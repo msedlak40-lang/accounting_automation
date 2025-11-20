@@ -4,11 +4,6 @@ import Database from 'better-sqlite3';
 import { initializeDatabase } from './database';
 import { setupIpcHandlers } from './ipc-handlers';
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling
-if (require('electron-squirrel-startup')) {
-  app.quit();
-}
-
 let mainWindow: BrowserWindow | null = null;
 let db: Database.Database | null = null;
 
