@@ -157,7 +157,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   ipcMain.handle('seed:serviceMappings', async (event, excelPath?: string) => {
     try {
       // Use provided path or default to data/raw/COA_Quickbooks_matched.xlsx
-      const defaultPath = path.join(__dirname, '../../../data/raw/COA_Quickbooks_matched.xlsx');
+      const defaultPath = path.join(__dirname, '../../../../data/raw/COA_Quickbooks_matched.xlsx');
       const filePath = excelPath || defaultPath;
 
       const result = seedServiceMappings(db, dbPath, filePath);
@@ -171,7 +171,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   ipcMain.handle('seed:paymentTypeMappings', async (event, excelPath?: string) => {
     try {
       // Use provided path or default to data/raw/COA_Quickbooks_matched.xlsx
-      const defaultPath = path.join(__dirname, '../../../data/raw/COA_Quickbooks_matched.xlsx');
+      const defaultPath = path.join(__dirname, '../../../../data/raw/COA_Quickbooks_matched.xlsx');
       const filePath = excelPath || defaultPath;
 
       const result = seedPaymentTypeMappings(db, dbPath, filePath);
