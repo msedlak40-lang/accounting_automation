@@ -1,5 +1,7 @@
 import { ipcMain } from 'electron';
 import { Database, logAudit, saveDatabase } from './database';
+import { seedServiceMappings, seedPaymentTypeMappings } from './seed-data';
+import * as path from 'path';
 
 /**
  * Setup IPC handlers for communication between main and renderer processes
@@ -148,6 +150,34 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       return { success: true, data: { id } };
     } catch (error: any) {
       return { success: false, error: error.message };
+    }
+  });
+
+  // Seed service mappings from Excel
+  ipcMain.handle('seed:serviceMappings', async (event, excelPath?: string) => {
+    try {
+      // Use provided path or default to data/raw/COA_Quickbooks_matched.xlsx
+      const defaultPath = path.join(__dirname, '../../../data/raw/COA_Quickbooks_matched.xlsx');
+      const filePath = excelPath || defaultPath;
+
+      const result = seedServiceMappings(db, dbPath, filePath);
+      return result;
+    } catch (error: any) {
+      return { success: false, count: 0, error: error.message };
+    }
+  });
+
+  // Seed payment type mappings from Excel
+  ipcMain.handle('seed:paymentTypeMappings', async (event, excelPath?: string) => {
+    try {
+      // Use provided path or default to data/raw/COA_Quickbooks_matched.xlsx
+      const defaultPath = path.join(__dirname, '../../../data/raw/COA_Quickbooks_matched.xlsx');
+      const filePath = excelPath || defaultPath;
+
+      const result = seedPaymentTypeMappings(db, dbPath, filePath);
+      return result;
+    } catch (error: any) {
+      return { success: false, count: 0, error: error.message };
     }
   });
 

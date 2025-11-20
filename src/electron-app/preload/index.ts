@@ -32,6 +32,14 @@ const api = {
     upload: (fileData: { path: string; type: string }) =>
       ipcRenderer.invoke('file:upload', fileData),
   },
+
+  // Database seeding
+  seed: {
+    serviceMappings: (excelPath?: string) =>
+      ipcRenderer.invoke('seed:serviceMappings', excelPath),
+    paymentTypeMappings: (excelPath?: string) =>
+      ipcRenderer.invoke('seed:paymentTypeMappings', excelPath),
+  },
 };
 
 // Expose protected methods that allow the renderer process to use

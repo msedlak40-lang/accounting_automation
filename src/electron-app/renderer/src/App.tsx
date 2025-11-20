@@ -13,6 +13,10 @@ declare global {
       audit: {
         getLogs: (options?: any) => Promise<{ success: boolean; data?: any[]; error?: string }>;
       };
+      seed: {
+        serviceMappings: (excelPath?: string) => Promise<{ success: boolean; count: number; error?: string }>;
+        paymentTypeMappings: (excelPath?: string) => Promise<{ success: boolean; count: number; error?: string }>;
+      };
     };
   }
 }
@@ -20,6 +24,15 @@ declare global {
 function App() {
   const [dbStatus, setDbStatus] = useState<'checking' | 'ready' | 'error'>('checking');
   const [stats, setStats] = useState({ customers: 0, mappings: 0, logs: 0 });
+  const [seedStatus, setSeedStatus] = useState<{
+    services: 'idle' | 'loading' | 'success' | 'error';
+    payments: 'idle' | 'loading' | 'success' | 'error';
+    servicesMessage?: string;
+    paymentsMessage?: string;
+  }>({
+    services: 'idle',
+    payments: 'idle',
+  });
 
   useEffect(() => {
     // Test database connection
@@ -49,6 +62,73 @@ function App() {
 
     checkDatabase();
   }, []);
+
+  const refreshStats = async () => {
+    const [customers, mappings, logs] = await Promise.all([
+      window.electronAPI.customers.getAll(),
+      window.electronAPI.serviceMappings.getAll(),
+      window.electronAPI.audit.getLogs({ limit: 10 }),
+    ]);
+    setStats({
+      customers: customers.data?.length || 0,
+      mappings: mappings.data?.length || 0,
+      logs: logs.data?.length || 0,
+    });
+  };
+
+  const handleSeedServices = async () => {
+    setSeedStatus(prev => ({ ...prev, services: 'loading', servicesMessage: undefined }));
+    try {
+      const result = await window.electronAPI.seed.serviceMappings();
+      if (result.success) {
+        setSeedStatus(prev => ({
+          ...prev,
+          services: 'success',
+          servicesMessage: `Successfully imported ${result.count} service mappings!`,
+        }));
+        await refreshStats();
+      } else {
+        setSeedStatus(prev => ({
+          ...prev,
+          services: 'error',
+          servicesMessage: result.error || 'Failed to import service mappings',
+        }));
+      }
+    } catch (error: any) {
+      setSeedStatus(prev => ({
+        ...prev,
+        services: 'error',
+        servicesMessage: error.message || 'Failed to import service mappings',
+      }));
+    }
+  };
+
+  const handleSeedPayments = async () => {
+    setSeedStatus(prev => ({ ...prev, payments: 'loading', paymentsMessage: undefined }));
+    try {
+      const result = await window.electronAPI.seed.paymentTypeMappings();
+      if (result.success) {
+        setSeedStatus(prev => ({
+          ...prev,
+          payments: 'success',
+          paymentsMessage: `Successfully imported ${result.count} payment type mappings!`,
+        }));
+        await refreshStats();
+      } else {
+        setSeedStatus(prev => ({
+          ...prev,
+          payments: 'error',
+          paymentsMessage: result.error || 'Failed to import payment type mappings',
+        }));
+      }
+    } catch (error: any) {
+      setSeedStatus(prev => ({
+        ...prev,
+        payments: 'error',
+        paymentsMessage: error.message || 'Failed to import payment type mappings',
+      }));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,6 +189,86 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Database Seeding Card */}
+        {dbStatus === 'ready' && stats.mappings === 0 && (
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4">Initialize Reference Data</h2>
+            <p className="text-gray-600 mb-4">
+              Import service mappings and payment type mappings from your Excel file to get started.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Service Mappings */}
+              <div className="border rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 mb-2">Service Mappings</h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Import EMR service to QuickBooks item mappings
+                </p>
+                <button
+                  onClick={handleSeedServices}
+                  disabled={seedStatus.services === 'loading' || seedStatus.services === 'success'}
+                  className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+                    seedStatus.services === 'success'
+                      ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                      : seedStatus.services === 'loading'
+                      ? 'bg-blue-100 text-blue-700 cursor-wait'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {seedStatus.services === 'loading' && 'Importing...'}
+                  {seedStatus.services === 'success' && '✓ Imported'}
+                  {seedStatus.services === 'error' && 'Retry Import'}
+                  {seedStatus.services === 'idle' && 'Import Service Mappings'}
+                </button>
+                {seedStatus.servicesMessage && (
+                  <p className={`mt-2 text-sm ${
+                    seedStatus.services === 'success' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {seedStatus.servicesMessage}
+                  </p>
+                )}
+              </div>
+
+              {/* Payment Type Mappings */}
+              <div className="border rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 mb-2">Payment Type Mappings</h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Import payment type to clearing account mappings
+                </p>
+                <button
+                  onClick={handleSeedPayments}
+                  disabled={seedStatus.payments === 'loading' || seedStatus.payments === 'success'}
+                  className={`w-full px-4 py-2 rounded-md font-medium transition-colors ${
+                    seedStatus.payments === 'success'
+                      ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                      : seedStatus.payments === 'loading'
+                      ? 'bg-blue-100 text-blue-700 cursor-wait'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {seedStatus.payments === 'loading' && 'Importing...'}
+                  {seedStatus.payments === 'success' && '✓ Imported'}
+                  {seedStatus.payments === 'error' && 'Retry Import'}
+                  {seedStatus.payments === 'idle' && 'Import Payment Types'}
+                </button>
+                {seedStatus.paymentsMessage && (
+                  <p className={`mt-2 text-sm ${
+                    seedStatus.payments === 'success' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {seedStatus.paymentsMessage}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Note:</strong> This will import data from <code className="bg-yellow-100 px-1 rounded">data/raw/COA_Quickbooks_matched.xlsx</code>
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Welcome Card */}
         <div className="bg-white rounded-lg shadow p-6">
