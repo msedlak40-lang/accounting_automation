@@ -10,7 +10,7 @@ export default defineConfig({
     electron([
       {
         // Main process entry point
-        entry: 'main/index.ts',
+        entry: path.resolve(__dirname, 'main/index.ts'),
         onstart(options) {
           options.startup();
         },
@@ -18,14 +18,14 @@ export default defineConfig({
           build: {
             outDir: 'dist-electron/main',
             rollupOptions: {
-              external: ['better-sqlite3'],
+              external: ['electron', 'sql.js'],
             },
           },
         },
       },
       {
         // Preload scripts
-        entry: 'preload/index.ts',
+        entry: path.resolve(__dirname, 'preload/index.ts'),
         onstart(options) {
           options.reload();
         },
