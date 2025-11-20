@@ -42,16 +42,16 @@ export function seedServiceMappings(
 
     console.log('Available sheet names:', workbook.SheetNames);
 
-    // Find the Service Item Mapping sheet
-    if (!workbook.SheetNames.includes('Service Item Mapping')) {
+    // Find the emr_service_items sheet
+    if (!workbook.SheetNames.includes('emr_service_items')) {
       return {
         success: false,
         count: 0,
-        error: `Sheet "Service Item Mapping" not found. Available sheets: ${workbook.SheetNames.join(', ')}`
+        error: `Sheet "emr_service_items" not found. Available sheets: ${workbook.SheetNames.join(', ')}`
       };
     }
 
-    const sheet = workbook.Sheets['Service Item Mapping'];
+    const sheet = workbook.Sheets['emr_service_items'];
     const data = XLSX.utils.sheet_to_json<any>(sheet);
 
     console.log(`Found ${data.length} service mappings to import`);
@@ -158,16 +158,16 @@ export function seedPaymentTypeMappings(
 
     console.log('Available sheet names:', workbook.SheetNames);
 
-    // Find the Payment Types sheet
-    if (!workbook.SheetNames.includes('Payment Types')) {
+    // Find the emr_payment_types sheet
+    if (!workbook.SheetNames.includes('emr_payment_types')) {
       return {
         success: false,
         count: 0,
-        error: `Sheet "Payment Types" not found. Available sheets: ${workbook.SheetNames.join(', ')}`
+        error: `Sheet "emr_payment_types" not found. Available sheets: ${workbook.SheetNames.join(', ')}`
       };
     }
 
-    const sheet = workbook.Sheets['Payment Types'];
+    const sheet = workbook.Sheets['emr_payment_types'];
     const data = XLSX.utils.sheet_to_json<any>(sheet);
 
     console.log(`Found ${data.length} payment type mappings to import`);
