@@ -66,20 +66,19 @@ export function seedServiceMappings(
 
     for (const row of data) {
       try {
-        // Map Excel columns to database fields
-        // Adjust these column names based on your actual Excel structure
+        // Map Excel columns to database fields based on actual Excel structure
         const mapping: ServiceMapping = {
-          emr_service_name: row['EMR Service'] || row['EMR Text'] || row['Service Name'],
-          qb_item_name: row['QB Item'] || row['QuickBooks Item'],
-          qb_item_hierarchy: row['Item Hierarchy'] || null,
-          asset_account: row['Asset Account'] || row['Inventory Asset'] || null,
-          income_account: row['Income Account'] || '4000 Injectables Income', // Default if missing
-          tax_code: row['Tax Code'] || row['Tax'] || null,
+          emr_service_name: row['Service/Product'],
+          qb_item_name: row['Matched_Item'],
+          qb_item_hierarchy: null, // Not in this Excel file
+          asset_account: row['Asset Account'] || null,
+          income_account: row['Account'], // This is the income account column
+          tax_code: row['Tax Code'] || null,
         };
 
         // Validate required fields
-        if (!mapping.emr_service_name || !mapping.qb_item_name) {
-          errors.push(`Skipping row: missing EMR service or QB item name`);
+        if (!mapping.emr_service_name || !mapping.qb_item_name || !mapping.income_account) {
+          errors.push(`Skipping row: missing required fields (Service/Product, Matched_Item, or Account)`);
           continue;
         }
 
