@@ -13,14 +13,13 @@ export default defineConfig({
     electron([
       {
         // Main process entry point
-        entry: 'main/index.ts',
+        entry: path.join(__dirname, 'main/index.ts'),
         onstart(options) {
           options.startup();
         },
         vite: {
-          root: __dirname,
           build: {
-            outDir: 'dist-electron/main',
+            outDir: path.join(__dirname, 'dist-electron/main'),
             rollupOptions: {
               external: ['electron', 'sql.js'],
             },
@@ -29,14 +28,13 @@ export default defineConfig({
       },
       {
         // Preload scripts
-        entry: 'preload/index.ts',
+        entry: path.join(__dirname, 'preload/index.ts'),
         onstart(options) {
           options.reload();
         },
         vite: {
-          root: __dirname,
           build: {
-            outDir: 'dist-electron/preload',
+            outDir: path.join(__dirname, 'dist-electron/preload'),
           },
         },
       },
