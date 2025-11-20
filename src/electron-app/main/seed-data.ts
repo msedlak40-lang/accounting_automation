@@ -36,8 +36,9 @@ export function seedServiceMappings(
       return { success: false, count: 0, error: `Cannot access file ${excelPath}` };
     }
 
-    // Read the Excel file
-    const workbook = XLSX.readFile(excelPath);
+    // Read the Excel file as a buffer first (more reliable in Electron)
+    const fileBuffer = fs.readFileSync(excelPath);
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
 
     // Find the Service Item Mapping sheet
     if (!workbook.SheetNames.includes('Service Item Mapping')) {
@@ -145,8 +146,9 @@ export function seedPaymentTypeMappings(
       return { success: false, count: 0, error: `Cannot access file ${excelPath}` };
     }
 
-    // Read the Excel file
-    const workbook = XLSX.readFile(excelPath);
+    // Read the Excel file as a buffer first (more reliable in Electron)
+    const fileBuffer = fs.readFileSync(excelPath);
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
 
     // Find the Payment Types sheet
     if (!workbook.SheetNames.includes('Payment Types')) {
