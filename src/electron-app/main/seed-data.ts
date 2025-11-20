@@ -40,9 +40,15 @@ export function seedServiceMappings(
     const fileBuffer = fs.readFileSync(excelPath);
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
 
+    console.log('Available sheet names:', workbook.SheetNames);
+
     // Find the Service Item Mapping sheet
     if (!workbook.SheetNames.includes('Service Item Mapping')) {
-      return { success: false, count: 0, error: 'Sheet "Service Item Mapping" not found' };
+      return {
+        success: false,
+        count: 0,
+        error: `Sheet "Service Item Mapping" not found. Available sheets: ${workbook.SheetNames.join(', ')}`
+      };
     }
 
     const sheet = workbook.Sheets['Service Item Mapping'];
@@ -150,9 +156,15 @@ export function seedPaymentTypeMappings(
     const fileBuffer = fs.readFileSync(excelPath);
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
 
+    console.log('Available sheet names:', workbook.SheetNames);
+
     // Find the Payment Types sheet
     if (!workbook.SheetNames.includes('Payment Types')) {
-      return { success: false, count: 0, error: 'Sheet "Payment Types" not found' };
+      return {
+        success: false,
+        count: 0,
+        error: `Sheet "Payment Types" not found. Available sheets: ${workbook.SheetNames.join(', ')}`
+      };
     }
 
     const sheet = workbook.Sheets['Payment Types'];
