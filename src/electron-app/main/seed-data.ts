@@ -1,6 +1,7 @@
 import { Database } from 'sql.js';
 import * as XLSX from 'xlsx';
 import * as path from 'path';
+import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase } from './database';
 
@@ -28,6 +29,13 @@ export function seedServiceMappings(
   excelPath: string
 ): { success: boolean; count: number; error?: string } {
   try {
+    console.log(`Attempting to read Excel file from: ${excelPath}`);
+
+    // Check if file exists
+    if (!fs.existsSync(excelPath)) {
+      return { success: false, count: 0, error: `Cannot access file ${excelPath}` };
+    }
+
     // Read the Excel file
     const workbook = XLSX.readFile(excelPath);
 
@@ -130,6 +138,13 @@ export function seedPaymentTypeMappings(
   excelPath: string
 ): { success: boolean; count: number; error?: string } {
   try {
+    console.log(`Attempting to read Excel file from: ${excelPath}`);
+
+    // Check if file exists
+    if (!fs.existsSync(excelPath)) {
+      return { success: false, count: 0, error: `Cannot access file ${excelPath}` };
+    }
+
     // Read the Excel file
     const workbook = XLSX.readFile(excelPath);
 

@@ -160,9 +160,14 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       const defaultPath = path.join(__dirname, '../../../../data/raw/COA_Quickbooks_matched.xlsx');
       const filePath = excelPath || defaultPath;
 
+      console.log('IPC seed:serviceMappings called');
+      console.log('__dirname:', __dirname);
+      console.log('Resolved file path:', filePath);
+
       const result = seedServiceMappings(db, dbPath, filePath);
       return result;
     } catch (error: any) {
+      console.error('Error in seed:serviceMappings handler:', error);
       return { success: false, count: 0, error: error.message };
     }
   });
@@ -174,9 +179,14 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       const defaultPath = path.join(__dirname, '../../../../data/raw/COA_Quickbooks_matched.xlsx');
       const filePath = excelPath || defaultPath;
 
+      console.log('IPC seed:paymentTypeMappings called');
+      console.log('__dirname:', __dirname);
+      console.log('Resolved file path:', filePath);
+
       const result = seedPaymentTypeMappings(db, dbPath, filePath);
       return result;
     } catch (error: any) {
+      console.error('Error in seed:paymentTypeMappings handler:', error);
       return { success: false, count: 0, error: error.message };
     }
   });
