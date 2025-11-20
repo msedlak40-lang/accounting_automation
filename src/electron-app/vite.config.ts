@@ -13,11 +13,12 @@ export default defineConfig({
     electron([
       {
         // Main process entry point
-        entry: path.resolve(__dirname, 'main/index.ts'),
+        entry: 'main/index.ts',
         onstart(options) {
           options.startup();
         },
         vite: {
+          root: __dirname,
           build: {
             outDir: 'dist-electron/main',
             rollupOptions: {
@@ -28,11 +29,12 @@ export default defineConfig({
       },
       {
         // Preload scripts
-        entry: path.resolve(__dirname, 'preload/index.ts'),
+        entry: 'preload/index.ts',
         onstart(options) {
           options.reload();
         },
         vite: {
+          root: __dirname,
           build: {
             outDir: 'dist-electron/preload',
           },
