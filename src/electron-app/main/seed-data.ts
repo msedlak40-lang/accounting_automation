@@ -56,6 +56,11 @@ export function seedServiceMappings(
 
     console.log(`Found ${data.length} service mappings to import`);
 
+    if (data.length > 0) {
+      console.log('Column names in Excel:', Object.keys(data[0]));
+      console.log('First row sample:', JSON.stringify(data[0], null, 2));
+    }
+
     let count = 0;
     const errors: string[] = [];
 
@@ -171,6 +176,11 @@ export function seedPaymentTypeMappings(
     const data = XLSX.utils.sheet_to_json<any>(sheet);
 
     console.log(`Found ${data.length} payment type mappings to import`);
+
+    if (data.length > 0) {
+      console.log('Column names in Excel:', Object.keys(data[0]));
+      console.log('First row sample:', JSON.stringify(data[0], null, 2));
+    }
 
     let count = 0;
     const errors: string[] = [];
