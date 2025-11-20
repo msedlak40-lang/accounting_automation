@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
 import path from 'path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [
