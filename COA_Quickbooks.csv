@@ -1,0 +1,118 @@
+﻿Account,Type,,Accnt. #
+1000 · Bank Accounts,Bank,,1000
+1000 · Bank Accounts:1010 · Operating,Bank,,1010
+1000 · Bank Accounts:1030 · Merchant Clearing,Bank,,1030
+1100 · Accounts Receivable,Accounts Receivable,,1100
+1100 · Accounts Receivable:1110 · Patients,Accounts Receivable,,1110
+1100 · Accounts Receivable:1200 · Vendor Receivable,Accounts Receivable,,1200
+1100 · Accounts Receivable:1200 · Vendor Receivable:1210 · Allergan,Accounts Receivable,,1210
+1100 · Accounts Receivable:1200 · Vendor Receivable:1220 · Galderma,Accounts Receivable,,1220
+1100 · Accounts Receivable:1200 · Vendor Receivable:1230 · ZO Skin Health,Accounts Receivable,,1230
+12000 · Undeposited Funds,Other Current Asset,,12000
+1300 · Inventory,Other Current Asset,,1300
+1300 · Inventory:1310 · Injectables,Other Current Asset,,1310
+1300 · Inventory:1320 · Skincare & Retail,Other Current Asset,,1320
+1300 · Inventory:1330 · Microneedling,Other Current Asset,,1330
+1300 · Inventory:1330 · Microneedling:1331 · With PRP,Other Current Asset,,1331
+1300 · Inventory:1340 · Chemical Peels & Facials,Other Current Asset,,1340
+1300 · Inventory:1350 · Weight Loss,Other Current Asset,,1350
+1300 · Inventory:1350 · Weight Loss:1351 · Semaglutide,Other Current Asset,,1351
+1300 · Inventory:1350 · Weight Loss:1352 · Tirzepatide,Other Current Asset,,1352
+1300 · Inventory:1350 · Weight Loss:1353 · B12 & Wellness,Other Current Asset,,1353
+15000 · Fixed Assets,Fixed Asset,,15000
+15000 · Fixed Assets:15100 · Leasehold Improvements,Fixed Asset,,15100
+15000 · Fixed Assets:15200 · Medical Equipment,Fixed Asset,,15200
+15000 · Fixed Assets:15200 · Medical Equipment:15210 · Devices,Fixed Asset,,15210
+15000 · Fixed Assets:15300 · Office Furniture & Fixtures,Fixed Asset,,15300
+15000 · Fixed Assets:15400 · Computer & IT Equipment,Fixed Asset,,15400
+15000 · Fixed Assets:15600 · Accumulated Depreciation,Fixed Asset,,15600
+Accounts Payable,Accounts Payable,,
+Prepaid Sales,Other Current Liability,,
+2000 · Liabilities,Other Current Liability,,2000
+2000 · Liabilities:2100 · Current Liabilities,Other Current Liability,,2100
+2000 · Liabilities:2100 · Current Liabilities:2110 · Client Gratuities Payable,Other Current Liability,,2110
+2000 · Liabilities:2100 · Current Liabilities:2120 · Gift Cards Outstanding,Other Current Liability,,2120
+2000 · Liabilities:2100 · Current Liabilities:2130 · Prepaid Packages,Other Current Liability,,2130
+2000 · Liabilities:2100 · Current Liabilities:2140 · Sales Tax Payable,Other Current Liability,,2140
+2000 · Liabilities:2100 · Current Liabilities:2150 · Credit Card Accounts,Other Current Liability,,2150
+2000 · Liabilities:2100 · Current Liabilities:2150 · Credit Card Accounts:2151 · Capital One,Other Current Liability,,2151
+24000 · Payroll Liabilities,Other Current Liability,,24000
+Owner's Equity,Equity,,
+Owner's Equity:Owner's Contribution KS,Equity,,
+Owner's Equity:Owner's Contribution MM,Equity,,
+30000 · Opening Balance Equity,Equity,,30000
+30000 · Opening Balance Equity:Opening Balance Equity KS,Equity,,
+30000 · Opening Balance Equity:Opening Balance Equity MM,Equity,,
+30700 · Members Draw,Equity,,30700
+32000 · Owners Equity,Equity,,32000
+Rebates,Income,,
+4000 · Service Revenue,Income,,4000
+4000 · Service Revenue:4100 · Injectables,Income,,4100
+4000 · Service Revenue:4110 · Facials & Peels,Income,,4110
+4000 · Service Revenue:4120 · Microneedling,Income,,4120
+4000 · Service Revenue:4120 · Microneedling:4121 · With PRP,Income,,4121
+4000 · Service Revenue:4130 · Skincare Product Sales,Income,,4130
+4000 · Service Revenue:4140 · Weight Loss,Income,,4140
+4000 · Service Revenue:4140 · Weight Loss:4141 · Semaglutide,Income,,4141
+4000 · Service Revenue:4140 · Weight Loss:4142 · Tirzepatide,Income,,4142
+4000 · Service Revenue:4140 · Weight Loss:4143 · B12 & Wellness,Income,,4143
+47300 · Refunds,Income,,47300
+5000 · COGS,Cost of Goods Sold,,5000
+5000 · COGS:5100 · Injectables,Cost of Goods Sold,,5100
+5000 · COGS:5110 · Facials & Peels,Cost of Goods Sold,,5110
+5000 · COGS:5120 · Microneedling,Cost of Goods Sold,,5120
+5000 · COGS:5120 · Microneedling:5121 · With PRP,Cost of Goods Sold,,5121
+5000 · COGS:5130 · Skincare Products,Cost of Goods Sold,,5130
+5000 · COGS:5140 · Weight Loss,Cost of Goods Sold,,5140
+5000 · COGS:5140 · Weight Loss:5141 · Semaglutide,Cost of Goods Sold,,5141
+5000 · COGS:5140 · Weight Loss:5142 · Tirzepatide,Cost of Goods Sold,,5142
+5000 · COGS:5140 · Weight Loss:5143 · B12 & Welness,Cost of Goods Sold,,5143
+5000 · COGS:5150 · Inventory Adjustments,Cost of Goods Sold,,5150
+5000 · COGS:5160 · Product Waste & Shrinkage,Cost of Goods Sold,,5160
+Sales Tax,Expense,,
+6000 · Service Delivery Expenses,Expense,,6000
+6000 · Service Delivery Expenses:6010 · Provider Payroll & Commissions,Expense,,6010
+6000 · Service Delivery Expenses:6020 · Contract Labor - Aesthetic Prov,Expense,,6020
+6000 · Service Delivery Expenses:6030 · Clinical Supplies (non-inv),Expense,,6030
+6000 · Service Delivery Expenses:6040 · Laundry & Linens,Expense,,6040
+6000 · Service Delivery Expenses:6050 · Medical Waste Disposal,Expense,,6050
+6000 · Service Delivery Expenses:6060 · Uniform & Scrubs,Expense,,6060
+6200 · Employee Benefits,Expense,,6200
+6200 · Employee Benefits:6210 · Employee In-Kind Treatments,Expense,,6210
+6200 · Employee Benefits:6220 · Continuing Education & Cert,Expense,,6220
+6200 · Employee Benefits:6230 · Employee Meals & Events,Expense,,6230
+62400 · Depreciation Expense,Expense,,62400
+6400 · Administrative Expenses,Expense,,6400
+6400 · Administrative Expenses:6410 · Rent & Utilities,Expense,,6410
+6400 · Administrative Expenses:6410 · Rent & Utilities:6411 · Office,Expense,,6411
+6400 · Administrative Expenses:6410 · Rent & Utilities:6412 · EMR,Expense,,6412
+6400 · Administrative Expenses:6410 · Rent & Utilities:6413 · Other,Expense,,6413
+6400 · Administrative Expenses:6420 · Office Supplies,Expense,,6420
+6400 · Administrative Expenses:6430 · Software Subscriptions,Expense,,6430
+6400 · Administrative Expenses:6440 · Professional Services,Expense,,6440
+6400 · Administrative Expenses:6440 · Professional Services:6441 · Legal,Expense,,6441
+6400 · Administrative Expenses:6440 · Professional Services:6442 · Accounting & Bookkeeping,Expense,,6442
+6400 · Administrative Expenses:6440 · Professional Services:6443 · Business Mgmt & Consulting,Expense,,6443
+6400 · Administrative Expenses:6450 · Bank & Merchant Fees,Expense,,6450
+6400 · Administrative Expenses:6460 · Insurance,Expense,,6460
+6400 · Administrative Expenses:6470 · Client Ammenties,Expense,,6470
+6400 · Administrative Expenses:6480 · Licenses & Permits,Expense,,6480
+66000 · Payroll Expenses,Expense,,66000
+7000 · Marketing & Promotions,Expense,,7000
+7000 · Marketing & Promotions:7010 · Advertising & Digital Marketing,Expense,,7010
+7000 · Marketing & Promotions:7010 · Advertising & Digital Marketing:7011 · Online Ads,Expense,,7011
+7000 · Marketing & Promotions:7010 · Advertising & Digital Marketing:7012 · Social Media Ads / Boosted Post,Expense,,7012
+7000 · Marketing & Promotions:7010 · Advertising & Digital Marketing:7013 · Google / Meta Spend,Expense,,7013
+7000 · Marketing & Promotions:7020 · Website & Digital Presence,Expense,,7020
+7000 · Marketing & Promotions:7020 · Website & Digital Presence:7021 · Web Hosting/Domain/Plugins,Expense,,7021
+7000 · Marketing & Promotions:7020 · Website & Digital Presence:7022 · Web Maintenance/SEO,Expense,,7022
+7000 · Marketing & Promotions:7030 · Creative & Brand Development,Expense,,7030
+7000 · Marketing & Promotions:7040 · Events & Open Houses,Expense,,7040
+7000 · Marketing & Promotions:7045 · Model Sitting Fees,Expense,,7045
+7000 · Marketing & Promotions:7050 · Agency & Professional Services,Expense,,7050
+7000 · Marketing & Promotions:7060 · Community Outreach & Sponsors,Expense,,7060
+7000 · Marketing & Promotions:7060 · Community Outreach & Sponsors:7061 · Charitable Donations,Expense,,7061
+7500 · Other Operating Expenses,Expense,,7500
+7500 · Other Operating Expenses:7510 · Travel & Meals,Expense,,7510
+7500 · Other Operating Expenses:7520 · Dues & Subscriptions,Expense,,7520
+7500 · Other Operating Expenses:7530 · Miscellaneous Expense,Expense,,7530
