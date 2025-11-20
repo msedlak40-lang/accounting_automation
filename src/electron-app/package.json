@@ -21,7 +21,7 @@
     "react-dom": "^18.2.0",
     "sql.js": "^1.10.3",
     "papaparse": "^5.4.1",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.1/xlsx-0.20.1.tgz",
+    "xlsx": "^0.18.5",
     "fuse.js": "^7.0.0",
     "uuid": "^9.0.1",
     "date-fns": "^3.0.0"
