@@ -1,11 +1,10 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import path from 'path';
-import Database from 'better-sqlite3';
-import { initializeDatabase } from './database';
+import { initializeDatabase, Database } from './database';
 import { setupIpcHandlers } from './ipc-handlers';
 
 let mainWindow: BrowserWindow | null = null;
-let db: Database.Database | null = null;
+let db: Database | null = null;
 
 // Get user data path for storing database
 const userDataPath = app.getPath('userData');
@@ -42,17 +41,14 @@ function createWindow() {
 }
 
 // Initialize database and app
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   try {
-    // Initialize SQLite database
-    db = new Database(dbPath);
+    // Initialize SQL.js database (async)
+    db = await initializeDatabase(dbPath);
     console.log(`Database initialized at: ${dbPath}`);
 
-    // Create tables and seed data
-    initializeDatabase(db);
-
     // Setup IPC handlers for renderer communication
-    setupIpcHandlers(db);
+    setupIpcHandlers(db, dbPath);
 
     // Create main window
     createWindow();
@@ -72,19 +68,9 @@ app.whenReady().then(() => {
 // Quit when all windows are closed (except on macOS)
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    if (db) {
-      db.close();
-    }
     app.quit();
   }
 });
 
-// Handle app termination
-app.on('before-quit', () => {
-  if (db) {
-    db.close();
-  }
-});
-
 // Export for use in other modules
-export { db };
+export { db, dbPath };

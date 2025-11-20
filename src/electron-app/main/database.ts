@@ -1,29 +1,55 @@
-import Database from 'better-sqlite3';
+import initSqlJs, { Database } from 'sql.js';
+import * as fs from 'fs';
+import * as path from 'path';
+
+let db: Database | null = null;
 
 /**
- * Initialize the SQLite database schema
- * Creates all tables if they don't exist
+ * Initialize SQL.js and create/load the database
  */
-export function initializeDatabase(db: Database.Database): void {
-  // Enable foreign keys
-  db.pragma('foreign_keys = ON');
+export async function initializeDatabase(dbPath: string): Promise<Database> {
+  const SQL = await initSqlJs({
+    locateFile: (file) => {
+      return path.join(__dirname, '../../node_modules/sql.js/dist/', file);
+    },
+  });
+
+  // Check if database file exists
+  if (fs.existsSync(dbPath)) {
+    // Load existing database
+    const buffer = fs.readFileSync(dbPath);
+    db = new SQL.Database(buffer);
+    console.log('Loaded existing database from:', dbPath);
+  } else {
+    // Create new database
+    db = new SQL.Database();
+    console.log('Created new database');
+  }
 
   // Create all tables
-  createCustomersTable(db);
-  createCustomerHistoryTable(db);
-  createServiceMappingsTable(db);
-  createPaymentTypeMappingsTable(db);
-  createFileUploadsTable(db);
-  createTransactionsStagingTable(db);
-  createExpenseCategoriesTable(db);
-  createExpenseTransactionsTable(db);
-  createAuditLogTable(db);
+  createTables(db);
 
-  console.log('Database schema initialized successfully');
+  // Save database to file
+  saveDatabase(db, dbPath);
+
+  return db;
 }
 
-function createCustomersTable(db: Database.Database): void {
-  db.exec(`
+/**
+ * Save database to disk
+ */
+export function saveDatabase(database: Database, dbPath: string): void {
+  const data = database.export();
+  const buffer = Buffer.from(data);
+  fs.writeFileSync(dbPath, buffer);
+}
+
+/**
+ * Create all database tables
+ */
+function createTables(database: Database): void {
+  const queries = `
+    -- 1. Customers table
     CREATE TABLE IF NOT EXISTS customers (
       id                 TEXT PRIMARY KEY,
       cid                TEXT UNIQUE NOT NULL,
@@ -38,11 +64,8 @@ function createCustomersTable(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_customers_cid ON customers(cid);
     CREATE INDEX IF NOT EXISTS idx_customers_emr_id ON customers(emr_id);
-  `);
-}
 
-function createCustomerHistoryTable(db: Database.Database): void {
-  db.exec(`
+    -- 2. Customer history table
     CREATE TABLE IF NOT EXISTS customer_history (
       id                 TEXT PRIMARY KEY,
       customer_id        TEXT REFERENCES customers(id),
@@ -59,11 +82,8 @@ function createCustomerHistoryTable(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_customer_history_customer_id ON customer_history(customer_id);
     CREATE INDEX IF NOT EXISTS idx_customer_history_changed_at ON customer_history(changed_at);
-  `);
-}
 
-function createServiceMappingsTable(db: Database.Database): void {
-  db.exec(`
+    -- 3. Service mappings table
     CREATE TABLE IF NOT EXISTS service_mappings (
       id                 TEXT PRIMARY KEY,
       emr_service_name   TEXT NOT NULL UNIQUE,
@@ -79,11 +99,8 @@ function createServiceMappingsTable(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_service_mappings_emr_service ON service_mappings(emr_service_name);
     CREATE INDEX IF NOT EXISTS idx_service_mappings_active ON service_mappings(is_active);
-  `);
-}
 
-function createPaymentTypeMappingsTable(db: Database.Database): void {
-  db.exec(`
+    -- 4. Payment type mappings table
     CREATE TABLE IF NOT EXISTS payment_type_mappings (
       id                 TEXT PRIMARY KEY,
       payment_type       TEXT UNIQUE NOT NULL,
@@ -94,11 +111,8 @@ function createPaymentTypeMappingsTable(db: Database.Database): void {
     );
 
     CREATE INDEX IF NOT EXISTS idx_payment_type ON payment_type_mappings(payment_type);
-  `);
-}
 
-function createFileUploadsTable(db: Database.Database): void {
-  db.exec(`
+    -- 5. File uploads table
     CREATE TABLE IF NOT EXISTS file_uploads (
       id                 TEXT PRIMARY KEY,
       filename           TEXT NOT NULL,
@@ -112,11 +126,8 @@ function createFileUploadsTable(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_file_uploads_type ON file_uploads(file_type);
     CREATE INDEX IF NOT EXISTS idx_file_uploads_uploaded_at ON file_uploads(uploaded_at);
-  `);
-}
 
-function createTransactionsStagingTable(db: Database.Database): void {
-  db.exec(`
+    -- 6. Transactions staging table
     CREATE TABLE IF NOT EXISTS transactions_staging (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -136,11 +147,8 @@ function createTransactionsStagingTable(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_upload_id ON transactions_staging(upload_id);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_customer_cid ON transactions_staging(customer_cid);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_date ON transactions_staging(transaction_date);
-  `);
-}
 
-function createExpenseCategoriesTable(db: Database.Database): void {
-  db.exec(`
+    -- 7. Expense categories table
     CREATE TABLE IF NOT EXISTS expense_categories (
       id                 TEXT PRIMARY KEY,
       merchant_pattern   TEXT NOT NULL,
@@ -153,11 +161,8 @@ function createExpenseCategoriesTable(db: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_expense_categories_pattern ON expense_categories(merchant_pattern);
     CREATE INDEX IF NOT EXISTS idx_expense_categories_active ON expense_categories(is_active);
-  `);
-}
 
-function createExpenseTransactionsTable(db: Database.Database): void {
-  db.exec(`
+    -- 8. Expense transactions table
     CREATE TABLE IF NOT EXISTS expense_transactions (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -179,11 +184,8 @@ function createExpenseTransactionsTable(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_date ON expense_transactions(transaction_date);
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_merchant ON expense_transactions(merchant);
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_status ON expense_transactions(status);
-  `);
-}
 
-function createAuditLogTable(db: Database.Database): void {
-  db.exec(`
+    -- 9. Audit log table
     CREATE TABLE IF NOT EXISTS audit_log (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp          TEXT DEFAULT (datetime('now')),
@@ -197,28 +199,32 @@ function createAuditLogTable(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_audit_log_timestamp ON audit_log(timestamp);
     CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action);
     CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
-  `);
+  `;
+
+  // Execute all CREATE TABLE statements
+  database.exec(queries);
+  console.log('Database schema initialized successfully');
 }
 
 /**
  * Log an action to the audit trail
  */
 export function logAudit(
-  db: Database.Database,
+  database: Database,
   action: string,
   entityType?: string,
   entityId?: string,
   details?: any
 ): void {
-  const stmt = db.prepare(`
-    INSERT INTO audit_log (action, entity_type, entity_id, details)
-    VALUES (?, ?, ?, ?)
-  `);
-
-  stmt.run(
-    action,
-    entityType || null,
-    entityId || null,
-    details ? JSON.stringify(details) : null
+  database.run(
+    `INSERT INTO audit_log (action, entity_type, entity_id, details) VALUES (?, ?, ?, ?)`,
+    [
+      action,
+      entityType || null,
+      entityId || null,
+      details ? JSON.stringify(details) : null,
+    ]
   );
 }
+
+export { Database };
