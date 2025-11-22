@@ -102,6 +102,23 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
+  // Get all payment type mappings
+  ipcMain.handle('payment-types:getAll', async () => {
+    try {
+      const result = db.exec('SELECT * FROM payment_type_mappings WHERE is_active = 1 ORDER BY payment_type');
+      const paymentTypes = result[0] ? result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      }) : [];
+      return { success: true, data: paymentTypes };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
   // Get audit log
   ipcMain.handle('audit:getLogs', async (event, options?: { limit?: number; action?: string }) => {
     try {

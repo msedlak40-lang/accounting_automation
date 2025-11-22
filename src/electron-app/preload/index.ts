@@ -21,6 +21,11 @@ const api = {
     create: (mappingData: any) => ipcRenderer.invoke('service-mappings:create', mappingData),
   },
 
+  // Payment type mappings
+  paymentTypes: {
+    getAll: () => ipcRenderer.invoke('payment-types:getAll'),
+  },
+
   // Audit logs
   audit: {
     getLogs: (options?: { limit?: number; action?: string }) =>
