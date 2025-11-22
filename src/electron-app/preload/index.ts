@@ -30,6 +30,7 @@ const api = {
   // Payment type mappings
   paymentTypes: {
     getAll: () => ipcRenderer.invoke('payment-types:getAll'),
+    create: (mappingData: any) => ipcRenderer.invoke('payment-types:create', mappingData),
   },
 
   // Audit logs

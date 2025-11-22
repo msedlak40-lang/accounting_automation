@@ -20,9 +20,13 @@ declare global {
       };
       serviceMappings: {
         getAll: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        create: (data: { emr_service_name: string; qb_item_name: string; income_account: string; tax_code?: string }) =>
+          Promise<{ success: boolean; data?: { id: string }; error?: string }>;
       };
       paymentTypes: {
         getAll: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        create: (data: { payment_type: string; category: string; clearing_account: string }) =>
+          Promise<{ success: boolean; data?: { id: string }; error?: string }>;
       };
       audit: {
         getLogs: (options?: any) => Promise<{ success: boolean; data?: any[]; error?: string }>;
@@ -106,6 +110,13 @@ function App() {
   const [paymentSearch, setPaymentSearch] = useState('');
   const [txnSearch, setTxnSearch] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
+
+  // Add mapping modal state
+  const [showAddService, setShowAddService] = useState(false);
+  const [showAddPayment, setShowAddPayment] = useState(false);
+  const [newService, setNewService] = useState({ emr_service_name: '', qb_item_name: '', income_account: '', tax_code: 'Non' });
+  const [newPayment, setNewPayment] = useState({ payment_type: '', category: 'Merchant', clearing_account: '1030 Merchant Clearing' });
+  const [addingMapping, setAddingMapping] = useState(false);
 
   useEffect(() => {
     checkDatabase();
@@ -260,6 +271,44 @@ function App() {
       setProcessingResult({ success: false, error: error.message });
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const handleAddServiceMapping = async () => {
+    if (!newService.emr_service_name || !newService.qb_item_name || !newService.income_account) {
+      return;
+    }
+    setAddingMapping(true);
+    try {
+      const result = await window.electronAPI.serviceMappings.create(newService);
+      if (result.success) {
+        setNewService({ emr_service_name: '', qb_item_name: '', income_account: '', tax_code: 'Non' });
+        setShowAddService(false);
+        await refreshData();
+      }
+    } catch (error) {
+      console.error('Error adding service mapping:', error);
+    } finally {
+      setAddingMapping(false);
+    }
+  };
+
+  const handleAddPaymentType = async () => {
+    if (!newPayment.payment_type || !newPayment.category || !newPayment.clearing_account) {
+      return;
+    }
+    setAddingMapping(true);
+    try {
+      const result = await window.electronAPI.paymentTypes.create(newPayment);
+      if (result.success) {
+        setNewPayment({ payment_type: '', category: 'Merchant', clearing_account: '1030 Merchant Clearing' });
+        setShowAddPayment(false);
+        await refreshData();
+      }
+    } catch (error) {
+      console.error('Error adding payment type:', error);
+    } finally {
+      setAddingMapping(false);
     }
   };
 
@@ -700,17 +749,91 @@ function App() {
 
         {/* Service Mappings Tab */}
         {activeTab === 'services' && (
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Service Mappings</h2>
-              <input
-                type="text"
-                placeholder="Search services..."
-                value={serviceSearch}
-                onChange={(e) => setServiceSearch(e.target.value)}
-                className="px-3 py-1.5 border rounded-md text-sm w-64"
-              />
-            </div>
+          <div className="space-y-4">
+            {/* Add Service Form */}
+            {showAddService && (
+              <div className="bg-white rounded-lg shadow p-4">
+                <h3 className="font-semibold mb-3">Add Service Mapping</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">EMR Service Name *</label>
+                    <input
+                      type="text"
+                      value={newService.emr_service_name}
+                      onChange={(e) => setNewService({ ...newService, emr_service_name: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                      placeholder="e.g., Botox 50 Units"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">QB Item Name *</label>
+                    <input
+                      type="text"
+                      value={newService.qb_item_name}
+                      onChange={(e) => setNewService({ ...newService, qb_item_name: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                      placeholder="e.g., Botox"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Income Account *</label>
+                    <input
+                      type="text"
+                      value={newService.income_account}
+                      onChange={(e) => setNewService({ ...newService, income_account: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                      placeholder="e.g., 4100 Revenue:Injectable Services"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Tax Code</label>
+                    <select
+                      value={newService.tax_code}
+                      onChange={(e) => setNewService({ ...newService, tax_code: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    >
+                      <option value="Non">Non-Taxable</option>
+                      <option value="Tax">Taxable</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={handleAddServiceMapping}
+                    disabled={addingMapping || !newService.emr_service_name || !newService.qb_item_name || !newService.income_account}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {addingMapping ? 'Adding...' : 'Add Mapping'}
+                  </button>
+                  <button
+                    onClick={() => setShowAddService(false)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Service Mappings</h2>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Search services..."
+                    value={serviceSearch}
+                    onChange={(e) => setServiceSearch(e.target.value)}
+                    className="px-3 py-1.5 border rounded-md text-sm w-64"
+                  />
+                  <button
+                    onClick={() => setShowAddService(true)}
+                    className="px-3 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
+                  >
+                    + Add
+                  </button>
+                </div>
+              </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
@@ -749,25 +872,92 @@ function App() {
                 </tbody>
               </table>
             </div>
-            <div className="p-3 border-t text-sm text-gray-500">
-              Showing {filteredServices.length} of {serviceMappings.length} mappings
+              <div className="p-3 border-t text-sm text-gray-500">
+                Showing {filteredServices.length} of {serviceMappings.length} mappings
+              </div>
             </div>
           </div>
         )}
 
         {/* Payment Types Tab */}
         {activeTab === 'payments' && (
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Payment Type Mappings</h2>
-              <input
-                type="text"
-                placeholder="Search payment types..."
-                value={paymentSearch}
-                onChange={(e) => setPaymentSearch(e.target.value)}
-                className="px-3 py-1.5 border rounded-md text-sm w-64"
-              />
-            </div>
+          <div className="space-y-4">
+            {/* Add Payment Type Form */}
+            {showAddPayment && (
+              <div className="bg-white rounded-lg shadow p-4">
+                <h3 className="font-semibold mb-3">Add Payment Type</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Payment Type *</label>
+                    <input
+                      type="text"
+                      value={newPayment.payment_type}
+                      onChange={(e) => setNewPayment({ ...newPayment, payment_type: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                      placeholder="e.g., Client Bank"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Category *</label>
+                    <select
+                      value={newPayment.category}
+                      onChange={(e) => setNewPayment({ ...newPayment, category: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                    >
+                      <option value="Merchant">Merchant</option>
+                      <option value="Vendor Receivable">Vendor Receivable</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Clearing Account *</label>
+                    <input
+                      type="text"
+                      value={newPayment.clearing_account}
+                      onChange={(e) => setNewPayment({ ...newPayment, clearing_account: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md text-sm"
+                      placeholder="e.g., 1030 Merchant Clearing"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={handleAddPaymentType}
+                    disabled={addingMapping || !newPayment.payment_type || !newPayment.category || !newPayment.clearing_account}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {addingMapping ? 'Adding...' : 'Add Payment Type'}
+                  </button>
+                  <button
+                    onClick={() => setShowAddPayment(false)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h2 className="text-lg font-semibold">Payment Type Mappings</h2>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Search payment types..."
+                    value={paymentSearch}
+                    onChange={(e) => setPaymentSearch(e.target.value)}
+                    className="px-3 py-1.5 border rounded-md text-sm w-64"
+                  />
+                  <button
+                    onClick={() => setShowAddPayment(true)}
+                    className="px-3 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
+                  >
+                    + Add
+                  </button>
+                </div>
+              </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
@@ -806,8 +996,9 @@ function App() {
                 </tbody>
               </table>
             </div>
-            <div className="p-3 border-t text-sm text-gray-500">
-              Showing {filteredPayments.length} of {paymentTypes.length} payment types
+              <div className="p-3 border-t text-sm text-gray-500">
+                Showing {filteredPayments.length} of {paymentTypes.length} payment types
+              </div>
             </div>
           </div>
         )}

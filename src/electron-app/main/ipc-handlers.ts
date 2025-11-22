@@ -127,6 +127,33 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
+  // Create payment type mapping
+  ipcMain.handle('payment-types:create', async (event, mappingData: any) => {
+    try {
+      const { v4: uuidv4 } = require('uuid');
+      const id = uuidv4();
+
+      db.run(
+        `INSERT INTO payment_type_mappings (id, payment_type, category, clearing_account) VALUES (?, ?, ?, ?)`,
+        [
+          id,
+          mappingData.payment_type,
+          mappingData.category,
+          mappingData.clearing_account
+        ]
+      );
+
+      logAudit(db, 'payment_type_created', 'payment_type', id, mappingData);
+
+      // Save database after write
+      saveDatabase(db, dbPath);
+
+      return { success: true, data: { id } };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
   // Get audit log
   ipcMain.handle('audit:getLogs', async (event, options?: { limit?: number; action?: string }) => {
     try {

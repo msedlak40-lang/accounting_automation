@@ -129,8 +129,8 @@ export function processEMRFile(
       if (isServiceLine) {
         stats.serviceLines++;
 
-        // Check service mapping
-        const serviceMapping = serviceMappings.get(serviceName);
+        // Check service mapping (using normalized key for case-insensitive matching)
+        const serviceMapping = serviceMappings.get(normalizeKey(serviceName));
         if (!serviceMapping) {
           stats.unmappedServices.add(serviceName);
         }
@@ -139,23 +139,23 @@ export function processEMRFile(
       if (isPaymentLine) {
         stats.paymentLines++;
 
-        // Check payment type mapping
-        const paymentMapping = paymentTypeMappings.get(paymentType);
+        // Check payment type mapping (using normalized key for case-insensitive matching)
+        const paymentMapping = paymentTypeMappings.get(normalizeKey(paymentType));
         if (!paymentMapping) {
           stats.unmappedPaymentTypes.add(paymentType);
         }
       }
 
-      // Build mapped data JSON
+      // Build mapped data JSON (using normalized keys for case-insensitive matching)
       const mappedData: any = {};
-      if (serviceName && serviceMappings.has(serviceName)) {
-        const sm = serviceMappings.get(serviceName)!;
+      if (serviceName && serviceMappings.has(normalizeKey(serviceName))) {
+        const sm = serviceMappings.get(normalizeKey(serviceName))!;
         mappedData.qb_item = sm.qb_item_name;
         mappedData.income_account = sm.income_account;
         mappedData.tax_code = sm.tax_code;
       }
-      if (paymentType && paymentTypeMappings.has(paymentType)) {
-        const pm = paymentTypeMappings.get(paymentType)!;
+      if (paymentType && paymentTypeMappings.has(normalizeKey(paymentType))) {
+        const pm = paymentTypeMappings.get(normalizeKey(paymentType))!;
         mappedData.clearing_account = pm.clearing_account;
         mappedData.category = pm.category;
       }
@@ -246,7 +246,15 @@ export function processEMRFile(
 }
 
 /**
+ * Normalize string for case-insensitive matching (lowercase and trim)
+ */
+function normalizeKey(str: string | null | undefined): string {
+  return (str || '').toLowerCase().trim();
+}
+
+/**
  * Load service mappings from database into a Map for quick lookup
+ * Keys are normalized for case-insensitive matching
  */
 function loadServiceMappings(db: Database): Map<string, ServiceMapping> {
   const map = new Map<string, ServiceMapping>();
@@ -261,7 +269,8 @@ function loadServiceMappings(db: Database): Map<string, ServiceMapping> {
         income_account: row[2] as string,
         tax_code: row[3] as string | null
       };
-      map.set(mapping.emr_service_name, mapping);
+      // Use normalized key for case-insensitive matching
+      map.set(normalizeKey(mapping.emr_service_name), mapping);
     }
   }
 
@@ -270,6 +279,7 @@ function loadServiceMappings(db: Database): Map<string, ServiceMapping> {
 
 /**
  * Load payment type mappings from database into a Map
+ * Keys are normalized for case-insensitive matching
  */
 function loadPaymentTypeMappings(db: Database): Map<string, PaymentTypeMapping> {
   const map = new Map<string, PaymentTypeMapping>();
@@ -283,7 +293,8 @@ function loadPaymentTypeMappings(db: Database): Map<string, PaymentTypeMapping> 
         category: row[1] as string,
         clearing_account: row[2] as string
       };
-      map.set(mapping.payment_type, mapping);
+      // Use normalized key for case-insensitive matching
+      map.set(normalizeKey(mapping.payment_type), mapping);
     }
   }
 

@@ -3,6 +3,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { logAudit, saveDatabase } from './database';
 
+/**
+ * Normalize string for case-insensitive matching (lowercase and trim)
+ */
+function normalizeKey(str: string | null | undefined): string {
+  return (str || '').toLowerCase().trim();
+}
+
 interface InvoiceLine {
   Customer: string;
   TxnDate: string;
@@ -117,9 +124,9 @@ export function exportToTransactionPro(
         warnings.push(`Customer CID ${cid} not found in crosswalk - using CID as customer name`);
       }
 
-      // Process service lines
+      // Process service lines (using normalized key for case-insensitive matching)
       if (serviceName) {
-        const serviceMapping = serviceMappings.get(serviceName);
+        const serviceMapping = serviceMappings.get(normalizeKey(serviceName));
 
         if (!serviceMapping) {
           warnings.push(`Service "${serviceName}" not mapped - skipping`);
@@ -142,9 +149,9 @@ export function exportToTransactionPro(
         processedInvoices.add(invoiceNumber);
       }
 
-      // Process payment lines
+      // Process payment lines (using normalized key for case-insensitive matching)
       if (paymentType && txn.amount > 0) {
-        const paymentMapping = paymentMappings.get(paymentType);
+        const paymentMapping = paymentMappings.get(normalizeKey(paymentType));
 
         if (!paymentMapping) {
           warnings.push(`Payment type "${paymentType}" not mapped - using default clearing account`);
@@ -222,6 +229,7 @@ export function exportToTransactionPro(
 
 /**
  * Get service mappings from database
+ * Keys are normalized for case-insensitive matching
  */
 function getServiceMappings(db: Database): Map<string, { qb_item_name: string; income_account: string; tax_code: string | null }> {
   const map = new Map();
@@ -234,7 +242,8 @@ function getServiceMappings(db: Database): Map<string, { qb_item_name: string; i
 
   if (result.length > 0 && result[0].values) {
     for (const row of result[0].values) {
-      map.set(row[0] as string, {
+      // Use normalized key for case-insensitive matching
+      map.set(normalizeKey(row[0] as string), {
         qb_item_name: row[1] as string,
         income_account: row[2] as string,
         tax_code: row[3] as string | null
@@ -247,6 +256,7 @@ function getServiceMappings(db: Database): Map<string, { qb_item_name: string; i
 
 /**
  * Get payment type mappings from database
+ * Keys are normalized for case-insensitive matching
  */
 function getPaymentTypeMappings(db: Database): Map<string, { category: string; clearing_account: string }> {
   const map = new Map();
@@ -259,7 +269,8 @@ function getPaymentTypeMappings(db: Database): Map<string, { category: string; c
 
   if (result.length > 0 && result[0].values) {
     for (const row of result[0].values) {
-      map.set(row[0] as string, {
+      // Use normalized key for case-insensitive matching
+      map.set(normalizeKey(row[0] as string), {
         category: row[1] as string,
         clearing_account: row[2] as string
       });
@@ -373,7 +384,7 @@ export function getExportPreview(
   `);
   const paymentLines = paymentResult[0]?.values[0]?.[0] as number || 0;
 
-  // Get unmapped services
+  // Get unmapped services (using normalized key for case-insensitive matching)
   const unmappedServiceResult = db.exec(`
     SELECT DISTINCT service_name FROM transactions_staging
     ${whereClause}
@@ -383,13 +394,13 @@ export function getExportPreview(
   if (unmappedServiceResult.length > 0) {
     for (const row of unmappedServiceResult[0].values) {
       const serviceName = row[0] as string;
-      if (!serviceMappings.has(serviceName)) {
+      if (!serviceMappings.has(normalizeKey(serviceName))) {
         unmappedServices.push(serviceName);
       }
     }
   }
 
-  // Get unmapped payment types
+  // Get unmapped payment types (using normalized key for case-insensitive matching)
   const unmappedPaymentResult = db.exec(`
     SELECT DISTINCT payment_type FROM transactions_staging
     ${whereClause}
@@ -399,7 +410,7 @@ export function getExportPreview(
   if (unmappedPaymentResult.length > 0) {
     for (const row of unmappedPaymentResult[0].values) {
       const paymentType = row[0] as string;
-      if (!paymentMappings.has(paymentType)) {
+      if (!paymentMappings.has(normalizeKey(paymentType))) {
         unmappedPayments.push(paymentType);
       }
     }
