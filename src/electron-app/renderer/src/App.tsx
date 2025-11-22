@@ -333,11 +333,12 @@ function App() {
     t.payment_type?.toLowerCase().includes(txnSearch.toLowerCase())
   );
 
-  // Filter customers
+  // Filter customers (using new UUID-based schema fields)
   const filteredCustomers = customers.filter(c =>
-    c.cid?.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.customer_name_emr?.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.customer_name_qb?.toLowerCase().includes(customerSearch.toLowerCase())
+    c.customer_id?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.emr_patient_id?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.emr_name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.qb_display_name?.toLowerCase().includes(customerSearch.toLowerCase())
   );
 
   const tabs = [
@@ -691,10 +692,10 @@ function App() {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left font-medium text-gray-600">CID</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">Customer UUID</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">EMR Patient ID</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">EMR Name</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">QuickBooks Name</th>
-                      <th className="px-4 py-3 text-right font-medium text-gray-600">Transactions</th>
                       <th className="px-4 py-3 text-center font-medium text-gray-600">Status</th>
                     </tr>
                   </thead>
@@ -707,25 +708,21 @@ function App() {
                       </tr>
                     ) : (
                       filteredCustomers.slice(0, 100).map((customer, index) => (
-                        <tr key={customer.id || index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 font-mono text-xs">{customer.cid}</td>
-                          <td className="px-4 py-3">{customer.customer_name_emr || <span className="text-gray-400">-</span>}</td>
+                        <tr key={customer.customer_id || index} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 font-mono text-xs" title={customer.customer_id}>
+                            {customer.customer_id ? customer.customer_id.substring(0, 8) + '...' : '-'}
+                          </td>
+                          <td className="px-4 py-3 font-mono text-xs">{customer.emr_patient_id || <span className="text-gray-400">-</span>}</td>
+                          <td className="px-4 py-3">{customer.emr_name || <span className="text-gray-400">-</span>}</td>
                           <td className="px-4 py-3">
-                            {customer.customer_name_qb ? (
-                              <span className="text-blue-600">{customer.customer_name_qb}</span>
+                            {customer.qb_display_name ? (
+                              <span className="text-blue-600">{customer.qb_display_name}</span>
                             ) : (
                               <span className="text-yellow-600 text-xs">Not mapped</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-right">
-                            <span className={`px-2 py-0.5 rounded text-xs ${
-                              customer.transaction_count > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
-                            }`}>
-                              {customer.transaction_count || 0}
-                            </span>
-                          </td>
                           <td className="px-4 py-3 text-center">
-                            {customer.customer_name_qb ? (
+                            {customer.qb_display_name ? (
                               <span className="inline-block w-2 h-2 rounded-full bg-green-500" title="Mapped to QB"></span>
                             ) : (
                               <span className="inline-block w-2 h-2 rounded-full bg-yellow-500" title="Needs QB mapping"></span>
