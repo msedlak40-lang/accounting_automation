@@ -61,6 +61,14 @@ const api = {
     paymentTypeMappings: (excelPath?: string) =>
       ipcRenderer.invoke('seed:paymentTypeMappings', excelPath),
   },
+
+  // Transaction Pro Export
+  export: {
+    selectDirectory: () => ipcRenderer.invoke('export:selectDirectory'),
+    preview: (uploadId?: string) => ipcRenderer.invoke('export:preview', uploadId),
+    transactionPro: (data: { outputDir: string; uploadId?: string }) =>
+      ipcRenderer.invoke('export:transactionPro', data),
+  },
 };
 
 // Expose protected methods that allow the renderer process to use

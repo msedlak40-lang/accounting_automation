@@ -51,11 +51,28 @@ declare global {
         getSummary: (uploadId?: string) => Promise<{ success: boolean; data?: { invoices: number; services: number; payments: number }; error?: string }>;
         getUploads: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
       };
+      export: {
+        selectDirectory: () => Promise<{ success: boolean; canceled?: boolean; dirPath?: string; error?: string }>;
+        preview: (uploadId?: string) => Promise<{
+          success: boolean;
+          data?: { invoiceLines: number; paymentLines: number; unmappedServices: string[]; unmappedPayments: string[] };
+          error?: string;
+        }>;
+        transactionPro: (data: { outputDir: string; uploadId?: string }) => Promise<{
+          success: boolean;
+          invoicesExported: number;
+          paymentsExported: number;
+          invoiceFilePath?: string;
+          paymentsFilePath?: string;
+          error?: string;
+          warnings: string[];
+        }>;
+      };
     };
   }
 }
 
-type TabType = 'dashboard' | 'transactions' | 'customers' | 'services' | 'payments' | 'audit';
+type TabType = 'dashboard' | 'transactions' | 'customers' | 'services' | 'payments' | 'export' | 'audit';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -78,6 +95,11 @@ function App() {
   // Customer crosswalk state
   const [importingCrosswalk, setImportingCrosswalk] = useState(false);
   const [crosswalkResult, setCrosswalkResult] = useState<any>(null);
+
+  // Export state
+  const [exporting, setExporting] = useState(false);
+  const [exportResult, setExportResult] = useState<any>(null);
+  const [exportPreview, setExportPreview] = useState<any>(null);
 
   // Search/filter state
   const [serviceSearch, setServiceSearch] = useState('');
@@ -143,7 +165,17 @@ function App() {
     if (activeTab === 'customers') {
       loadCustomers();
     }
+    if (activeTab === 'export') {
+      loadExportPreview();
+    }
   }, [activeTab]);
+
+  const loadExportPreview = async () => {
+    const result = await window.electronAPI.export.preview();
+    if (result.success) {
+      setExportPreview(result.data);
+    }
+  };
 
   const loadCustomers = async () => {
     const result = await window.electronAPI.customers.getAllWithStatus();
@@ -175,6 +207,31 @@ function App() {
       setCrosswalkResult({ success: false, error: error.message });
     } finally {
       setImportingCrosswalk(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      // Select output directory
+      const dirResult = await window.electronAPI.export.selectDirectory();
+      if (!dirResult.success || dirResult.canceled || !dirResult.dirPath) {
+        return;
+      }
+
+      setExporting(true);
+      setExportResult(null);
+
+      const result = await window.electronAPI.export.transactionPro({ outputDir: dirResult.dirPath });
+      setExportResult(result);
+
+      if (result.success) {
+        await refreshData();
+      }
+    } catch (error: any) {
+      console.error('Export error:', error);
+      setExportResult({ success: false, error: error.message, warnings: [] });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -239,6 +296,7 @@ function App() {
     { id: 'customers', label: `Customers (${stats.customers})`, icon: '👥' },
     { id: 'services', label: `Service Mappings (${stats.mappings})`, icon: '🔗' },
     { id: 'payments', label: `Payment Types (${stats.paymentTypes})`, icon: '💳' },
+    { id: 'export', label: 'Export', icon: '📥' },
     { id: 'audit', label: `Audit Log (${stats.logs})`, icon: '📝' },
   ];
 
@@ -362,10 +420,13 @@ function App() {
                   <div className="font-medium">Upload CC Statement</div>
                   <div className="text-sm text-gray-500">Coming soon</div>
                 </button>
-                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors opacity-50" disabled>
+                <button
+                  onClick={() => setActiveTab('export')}
+                  className="p-4 border rounded-lg hover:bg-green-50 text-left transition-colors"
+                >
                   <div className="text-2xl mb-2">📥</div>
                   <div className="font-medium">Export to Transaction Pro</div>
-                  <div className="text-sm text-gray-500">Coming soon</div>
+                  <div className="text-sm text-gray-500">Generate QB import files</div>
                 </button>
               </div>
 
@@ -747,6 +808,124 @@ function App() {
             </div>
             <div className="p-3 border-t text-sm text-gray-500">
               Showing {filteredPayments.length} of {paymentTypes.length} payment types
+            </div>
+          </div>
+        )}
+
+        {/* Export Tab */}
+        {activeTab === 'export' && (
+          <div className="space-y-4">
+            {/* Export Preview Card */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Export to Transaction Pro</h2>
+              <p className="text-gray-600 mb-4">
+                Generate CSV files for importing invoices and payments into QuickBooks via Transaction Pro.
+              </p>
+
+              {exportPreview && (
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-blue-700">{exportPreview.invoiceLines}</div>
+                    <div className="text-sm text-blue-600">Invoice Lines</div>
+                    <div className="text-xs text-blue-500 mt-1">Service items to export</div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-green-700">{exportPreview.paymentLines}</div>
+                    <div className="text-sm text-green-600">Payment Lines</div>
+                    <div className="text-xs text-green-500 mt-1">Receive payments to export</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Unmapped Warnings */}
+              {exportPreview?.unmappedServices?.length > 0 && (
+                <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="font-medium text-yellow-700 text-sm">
+                    Unmapped Services ({exportPreview.unmappedServices.length})
+                  </div>
+                  <div className="text-xs text-yellow-600 mt-1">
+                    {exportPreview.unmappedServices.slice(0, 5).join(', ')}
+                    {exportPreview.unmappedServices.length > 5 && ` ...and ${exportPreview.unmappedServices.length - 5} more`}
+                  </div>
+                </div>
+              )}
+
+              {exportPreview?.unmappedPayments?.length > 0 && (
+                <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="font-medium text-yellow-700 text-sm">
+                    Unmapped Payment Types ({exportPreview.unmappedPayments.length})
+                  </div>
+                  <div className="text-xs text-yellow-600 mt-1">
+                    {exportPreview.unmappedPayments.join(', ')}
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handleExport}
+                disabled={exporting || !exportPreview || (exportPreview.invoiceLines === 0 && exportPreview.paymentLines === 0)}
+                className="px-6 py-3 bg-blue-500 text-white rounded-md font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {exporting ? 'Exporting...' : 'Export to CSV'}
+              </button>
+
+              {/* Export Result */}
+              {exportResult && (
+                <div className={`mt-4 p-4 rounded-lg ${exportResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  {exportResult.success ? (
+                    <div>
+                      <div className="font-medium text-green-700 mb-2">Export Successful!</div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-600">Invoices exported:</span>{' '}
+                          <span className="font-medium">{exportResult.invoicesExported}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Payments exported:</span>{' '}
+                          <span className="font-medium">{exportResult.paymentsExported}</span>
+                        </div>
+                      </div>
+                      {exportResult.invoiceFilePath && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          Invoice file: <code className="bg-gray-100 px-1 rounded">{exportResult.invoiceFilePath}</code>
+                        </div>
+                      )}
+                      {exportResult.paymentsFilePath && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          Payments file: <code className="bg-gray-100 px-1 rounded">{exportResult.paymentsFilePath}</code>
+                        </div>
+                      )}
+                      {exportResult.warnings?.length > 0 && (
+                        <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
+                          <div className="text-sm font-medium text-yellow-700">Warnings ({exportResult.warnings.length}):</div>
+                          <div className="text-xs text-yellow-600 mt-1 max-h-24 overflow-y-auto">
+                            {exportResult.warnings.slice(0, 10).map((w: string, i: number) => (
+                              <div key={i}>{w}</div>
+                            ))}
+                            {exportResult.warnings.length > 10 && <div>...and {exportResult.warnings.length - 10} more</div>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-red-700">
+                      <span className="font-medium">Error:</span> {exportResult.error}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Export Instructions */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="font-semibold mb-3">How to Import into QuickBooks</h3>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+                <li>Export the CSV files using the button above</li>
+                <li>Open Transaction Pro Importer in QuickBooks Desktop</li>
+                <li>Import the <strong>invoices</strong> file first (creates customer invoices)</li>
+                <li>Then import the <strong>payments</strong> file (applies payments to invoices)</li>
+                <li>Verify the imported transactions in QuickBooks</li>
+              </ol>
             </div>
           </div>
         )}

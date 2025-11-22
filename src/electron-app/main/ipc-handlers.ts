@@ -8,6 +8,7 @@ import {
   getUnmappedCustomers,
   updateCustomerQBName
 } from './customer-crosswalk';
+import { exportToTransactionPro, getExportPreview } from './transaction-pro-exporter';
 import * as path from 'path';
 
 /**
@@ -380,6 +381,47 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       return { success: true, filePath: result.filePaths[0] };
     } catch (error: any) {
       return { success: false, error: error.message };
+    }
+  });
+
+  // Transaction Pro Export handlers
+  // Select export directory
+  ipcMain.handle('export:selectDirectory', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Select Export Directory',
+        properties: ['openDirectory', 'createDirectory']
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: false, canceled: true };
+      }
+
+      return { success: true, dirPath: result.filePaths[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get export preview
+  ipcMain.handle('export:preview', async (event, uploadId?: string) => {
+    try {
+      const preview = getExportPreview(db, uploadId);
+      return { success: true, data: preview };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Export to Transaction Pro
+  ipcMain.handle('export:transactionPro', async (event, data: { outputDir: string; uploadId?: string }) => {
+    try {
+      console.log('Exporting to Transaction Pro:', data);
+      const result = exportToTransactionPro(db, dbPath, data.outputDir, data.uploadId);
+      return result;
+    } catch (error: any) {
+      console.error('Error in export:transactionPro handler:', error);
+      return { success: false, invoicesExported: 0, paymentsExported: 0, error: error.message, warnings: [] };
     }
   });
 
