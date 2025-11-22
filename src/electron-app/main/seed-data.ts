@@ -186,11 +186,39 @@ export function seedPaymentTypeMappings(
 
     for (const row of data) {
       try {
-        // Map Excel columns to database fields
+        // Map Excel columns to database fields based on actual Excel structure
+        // Columns: 'Payment Type', 'desc'
+        const paymentType = row['Payment Type'];
+        const desc = row['desc'] || '';
+
+        // Derive clearing account from payment type and description
+        let clearingAccount = '1030 Merchant Clearing'; // default
+        const descLower = desc.toLowerCase();
+        const typeLower = paymentType?.toLowerCase() || '';
+
+        if (descLower.includes('vendor receivable')) {
+          // Map specific vendor receivables
+          if (typeLower.includes('alle') || typeLower.includes('allergan')) {
+            clearingAccount = '1210 Vendor Rec: Allergan';
+          } else if (typeLower.includes('aspire') || typeLower.includes('galderma')) {
+            clearingAccount = '1220 Vendor Rec: Galderma';
+          } else if (typeLower.includes('cherry')) {
+            clearingAccount = '1240 Vendor Rec: Cherry';
+          } else {
+            clearingAccount = '1200 Vendor Receivables';
+          }
+        } else if (descLower.includes('prepaid') || descLower.includes('client bank')) {
+          clearingAccount = '1100 Client Bank / Prepaid Liab';
+        } else if (descLower.includes('gift card')) {
+          clearingAccount = '1150 Gift Card Liability';
+        } else if (descLower.includes('merchant') || descLower.includes('clearing')) {
+          clearingAccount = '1030 Merchant Clearing';
+        }
+
         const mapping: PaymentTypeMapping = {
-          payment_type: row['Payment Type'] || row['EMR Payment Type'],
-          category: row['Category'] || row['Mapping Target'] || 'Merchant Clearing',
-          clearing_account: row['Clearing Account'] || row['Account'] || '1030 Merchant Clearing',
+          payment_type: paymentType,
+          category: desc || 'Merchant Clearing',
+          clearing_account: clearingAccount,
         };
 
         // Validate required fields
