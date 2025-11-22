@@ -1,6 +1,7 @@
 import initSqlJs, { Database } from 'sql.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import { app } from 'electron';
 
 let db: Database | null = null;
 
@@ -8,10 +9,31 @@ let db: Database | null = null;
  * Initialize SQL.js and create/load the database
  */
 export async function initializeDatabase(dbPath: string): Promise<Database> {
+  // Determine the correct path to sql.js WASM file
+  // In dev mode, use the node_modules in the project directory
+  // In production, use the packaged location
+  let wasmPath: string;
+
+  if (app.isPackaged) {
+    // Production: WASM file is in resources
+    wasmPath = path.join(process.resourcesPath, 'sql-wasm.wasm');
+  } else {
+    // Development: Use node_modules relative to the electron-app directory
+    // __dirname in dev is typically: src/electron-app/dist-electron/main
+    // We need: src/electron-app/node_modules/sql.js/dist/
+    wasmPath = path.join(__dirname, '../../node_modules/sql.js/dist/sql-wasm.wasm');
+
+    // If that doesn't exist, try from project root
+    if (!fs.existsSync(wasmPath)) {
+      wasmPath = path.join(app.getAppPath(), 'node_modules/sql.js/dist/sql-wasm.wasm');
+    }
+  }
+
+  console.log('SQL.js WASM path:', wasmPath);
+  console.log('WASM exists:', fs.existsSync(wasmPath));
+
   const SQL = await initSqlJs({
-    locateFile: (file) => {
-      return path.join(__dirname, '../../node_modules/sql.js/dist/', file);
-    },
+    locateFile: () => wasmPath,
   });
 
   // Check if database file exists
