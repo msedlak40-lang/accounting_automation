@@ -18,6 +18,12 @@ const api = {
     getStats: () => ipcRenderer.invoke('customers:getStats'),
     importCrosswalk: (excelPath?: string) => ipcRenderer.invoke('customers:importCrosswalk', excelPath),
     selectCrosswalkFile: () => ipcRenderer.invoke('customers:selectCrosswalkFile'),
+    updateNames: (data: {
+      customer_id: string;
+      qb_display_name?: string;
+      emr_name?: string;
+      emr_patient_id?: string;
+    }) => ipcRenderer.invoke('customers:updateNames', data),
   },
 
   // Service mappings

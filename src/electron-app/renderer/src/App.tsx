@@ -9,7 +9,7 @@ declare global {
         getAllWithMappings: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
         getUnmappedEMR: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
         getStats: () => Promise<{ success: boolean; data?: any; error?: string }>;
-        updateQBName: (data: { cid: string; qbName: string; qbListId?: string }) =>
+        updateNames: (data: { customer_id: string; qb_display_name?: string; emr_name?: string; emr_patient_id?: string }) =>
           Promise<{ success: boolean; error?: string }>;
         importCrosswalk: (excelPath?: string) => Promise<{
           success: boolean;
@@ -118,6 +118,16 @@ function App() {
   const [newService, setNewService] = useState({ emr_service_name: '', qb_item_name: '', income_account: '', tax_code: 'Non' });
   const [newPayment, setNewPayment] = useState({ payment_type: '', category: 'Merchant', clearing_account: '1030 Merchant Clearing' });
   const [addingMapping, setAddingMapping] = useState(false);
+
+  // Customer edit modal state
+  const [showEditCustomer, setShowEditCustomer] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<{
+    customer_id: string;
+    emr_patient_id: string;
+    emr_name: string;
+    qb_display_name: string;
+  } | null>(null);
+  const [savingCustomer, setSavingCustomer] = useState(false);
 
   useEffect(() => {
     checkDatabase();
@@ -310,6 +320,43 @@ function App() {
       console.error('Error adding payment type:', error);
     } finally {
       setAddingMapping(false);
+    }
+  };
+
+  const handleEditCustomer = (customer: any) => {
+    setEditingCustomer({
+      customer_id: customer.customer_id || '',
+      emr_patient_id: customer.emr_patient_id || '',
+      emr_name: customer.emr_name || '',
+      qb_display_name: customer.qb_display_name || '',
+    });
+    setShowEditCustomer(true);
+  };
+
+  const handleSaveCustomer = async () => {
+    if (!editingCustomer || !editingCustomer.customer_id) {
+      return;
+    }
+    setSavingCustomer(true);
+    try {
+      const result = await window.electronAPI.customers.updateNames({
+        customer_id: editingCustomer.customer_id,
+        qb_display_name: editingCustomer.qb_display_name || undefined,
+        emr_name: editingCustomer.emr_name || undefined,
+        emr_patient_id: editingCustomer.emr_patient_id || undefined,
+      });
+      if (result.success) {
+        setShowEditCustomer(false);
+        setEditingCustomer(null);
+        await loadCustomers();
+      } else {
+        console.error('Error saving customer:', result.error);
+        alert(`Error saving customer: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving customer:', error);
+    } finally {
+      setSavingCustomer(false);
     }
   };
 
@@ -648,6 +695,72 @@ function App() {
         {/* Customers Tab */}
         {activeTab === 'customers' && (
           <div className="space-y-4">
+            {/* Edit Customer Modal */}
+            {showEditCustomer && editingCustomer && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+                  <h3 className="text-lg font-semibold mb-4">Edit Customer Names</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Customer UUID</label>
+                      <input
+                        type="text"
+                        value={editingCustomer.customer_id}
+                        disabled
+                        className="w-full px-3 py-2 border rounded-md text-sm bg-gray-100 text-gray-500 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">EMR Patient ID</label>
+                      <input
+                        type="text"
+                        value={editingCustomer.emr_patient_id}
+                        onChange={(e) => setEditingCustomer({ ...editingCustomer, emr_patient_id: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                        placeholder="EMR Patient ID"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">EMR Name</label>
+                      <input
+                        type="text"
+                        value={editingCustomer.emr_name}
+                        onChange={(e) => setEditingCustomer({ ...editingCustomer, emr_name: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                        placeholder="Name from EMR system"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">QuickBooks Display Name *</label>
+                      <input
+                        type="text"
+                        value={editingCustomer.qb_display_name}
+                        onChange={(e) => setEditingCustomer({ ...editingCustomer, qb_display_name: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                        placeholder="Name for QuickBooks export"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">This name will be used when exporting to QuickBooks</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-6">
+                    <button
+                      onClick={handleSaveCustomer}
+                      disabled={savingCustomer || !editingCustomer.qb_display_name}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
+                    >
+                      {savingCustomer ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button
+                      onClick={() => { setShowEditCustomer(false); setEditingCustomer(null); }}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Import Crosswalk Card */}
             <div className="bg-white rounded-lg shadow p-4">
               <div className="flex justify-between items-center">
@@ -697,12 +810,13 @@ function App() {
                       <th className="px-4 py-3 text-left font-medium text-gray-600">EMR Name</th>
                       <th className="px-4 py-3 text-left font-medium text-gray-600">QuickBooks Name</th>
                       <th className="px-4 py-3 text-center font-medium text-gray-600">Status</th>
+                      <th className="px-4 py-3 text-center font-medium text-gray-600">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredCustomers.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                        <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                           {customerSearch ? 'No matching customers found' : 'No customers loaded. Import a crosswalk file or upload EMR transactions.'}
                         </td>
                       </tr>
@@ -727,6 +841,14 @@ function App() {
                             ) : (
                               <span className="inline-block w-2 h-2 rounded-full bg-yellow-500" title="Needs QB mapping"></span>
                             )}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => handleEditCustomer(customer)}
+                              className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                            >
+                              Edit
+                            </button>
                           </td>
                         </tr>
                       ))

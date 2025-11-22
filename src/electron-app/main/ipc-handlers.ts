@@ -423,6 +423,69 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
+  // Update customer names (QB display name and/or EMR name)
+  ipcMain.handle('customers:updateNames', async (event, data: {
+    customer_id: string;
+    qb_display_name?: string;
+    emr_name?: string;
+    emr_patient_id?: string;
+  }) => {
+    try {
+      const { customer_id, qb_display_name, emr_name, emr_patient_id } = data;
+
+      // Update or insert QB display name
+      if (qb_display_name !== undefined) {
+        // Check if entry exists in stg_qb_customers
+        const existing = db.exec(`
+          SELECT qb_listid FROM stg_qb_customers WHERE customer_id = ?
+        `, [customer_id]);
+
+        if (existing.length > 0 && existing[0].values.length > 0) {
+          // Update existing
+          db.run(`
+            UPDATE stg_qb_customers SET qb_display_name = ? WHERE customer_id = ?
+          `, [qb_display_name, customer_id]);
+        } else {
+          // Insert new - generate a placeholder qb_listid
+          const placeholderListId = `MANUAL-${customer_id.substring(0, 8)}`;
+          db.run(`
+            INSERT INTO stg_qb_customers (qb_listid, qb_display_name, customer_id)
+            VALUES (?, ?, ?)
+          `, [placeholderListId, qb_display_name, customer_id]);
+        }
+      }
+
+      // Update or insert EMR name
+      if (emr_name !== undefined && emr_patient_id) {
+        // Check if entry exists
+        const existing = db.exec(`
+          SELECT emr_patient_id FROM stg_emr_patients WHERE emr_patient_id = ?
+        `, [emr_patient_id]);
+
+        if (existing.length > 0 && existing[0].values.length > 0) {
+          // Update existing
+          db.run(`
+            UPDATE stg_emr_patients SET full_name = ?, customer_id = ? WHERE emr_patient_id = ?
+          `, [emr_name, customer_id, emr_patient_id]);
+        } else {
+          // Insert new
+          db.run(`
+            INSERT INTO stg_emr_patients (emr_patient_id, full_name, customer_id)
+            VALUES (?, ?, ?)
+          `, [emr_patient_id, emr_name, customer_id]);
+        }
+      }
+
+      logAudit(db, 'customer_names_updated', 'customer', customer_id, data);
+      saveDatabase(db, dbPath);
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error updating customer names:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
   // Select crosswalk file dialog
   ipcMain.handle('customers:selectCrosswalkFile', async () => {
     try {
