@@ -429,7 +429,9 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       const result = await dialog.showOpenDialog({
         title: 'Select Customer Crosswalk File',
         filters: [
-          { name: 'Excel Files', extensions: ['xlsx', 'xls'] }
+          { name: 'Excel Files', extensions: ['xlsx', 'xls'] },
+          { name: 'CSV Files', extensions: ['csv'] },
+          { name: 'All Supported', extensions: ['xlsx', 'xls', 'csv'] }
         ],
         properties: ['openFile']
       });

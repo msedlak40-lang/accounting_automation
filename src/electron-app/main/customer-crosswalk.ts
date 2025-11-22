@@ -1,6 +1,7 @@
 import { Database } from 'sql.js';
 import * as XLSX from 'xlsx';
 import * as fs from 'fs';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase, logAudit } from './database';
 
@@ -14,38 +15,194 @@ interface CrosswalkImportResult {
 }
 
 /**
- * Import customer crosswalk from Excel file
- * Handles: customers, customer_ids, uuids_pool, stg_qb_customers sheets
+ * Detect the table type from CSV column headers
+ */
+function detectCSVTableType(columns: string[]): string | null {
+  const colSet = new Set(columns.map(c => c.toLowerCase()));
+
+  if (colSet.has('uuid_v4')) return 'uuids_pool';
+  if (colSet.has('customer_id') && colSet.has('system_name') && colSet.has('external_id')) return 'customer_ids';
+  if (colSet.has('customer_id') && !colSet.has('system_name') && !colSet.has('qb_display_name')) return 'customers';
+  if (colSet.has('qb_listid') || colSet.has('qb_display_name')) return 'stg_qb_customers';
+  if (colSet.has('emr_patient_id') && colSet.has('full_name')) return 'stg_emr_patients';
+
+  return null;
+}
+
+/**
+ * Import customer crosswalk from Excel or CSV file
+ * Excel: Handles multiple sheets (customers, customer_ids, uuids_pool, stg_qb_customers)
+ * CSV: Auto-detects table type from column headers
  */
 export function importCustomerCrosswalk(
   db: Database,
   dbPath: string,
-  excelPath: string
+  filePath: string
 ): CrosswalkImportResult {
   try {
-    console.log(`Importing customer crosswalk from: ${excelPath}`);
+    console.log(`Importing customer crosswalk from: ${filePath}`);
 
-    if (!fs.existsSync(excelPath)) {
+    if (!fs.existsSync(filePath)) {
       return {
         success: false,
         customersImported: 0,
         customerIdsImported: 0,
         uuidsImported: 0,
         qbCustomersImported: 0,
-        error: `File not found: ${excelPath}`
+        error: `File not found: ${filePath}`
       };
     }
 
-    const fileBuffer = fs.readFileSync(excelPath);
+    const fileBuffer = fs.readFileSync(filePath);
+    const fileExt = path.extname(filePath).toLowerCase();
+    const isCSV = fileExt === '.csv';
+
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
 
     console.log('Available sheets:', workbook.SheetNames);
+    console.log('File type:', isCSV ? 'CSV' : 'Excel');
 
     let customersImported = 0;
     let customerIdsImported = 0;
     let uuidsImported = 0;
     let qbCustomersImported = 0;
 
+    // Handle CSV files - auto-detect table type from columns
+    if (isCSV) {
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json<any>(sheet);
+
+      if (data.length === 0) {
+        return {
+          success: false,
+          customersImported: 0,
+          customerIdsImported: 0,
+          uuidsImported: 0,
+          qbCustomersImported: 0,
+          error: 'CSV file is empty'
+        };
+      }
+
+      // Detect table type from column headers
+      const columns = Object.keys(data[0]);
+      const tableType = detectCSVTableType(columns);
+      console.log(`CSV detected table type: ${tableType}, columns: ${columns.join(', ')}`);
+
+      if (!tableType) {
+        return {
+          success: false,
+          customersImported: 0,
+          customerIdsImported: 0,
+          uuidsImported: 0,
+          qbCustomersImported: 0,
+          error: `Could not detect table type from columns: ${columns.join(', ')}`
+        };
+      }
+
+      // Process based on detected type
+      switch (tableType) {
+        case 'uuids_pool':
+          for (const row of data) {
+            const uuid = row['uuid_v4'];
+            if (!uuid) continue;
+            try {
+              db.run(`INSERT OR IGNORE INTO uuids_pool (uuid_v4, is_available) VALUES (?, 1)`, [uuid]);
+              uuidsImported++;
+            } catch (e) { /* ignore duplicates */ }
+          }
+          console.log(`CSV: Imported ${uuidsImported} UUIDs`);
+          break;
+
+        case 'customers':
+          for (const row of data) {
+            const customerId = row['customer_id'];
+            if (!customerId) continue;
+            try {
+              db.run(`INSERT OR IGNORE INTO customers (customer_id, created_at, status) VALUES (?, ?, ?)`,
+                [customerId, row['created_at'] || new Date().toISOString(), row['status'] || 'active']);
+              db.run(`UPDATE uuids_pool SET is_available = 0, assigned_at = datetime('now') WHERE uuid_v4 = ?`, [customerId]);
+              customersImported++;
+            } catch (e) { /* ignore duplicates */ }
+          }
+          console.log(`CSV: Imported ${customersImported} customers`);
+          break;
+
+        case 'customer_ids':
+          for (const row of data) {
+            const customerId = row['customer_id'];
+            const systemName = row['system_name'];
+            const externalId = String(row['external_id'] || '');
+            if (!customerId || !systemName || !externalId) continue;
+            try {
+              db.run(`INSERT OR REPLACE INTO customer_ids (customer_id, system_name, external_id) VALUES (?, ?, ?)`,
+                [customerId, systemName, externalId]);
+              customerIdsImported++;
+            } catch (e) { console.error('Error inserting customer_id:', e); }
+          }
+          console.log(`CSV: Imported ${customerIdsImported} customer ID mappings`);
+          break;
+
+        case 'stg_qb_customers':
+          for (const row of data) {
+            const qbListId = row['qb_listid'];
+            const qbDisplayName = row['qb_display_name'];
+            if (!qbListId || !qbDisplayName) continue;
+
+            // Look up customer_id from customer_ids
+            const customerIdResult = db.exec(`
+              SELECT customer_id FROM customer_ids
+              WHERE (system_name = 'QuickBooks' OR system_name = 'QB') AND external_id = ?
+            `, [qbListId]);
+            const customerId = customerIdResult.length > 0 && customerIdResult[0].values.length > 0
+              ? customerIdResult[0].values[0][0] as string : null;
+
+            try {
+              db.run(`INSERT OR REPLACE INTO stg_qb_customers (qb_listid, qb_display_name, email, phone, customer_id) VALUES (?, ?, ?, ?, ?)`,
+                [qbListId, qbDisplayName, row['email'] || null, row['phone'] || null, customerId]);
+              qbCustomersImported++;
+            } catch (e) { console.error('Error inserting QB customer:', e); }
+          }
+          console.log(`CSV: Imported ${qbCustomersImported} QB customers`);
+          break;
+
+        case 'stg_emr_patients':
+          let emrPatientsImported = 0;
+          for (const row of data) {
+            const emrPatientId = row['emr_patient_id'];
+            const fullName = row['full_name'];
+            if (!emrPatientId) continue;
+            try {
+              db.run(`INSERT OR REPLACE INTO stg_emr_patients (emr_patient_id, full_name, customer_id) VALUES (?, ?, ?)`,
+                [emrPatientId, fullName || null, row['customer_id'] || null]);
+              emrPatientsImported++;
+            } catch (e) { console.error('Error inserting EMR patient:', e); }
+          }
+          console.log(`CSV: Imported ${emrPatientsImported} EMR patients`);
+          break;
+      }
+
+      // Log and save for CSV
+      logAudit(db, 'customer_crosswalk_imported', 'crosswalk', null, {
+        fileType: 'csv',
+        tableType,
+        customersImported,
+        customerIdsImported,
+        uuidsImported,
+        qbCustomersImported
+      });
+      saveDatabase(db, dbPath);
+
+      return {
+        success: true,
+        customersImported,
+        customerIdsImported,
+        uuidsImported,
+        qbCustomersImported
+      };
+    }
+
+    // Excel file processing - check for named sheets
     // 1. Import UUIDs pool first
     if (workbook.SheetNames.includes('uuids_pool')) {
       const uuidsSheet = workbook.Sheets['uuids_pool'];
