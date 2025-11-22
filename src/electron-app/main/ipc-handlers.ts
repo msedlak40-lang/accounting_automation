@@ -1,6 +1,7 @@
-import { ipcMain } from 'electron';
+import { ipcMain, dialog } from 'electron';
 import { Database, logAudit, saveDatabase } from './database';
 import { seedServiceMappings, seedPaymentTypeMappings } from './seed-data';
+import { processEMRFile, getStagedTransactionsSummary } from './emr-processor';
 import * as path from 'path';
 
 /**
@@ -205,6 +206,107 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     } catch (error: any) {
       console.error('Error in seed:paymentTypeMappings handler:', error);
       return { success: false, count: 0, error: error.message };
+    }
+  });
+
+  // Open file dialog for EMR upload
+  ipcMain.handle('emr:selectFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Select EMR Transactions File',
+        filters: [
+          { name: 'Excel Files', extensions: ['xlsx', 'xls'] }
+        ],
+        properties: ['openFile']
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: false, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePaths[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Process EMR file
+  ipcMain.handle('emr:processFile', async (event, filePath: string) => {
+    try {
+      console.log('Processing EMR file:', filePath);
+      const result = processEMRFile(db, dbPath, filePath);
+      return result;
+    } catch (error: any) {
+      console.error('Error in emr:processFile handler:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get staged transactions
+  ipcMain.handle('emr:getStagedTransactions', async (event, options?: { uploadId?: string; limit?: number; offset?: number }) => {
+    try {
+      let sql = `
+        SELECT
+          ts.*,
+          CASE WHEN sm.id IS NOT NULL THEN 1 ELSE 0 END as service_mapped,
+          CASE WHEN pm.id IS NOT NULL THEN 1 ELSE 0 END as payment_mapped
+        FROM transactions_staging ts
+        LEFT JOIN service_mappings sm ON ts.service_name = sm.emr_service_name AND sm.is_active = 1
+        LEFT JOIN payment_type_mappings pm ON ts.payment_type = pm.payment_type AND pm.is_active = 1
+      `;
+
+      if (options?.uploadId) {
+        sql += ` WHERE ts.upload_id = '${options.uploadId}'`;
+      }
+
+      sql += ' ORDER BY ts.transaction_date DESC, ts.invoice_number';
+
+      if (options?.limit) {
+        sql += ` LIMIT ${options.limit}`;
+        if (options?.offset) {
+          sql += ` OFFSET ${options.offset}`;
+        }
+      }
+
+      const result = db.exec(sql);
+      const transactions = result[0] ? result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      }) : [];
+
+      return { success: true, data: transactions };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get staged transactions summary
+  ipcMain.handle('emr:getSummary', async (event, uploadId?: string) => {
+    try {
+      const summary = getStagedTransactionsSummary(db, uploadId);
+      return { success: true, data: summary };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get file uploads
+  ipcMain.handle('emr:getUploads', async () => {
+    try {
+      const result = db.exec('SELECT * FROM file_uploads ORDER BY uploaded_at DESC');
+      const uploads = result[0] ? result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      }) : [];
+      return { success: true, data: uploads };
+    } catch (error: any) {
+      return { success: false, error: error.message };
     }
   });
 

@@ -38,6 +38,16 @@ const api = {
       ipcRenderer.invoke('file:upload', fileData),
   },
 
+  // EMR processing
+  emr: {
+    selectFile: () => ipcRenderer.invoke('emr:selectFile'),
+    processFile: (filePath: string) => ipcRenderer.invoke('emr:processFile', filePath),
+    getStagedTransactions: (options?: { uploadId?: string; limit?: number; offset?: number }) =>
+      ipcRenderer.invoke('emr:getStagedTransactions', options),
+    getSummary: (uploadId?: string) => ipcRenderer.invoke('emr:getSummary', uploadId),
+    getUploads: () => ipcRenderer.invoke('emr:getUploads'),
+  },
+
   // Database seeding
   seed: {
     serviceMappings: (excelPath?: string) =>

@@ -20,26 +20,53 @@ declare global {
         serviceMappings: (excelPath?: string) => Promise<{ success: boolean; count: number; error?: string }>;
         paymentTypeMappings: (excelPath?: string) => Promise<{ success: boolean; count: number; error?: string }>;
       };
+      emr: {
+        selectFile: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
+        processFile: (filePath: string) => Promise<{
+          success: boolean;
+          uploadId: string;
+          stats: {
+            totalRows: number;
+            invoiceCount: number;
+            serviceLines: number;
+            paymentLines: number;
+            unmappedServices: string[];
+            unmappedPaymentTypes: string[];
+          };
+          error?: string;
+        }>;
+        getStagedTransactions: (options?: { uploadId?: string; limit?: number; offset?: number }) =>
+          Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getSummary: (uploadId?: string) => Promise<{ success: boolean; data?: { invoices: number; services: number; payments: number }; error?: string }>;
+        getUploads: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+      };
     };
   }
 }
 
-type TabType = 'dashboard' | 'services' | 'payments' | 'audit';
+type TabType = 'dashboard' | 'transactions' | 'services' | 'payments' | 'audit';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [dbStatus, setDbStatus] = useState<'checking' | 'ready' | 'error'>('checking');
-  const [stats, setStats] = useState({ customers: 0, mappings: 0, paymentTypes: 0, logs: 0 });
+  const [stats, setStats] = useState({ customers: 0, mappings: 0, paymentTypes: 0, logs: 0, transactions: 0 });
 
   // Data for tables
   const [serviceMappings, setServiceMappings] = useState<any[]>([]);
   const [paymentTypes, setPaymentTypes] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [uploads, setUploads] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // EMR upload state
+  const [processing, setProcessing] = useState(false);
+  const [processingResult, setProcessingResult] = useState<any>(null);
 
   // Search/filter state
   const [serviceSearch, setServiceSearch] = useState('');
   const [paymentSearch, setPaymentSearch] = useState('');
+  const [txnSearch, setTxnSearch] = useState('');
 
   useEffect(() => {
     checkDatabase();
@@ -47,11 +74,13 @@ function App() {
 
   const checkDatabase = async () => {
     try {
-      const [customers, mappings, payments, logs] = await Promise.all([
+      const [customers, mappings, payments, logs, txnSummary, uploadsResult] = await Promise.all([
         window.electronAPI.customers.getAll(),
         window.electronAPI.serviceMappings.getAll(),
         window.electronAPI.paymentTypes.getAll(),
         window.electronAPI.audit.getLogs({ limit: 100 }),
+        window.electronAPI.emr.getSummary(),
+        window.electronAPI.emr.getUploads(),
       ]);
 
       if (customers.success && mappings.success && payments.success && logs.success) {
@@ -60,10 +89,12 @@ function App() {
           mappings: mappings.data?.length || 0,
           paymentTypes: payments.data?.length || 0,
           logs: logs.data?.length || 0,
+          transactions: txnSummary.data?.invoices || 0,
         });
         setServiceMappings(mappings.data || []);
         setPaymentTypes(payments.data || []);
         setAuditLogs(logs.data || []);
+        setUploads(uploadsResult.data || []);
         setDbStatus('ready');
       } else {
         setDbStatus('error');
@@ -80,6 +111,48 @@ function App() {
     setLoading(false);
   };
 
+  const loadTransactions = async () => {
+    const result = await window.electronAPI.emr.getStagedTransactions({ limit: 500 });
+    if (result.success) {
+      setTransactions(result.data || []);
+    }
+  };
+
+  // Load transactions when tab becomes active
+  useEffect(() => {
+    if (activeTab === 'transactions') {
+      loadTransactions();
+    }
+  }, [activeTab]);
+
+  const handleEMRUpload = async () => {
+    try {
+      // Open file dialog
+      const fileResult = await window.electronAPI.emr.selectFile();
+      if (!fileResult.success || fileResult.canceled || !fileResult.filePath) {
+        return;
+      }
+
+      setProcessing(true);
+      setProcessingResult(null);
+
+      // Process the file
+      const result = await window.electronAPI.emr.processFile(fileResult.filePath);
+      setProcessingResult(result);
+
+      if (result.success) {
+        // Refresh data
+        await refreshData();
+        await loadTransactions();
+      }
+    } catch (error: any) {
+      console.error('EMR upload error:', error);
+      setProcessingResult({ success: false, error: error.message });
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   // Filter service mappings
   const filteredServices = serviceMappings.filter(s =>
     s.emr_service_name?.toLowerCase().includes(serviceSearch.toLowerCase()) ||
@@ -92,8 +165,17 @@ function App() {
     p.clearing_account?.toLowerCase().includes(paymentSearch.toLowerCase())
   );
 
+  // Filter transactions
+  const filteredTransactions = transactions.filter(t =>
+    t.invoice_number?.toLowerCase().includes(txnSearch.toLowerCase()) ||
+    t.customer_cid?.toLowerCase().includes(txnSearch.toLowerCase()) ||
+    t.service_name?.toLowerCase().includes(txnSearch.toLowerCase()) ||
+    t.payment_type?.toLowerCase().includes(txnSearch.toLowerCase())
+  );
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'transactions', label: `Transactions (${stats.transactions})`, icon: '📋' },
     { id: 'services', label: `Service Mappings (${stats.mappings})`, icon: '🔗' },
     { id: 'payments', label: `Payment Types (${stats.paymentTypes})`, icon: '💳' },
     { id: 'audit', label: `Audit Log (${stats.logs})`, icon: '📝' },
@@ -166,10 +248,14 @@ function App() {
                     <span className="font-medium">Database initialized successfully</span>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-5 gap-4">
                     <div className="bg-blue-50 rounded-lg p-4 cursor-pointer hover:bg-blue-100 transition-colors" onClick={() => setActiveTab('dashboard')}>
                       <div className="text-2xl font-bold text-blue-700">{stats.customers}</div>
                       <div className="text-sm text-blue-600">Customers</div>
+                    </div>
+                    <div className="bg-indigo-50 rounded-lg p-4 cursor-pointer hover:bg-indigo-100 transition-colors" onClick={() => setActiveTab('transactions')}>
+                      <div className="text-2xl font-bold text-indigo-700">{stats.transactions}</div>
+                      <div className="text-sm text-indigo-600">Invoices Staged</div>
                     </div>
                     <div className="bg-green-50 rounded-lg p-4 cursor-pointer hover:bg-green-100 transition-colors" onClick={() => setActiveTab('services')}>
                       <div className="text-2xl font-bold text-green-700">{stats.mappings}</div>
@@ -201,22 +287,187 @@ function App() {
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
               <div className="grid grid-cols-3 gap-4">
-                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors">
+                <button
+                  onClick={handleEMRUpload}
+                  disabled={processing}
+                  className="p-4 border rounded-lg hover:bg-blue-50 text-left transition-colors disabled:opacity-50"
+                >
                   <div className="text-2xl mb-2">📤</div>
-                  <div className="font-medium">Upload EMR File</div>
+                  <div className="font-medium">{processing ? 'Processing...' : 'Upload EMR File'}</div>
                   <div className="text-sm text-gray-500">Import transactions</div>
                 </button>
-                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors">
+                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors opacity-50" disabled>
                   <div className="text-2xl mb-2">💳</div>
                   <div className="font-medium">Upload CC Statement</div>
-                  <div className="text-sm text-gray-500">Capital One expenses</div>
+                  <div className="text-sm text-gray-500">Coming soon</div>
                 </button>
-                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors">
+                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors opacity-50" disabled>
                   <div className="text-2xl mb-2">📥</div>
                   <div className="font-medium">Export to Transaction Pro</div>
-                  <div className="text-sm text-gray-500">Generate QB import</div>
+                  <div className="text-sm text-gray-500">Coming soon</div>
                 </button>
               </div>
+
+              {/* Processing Result */}
+              {processingResult && (
+                <div className={`mt-4 p-4 rounded-lg ${processingResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  {processingResult.success ? (
+                    <div>
+                      <div className="font-medium text-green-700 mb-2">EMR File Processed Successfully!</div>
+                      <div className="grid grid-cols-4 gap-4 text-sm">
+                        <div><span className="text-gray-600">Total Rows:</span> <span className="font-medium">{processingResult.stats.totalRows}</span></div>
+                        <div><span className="text-gray-600">Invoices:</span> <span className="font-medium">{processingResult.stats.invoiceCount}</span></div>
+                        <div><span className="text-gray-600">Service Lines:</span> <span className="font-medium">{processingResult.stats.serviceLines}</span></div>
+                        <div><span className="text-gray-600">Payment Lines:</span> <span className="font-medium">{processingResult.stats.paymentLines}</span></div>
+                      </div>
+                      {processingResult.stats.unmappedServices?.length > 0 && (
+                        <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
+                          <div className="text-sm font-medium text-yellow-700">Unmapped Services ({processingResult.stats.unmappedServices.length}):</div>
+                          <div className="text-xs text-yellow-600 mt-1 max-h-20 overflow-y-auto">
+                            {processingResult.stats.unmappedServices.slice(0, 10).join(', ')}
+                            {processingResult.stats.unmappedServices.length > 10 && ` ...and ${processingResult.stats.unmappedServices.length - 10} more`}
+                          </div>
+                        </div>
+                      )}
+                      {processingResult.stats.unmappedPaymentTypes?.length > 0 && (
+                        <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200">
+                          <div className="text-sm font-medium text-yellow-700">Unmapped Payment Types ({processingResult.stats.unmappedPaymentTypes.length}):</div>
+                          <div className="text-xs text-yellow-600 mt-1">
+                            {processingResult.stats.unmappedPaymentTypes.join(', ')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-red-700">
+                      <span className="font-medium">Error:</span> {processingResult.error}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Recent Uploads */}
+            {uploads.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">Recent Uploads</h2>
+                <div className="space-y-2">
+                  {uploads.slice(0, 5).map((upload: any, index: number) => (
+                    <div key={upload.id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center">
+                        <span className={`w-2 h-2 rounded-full mr-3 ${
+                          upload.status === 'processed' ? 'bg-green-500' :
+                          upload.status === 'processing' ? 'bg-yellow-500' :
+                          upload.status === 'failed' ? 'bg-red-500' : 'bg-gray-400'
+                        }`}></span>
+                        <div>
+                          <div className="font-medium text-sm">{upload.filename}</div>
+                          <div className="text-xs text-gray-500">{upload.row_count} rows - {upload.file_type}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {upload.uploaded_at ? new Date(upload.uploaded_at).toLocaleString() : '-'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Transactions Tab */}
+        {activeTab === 'transactions' && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-semibold">Staged Transactions</h2>
+                <p className="text-sm text-gray-500">EMR transactions ready for export</p>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Search transactions..."
+                  value={txnSearch}
+                  onChange={(e) => setTxnSearch(e.target.value)}
+                  className="px-3 py-1.5 border rounded-md text-sm w-64"
+                />
+                <button
+                  onClick={handleEMRUpload}
+                  disabled={processing}
+                  className="px-4 py-1.5 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
+                >
+                  {processing ? 'Processing...' : 'Upload New'}
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-3 text-left font-medium text-gray-600">Date</th>
+                    <th className="px-3 py-3 text-left font-medium text-gray-600">Invoice #</th>
+                    <th className="px-3 py-3 text-left font-medium text-gray-600">CID</th>
+                    <th className="px-3 py-3 text-left font-medium text-gray-600">Service/Product</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600">Qty</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600">Price</th>
+                    <th className="px-3 py-3 text-right font-medium text-gray-600">Amount</th>
+                    <th className="px-3 py-3 text-left font-medium text-gray-600">Payment</th>
+                    <th className="px-3 py-3 text-center font-medium text-gray-600">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {filteredTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                        {txnSearch ? 'No matching transactions found' : 'No transactions staged. Upload an EMR file to get started.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredTransactions.slice(0, 100).map((txn, index) => (
+                      <tr key={txn.id || index} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 text-gray-500 text-xs font-mono">{txn.transaction_date}</td>
+                        <td className="px-3 py-2 font-medium">{txn.invoice_number}</td>
+                        <td className="px-3 py-2">{txn.customer_cid}</td>
+                        <td className="px-3 py-2">
+                          {txn.service_name ? (
+                            <span className={txn.service_mapped ? '' : 'text-red-600'}>{txn.service_name}</span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-right">{txn.quantity || '-'}</td>
+                        <td className="px-3 py-2 text-right">{txn.price ? `$${Number(txn.price).toFixed(2)}` : '-'}</td>
+                        <td className="px-3 py-2 text-right font-medium">{txn.amount ? `$${Number(txn.amount).toFixed(2)}` : '-'}</td>
+                        <td className="px-3 py-2">
+                          {txn.payment_type ? (
+                            <span className={`px-1.5 py-0.5 rounded text-xs ${txn.payment_mapped ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                              {txn.payment_type}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          {txn.service_name && (
+                            <span className={`inline-block w-2 h-2 rounded-full mr-1 ${txn.service_mapped ? 'bg-green-500' : 'bg-red-500'}`} title={txn.service_mapped ? 'Service Mapped' : 'Service Not Mapped'}></span>
+                          )}
+                          {txn.payment_type && (
+                            <span className={`inline-block w-2 h-2 rounded-full ${txn.payment_mapped ? 'bg-green-500' : 'bg-red-500'}`} title={txn.payment_mapped ? 'Payment Mapped' : 'Payment Not Mapped'}></span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-3 border-t text-sm text-gray-500 flex justify-between">
+              <span>Showing {Math.min(filteredTransactions.length, 100)} of {filteredTransactions.length} transactions</span>
+              <span className="text-xs">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span> Mapped
+                <span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-3 mr-1"></span> Unmapped
+              </span>
             </div>
           </div>
         )}
@@ -373,11 +624,11 @@ function App() {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                            log.action?.includes('create') || log.action?.includes('import')
+                            log.action?.includes('create') || log.action?.includes('import') || log.action?.includes('processed')
                               ? 'bg-green-100 text-green-700'
                               : log.action?.includes('update')
                               ? 'bg-blue-100 text-blue-700'
-                              : log.action?.includes('delete')
+                              : log.action?.includes('delete') || log.action?.includes('failed')
                               ? 'bg-red-100 text-red-700'
                               : 'bg-gray-100 text-gray-600'
                           }`}>
