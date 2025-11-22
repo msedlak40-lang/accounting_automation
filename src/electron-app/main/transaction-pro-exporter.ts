@@ -308,22 +308,23 @@ function getPaymentTypeMappings(db: Database): Map<string, { category: string; c
 
 /**
  * Get customer mappings from database
- * Maps customer_id (UUID) to qb_display_name
+ * Maps customer_id (UUID) directly to qb_display_name via stg_qb_customers
  */
 function getCustomerMappings(db: Database): Map<string, { emr_name: string | null; qb_name: string | null }> {
   const map = new Map();
 
-  // Get all customers with their EMR and QB mappings via the new schema
+  // Primary path: customer_id → stg_qb_customers.customer_id → qb_display_name
+  // This is the direct UUID-based lookup
   const result = db.exec(`
     SELECT
       c.customer_id,
       ep.full_name as emr_name,
       qbc.qb_display_name as qb_name
     FROM customers c
-    LEFT JOIN customer_ids emr_ci ON c.customer_id = emr_ci.customer_id AND emr_ci.system_name = 'EMR'
+    LEFT JOIN customer_ids emr_ci ON c.customer_id = emr_ci.customer_id
+      AND (emr_ci.system_name = 'EMR' OR emr_ci.system_name LIKE '%EMR%')
     LEFT JOIN stg_emr_patients ep ON emr_ci.external_id = ep.emr_patient_id
-    LEFT JOIN customer_ids qb_ci ON c.customer_id = qb_ci.customer_id AND qb_ci.system_name = 'QuickBooks'
-    LEFT JOIN stg_qb_customers qbc ON qb_ci.external_id = qbc.qb_listid OR qbc.customer_id = c.customer_id
+    LEFT JOIN stg_qb_customers qbc ON qbc.customer_id = c.customer_id
     WHERE c.status = 'active'
   `);
 
@@ -336,16 +337,43 @@ function getCustomerMappings(db: Database): Map<string, { emr_name: string | nul
     }
   }
 
+  // Secondary path: also check via customer_ids QB mapping for customers not in stg_qb_customers directly
+  const secondaryResult = db.exec(`
+    SELECT
+      c.customer_id,
+      qbc.qb_display_name as qb_name
+    FROM customers c
+    JOIN customer_ids qb_ci ON c.customer_id = qb_ci.customer_id
+      AND (qb_ci.system_name = 'QuickBooks' OR qb_ci.system_name = 'QB' OR qb_ci.system_name LIKE '%QB%')
+    JOIN stg_qb_customers qbc ON qb_ci.external_id = qbc.qb_listid
+    WHERE c.status = 'active'
+  `);
+
+  if (secondaryResult.length > 0 && secondaryResult[0].values) {
+    for (const row of secondaryResult[0].values) {
+      const customerId = row[0] as string;
+      const qbName = row[1] as string | null;
+      // Only add if not already mapped or if existing entry has no qb_name
+      if (!map.has(customerId)) {
+        map.set(customerId, { emr_name: null, qb_name: qbName });
+      } else if (qbName && !map.get(customerId)!.qb_name) {
+        const existing = map.get(customerId)!;
+        map.set(customerId, { ...existing, qb_name: qbName });
+      }
+    }
+  }
+
   return map;
 }
 
 /**
  * Get customer mappings by EMR CID (for backward compatibility)
- * Maps EMR patient ID (CID) to qb_display_name
+ * Maps EMR patient ID (CID) to qb_display_name via customer_id
  */
 function getCustomerMappingsByCID(db: Database): Map<string, { emr_name: string | null; qb_name: string | null; customer_id: string | null }> {
   const map = new Map();
 
+  // Map EMR CID → customer_id → stg_qb_customers.qb_display_name
   const result = db.exec(`
     SELECT
       ci.external_id as emr_cid,
@@ -355,9 +383,8 @@ function getCustomerMappingsByCID(db: Database): Map<string, { emr_name: string 
     FROM customer_ids ci
     JOIN customers c ON ci.customer_id = c.customer_id
     LEFT JOIN stg_emr_patients ep ON ci.external_id = ep.emr_patient_id
-    LEFT JOIN customer_ids qb_ci ON c.customer_id = qb_ci.customer_id AND qb_ci.system_name = 'QuickBooks'
-    LEFT JOIN stg_qb_customers qbc ON qb_ci.external_id = qbc.qb_listid OR qbc.customer_id = c.customer_id
-    WHERE ci.system_name = 'EMR' AND c.status = 'active'
+    LEFT JOIN stg_qb_customers qbc ON qbc.customer_id = c.customer_id
+    WHERE (ci.system_name = 'EMR' OR ci.system_name LIKE '%EMR%') AND c.status = 'active'
   `);
 
   if (result.length > 0 && result[0].values) {
