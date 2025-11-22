@@ -6,8 +6,9 @@ declare global {
     electronAPI: {
       customers: {
         getAll: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
-        getAllWithStatus: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
-        getUnmapped: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getAllWithMappings: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getUnmappedEMR: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getStats: () => Promise<{ success: boolean; data?: any; error?: string }>;
         updateQBName: (data: { cid: string; qbName: string; qbListId?: string }) =>
           Promise<{ success: boolean; error?: string }>;
         importCrosswalk: (excelPath?: string) => Promise<{
@@ -189,7 +190,7 @@ function App() {
   };
 
   const loadCustomers = async () => {
-    const result = await window.electronAPI.customers.getAllWithStatus();
+    const result = await window.electronAPI.customers.getAllWithMappings();
     if (result.success) {
       setCustomers(result.data || []);
     }
