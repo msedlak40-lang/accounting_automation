@@ -149,13 +149,8 @@ export function importCustomerCrosswalk(
             const qbDisplayName = row['qb_display_name'];
             if (!qbListId || !qbDisplayName) continue;
 
-            // Look up customer_id from customer_ids
-            const customerIdResult = db.exec(`
-              SELECT customer_id FROM customer_ids
-              WHERE (system_name = 'QuickBooks' OR system_name = 'QB') AND external_id = ?
-            `, [qbListId]);
-            const customerId = customerIdResult.length > 0 && customerIdResult[0].values.length > 0
-              ? customerIdResult[0].values[0][0] as string : null;
+            // Get customer_id from row - check both 'UUID' and 'customer_id' column names
+            const customerId = row['UUID'] || row['uuid'] || row['customer_id'] || null;
 
             try {
               db.run(`INSERT OR REPLACE INTO stg_qb_customers (qb_listid, qb_display_name, email, phone, customer_id) VALUES (?, ?, ?, ?, ?)`,
@@ -302,15 +297,8 @@ export function importCustomerCrosswalk(
 
         if (!qbListId || !qbDisplayName) continue;
 
-        // Look up customer_id from customer_ids where system_name = 'QB'
-        const customerIdResult = db.exec(`
-          SELECT customer_id FROM customer_ids
-          WHERE system_name = 'QuickBooks' AND external_id = ?
-        `, [qbListId]);
-
-        const customerId = customerIdResult.length > 0 && customerIdResult[0].values.length > 0
-          ? customerIdResult[0].values[0][0] as string
-          : null;
+        // Get customer_id from row - check both 'UUID' and 'customer_id' column names
+        const customerId = row['UUID'] || row['uuid'] || row['customer_id'] || null;
 
         try {
           db.run(`
