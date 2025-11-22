@@ -49,41 +49,65 @@ export function saveDatabase(database: Database, dbPath: string): void {
  */
 function createTables(database: Database): void {
   const queries = `
-    -- 1. Customers table
+    -- 1. Customers master table (UUID-based)
     CREATE TABLE IF NOT EXISTS customers (
-      id                 TEXT PRIMARY KEY,
-      cid                TEXT UNIQUE NOT NULL,
-      customer_name_emr  TEXT,
-      emr_id             TEXT,
-      customer_name_qb   TEXT,
-      qb_list_id         TEXT,
-      is_active          INTEGER DEFAULT 1,
+      customer_id        TEXT PRIMARY KEY,
+      created_at         TEXT DEFAULT (datetime('now')),
+      status             TEXT DEFAULT 'active'
+    );
+
+    -- 2. Customer IDs mapping table (maps UUID to system-specific IDs)
+    CREATE TABLE IF NOT EXISTS customer_ids (
+      id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id        TEXT NOT NULL REFERENCES customers(customer_id),
+      system_name        TEXT NOT NULL,
+      external_id        TEXT NOT NULL,
+      created_at         TEXT DEFAULT (datetime('now')),
+      UNIQUE(system_name, external_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_customer_ids_customer ON customer_ids(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_customer_ids_system ON customer_ids(system_name, external_id);
+
+    -- 3. UUIDs pool table
+    CREATE TABLE IF NOT EXISTS uuids_pool (
+      uuid_v4            TEXT PRIMARY KEY,
+      assigned_at        TEXT,
+      is_available       INTEGER DEFAULT 1
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_uuids_pool_available ON uuids_pool(is_available);
+
+    -- 4. EMR patients staging table
+    CREATE TABLE IF NOT EXISTS stg_emr_patients (
+      emr_patient_id     TEXT PRIMARY KEY,
+      full_name          TEXT,
+      first_name         TEXT,
+      last_name          TEXT,
+      email              TEXT,
+      phone              TEXT,
+      dob                TEXT,
+      customer_id        TEXT REFERENCES customers(customer_id),
       created_at         TEXT DEFAULT (datetime('now')),
       updated_at         TEXT DEFAULT (datetime('now'))
     );
 
-    CREATE INDEX IF NOT EXISTS idx_customers_cid ON customers(cid);
-    CREATE INDEX IF NOT EXISTS idx_customers_emr_id ON customers(emr_id);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_patients_customer ON stg_emr_patients(customer_id);
 
-    -- 2. Customer history table
-    CREATE TABLE IF NOT EXISTS customer_history (
-      id                 TEXT PRIMARY KEY,
-      customer_id        TEXT REFERENCES customers(id),
-      cid                TEXT,
-      customer_name_emr  TEXT,
-      emr_id             TEXT,
-      customer_name_qb   TEXT,
-      qb_list_id         TEXT,
-      change_type        TEXT,
-      changed_at         TEXT DEFAULT (datetime('now')),
-      changed_by         TEXT DEFAULT 'primary_user',
-      snapshot           TEXT
+    -- 5. QB customers staging table
+    CREATE TABLE IF NOT EXISTS stg_qb_customers (
+      qb_listid          TEXT PRIMARY KEY,
+      qb_display_name    TEXT NOT NULL,
+      email              TEXT,
+      phone              TEXT,
+      customer_id        TEXT REFERENCES customers(customer_id),
+      created_at         TEXT DEFAULT (datetime('now'))
     );
 
-    CREATE INDEX IF NOT EXISTS idx_customer_history_customer_id ON customer_history(customer_id);
-    CREATE INDEX IF NOT EXISTS idx_customer_history_changed_at ON customer_history(changed_at);
+    CREATE INDEX IF NOT EXISTS idx_stg_qb_customers_customer ON stg_qb_customers(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_stg_qb_customers_display_name ON stg_qb_customers(qb_display_name);
 
-    -- 3. Service mappings table
+    -- 6. Service mappings table
     CREATE TABLE IF NOT EXISTS service_mappings (
       id                 TEXT PRIMARY KEY,
       emr_service_name   TEXT NOT NULL UNIQUE,
@@ -100,7 +124,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_service_mappings_emr_service ON service_mappings(emr_service_name);
     CREATE INDEX IF NOT EXISTS idx_service_mappings_active ON service_mappings(is_active);
 
-    -- 4. Payment type mappings table
+    -- 7. Payment type mappings table
     CREATE TABLE IF NOT EXISTS payment_type_mappings (
       id                 TEXT PRIMARY KEY,
       payment_type       TEXT UNIQUE NOT NULL,
@@ -112,7 +136,7 @@ function createTables(database: Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_payment_type ON payment_type_mappings(payment_type);
 
-    -- 5. File uploads table
+    -- 8. File uploads table
     CREATE TABLE IF NOT EXISTS file_uploads (
       id                 TEXT PRIMARY KEY,
       filename           TEXT NOT NULL,
@@ -127,11 +151,12 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_file_uploads_type ON file_uploads(file_type);
     CREATE INDEX IF NOT EXISTS idx_file_uploads_uploaded_at ON file_uploads(uploaded_at);
 
-    -- 6. Transactions staging table
+    -- 9. Transactions staging table
     CREATE TABLE IF NOT EXISTS transactions_staging (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
       customer_cid       TEXT,
+      customer_id        TEXT REFERENCES customers(customer_id),
       invoice_number     TEXT,
       transaction_date   TEXT,
       service_name       TEXT,
@@ -146,9 +171,10 @@ function createTables(database: Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_upload_id ON transactions_staging(upload_id);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_customer_cid ON transactions_staging(customer_cid);
+    CREATE INDEX IF NOT EXISTS idx_transactions_staging_customer_id ON transactions_staging(customer_id);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_date ON transactions_staging(transaction_date);
 
-    -- 7. Expense categories table
+    -- 10. Expense categories table
     CREATE TABLE IF NOT EXISTS expense_categories (
       id                 TEXT PRIMARY KEY,
       merchant_pattern   TEXT NOT NULL,
@@ -162,7 +188,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_expense_categories_pattern ON expense_categories(merchant_pattern);
     CREATE INDEX IF NOT EXISTS idx_expense_categories_active ON expense_categories(is_active);
 
-    -- 8. Expense transactions table
+    -- 11. Expense transactions table
     CREATE TABLE IF NOT EXISTS expense_transactions (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -185,7 +211,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_merchant ON expense_transactions(merchant);
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_status ON expense_transactions(status);
 
-    -- 9. Audit log table
+    -- 12. Audit log table
     CREATE TABLE IF NOT EXISTS audit_log (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp          TEXT DEFAULT (datetime('now')),

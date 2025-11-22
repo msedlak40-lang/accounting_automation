@@ -4,9 +4,9 @@ import { seedServiceMappings, seedPaymentTypeMappings } from './seed-data';
 import { processEMRFile, getStagedTransactionsSummary } from './emr-processor';
 import {
   importCustomerCrosswalk,
-  getAllCustomersWithStatus,
-  getUnmappedCustomers,
-  updateCustomerQBName
+  getAllCustomersWithMappings,
+  getUnmappedEMRPatients,
+  getCrosswalkStats
 } from './customer-crosswalk';
 import { exportToTransactionPro, getExportPreview } from './transaction-pro-exporter';
 import * as path from 'path';
@@ -356,35 +356,35 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       return result;
     } catch (error: any) {
       console.error('Error in customers:importCrosswalk handler:', error);
-      return { success: false, customersImported: 0, mappingsImported: 0, error: error.message };
+      return { success: false, customersImported: 0, customerIdsImported: 0, uuidsImported: 0, qbCustomersImported: 0, error: error.message };
     }
   });
 
-  // Get all customers with status
-  ipcMain.handle('customers:getAllWithStatus', async () => {
+  // Get crosswalk stats
+  ipcMain.handle('customers:getStats', async () => {
     try {
-      const customers = getAllCustomersWithStatus(db);
+      const stats = getCrosswalkStats(db);
+      return { success: true, data: stats };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get all customers with mappings
+  ipcMain.handle('customers:getAllWithMappings', async () => {
+    try {
+      const customers = getAllCustomersWithMappings(db);
       return { success: true, data: customers };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   });
 
-  // Get unmapped customers
-  ipcMain.handle('customers:getUnmapped', async () => {
+  // Get unmapped EMR patients from transactions
+  ipcMain.handle('customers:getUnmappedEMR', async () => {
     try {
-      const unmapped = getUnmappedCustomers(db);
+      const unmapped = getUnmappedEMRPatients(db);
       return { success: true, data: unmapped };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  });
-
-  // Update customer QB name
-  ipcMain.handle('customers:updateQBName', async (event, data: { cid: string; qbName: string; qbListId?: string }) => {
-    try {
-      const success = updateCustomerQBName(db, dbPath, data.cid, data.qbName, data.qbListId);
-      return { success };
     } catch (error: any) {
       return { success: false, error: error.message };
     }

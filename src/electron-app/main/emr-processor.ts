@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase, logAudit } from './database';
+import { buildEMRToCustomerMap, getOrCreateCustomerByEMRId } from './customer-crosswalk';
 
 interface EMRRow {
   Date: Date;
@@ -31,6 +32,8 @@ interface ProcessingResult {
     paymentLines: number;
     unmappedServices: string[];
     unmappedPaymentTypes: string[];
+    customersMatched: number;
+    newCustomersCreated: number;
   };
   error?: string;
 }
@@ -66,7 +69,7 @@ export function processEMRFile(
       return {
         success: false,
         uploadId,
-        stats: { totalRows: 0, invoiceCount: 0, serviceLines: 0, paymentLines: 0, unmappedServices: [], unmappedPaymentTypes: [] },
+        stats: { totalRows: 0, invoiceCount: 0, serviceLines: 0, paymentLines: 0, unmappedServices: [], unmappedPaymentTypes: [], customersMatched: 0, newCustomersCreated: 0 },
         error: `File not found: ${filePath}`
       };
     }
@@ -85,9 +88,11 @@ export function processEMRFile(
     // Load service mappings from database
     const serviceMappings = loadServiceMappings(db);
     const paymentTypeMappings = loadPaymentTypeMappings(db);
+    const emrToCustomerMap = buildEMRToCustomerMap(db);
 
     console.log(`Loaded ${serviceMappings.size} service mappings`);
     console.log(`Loaded ${paymentTypeMappings.size} payment type mappings`);
+    console.log(`Loaded ${emrToCustomerMap.size} EMR->Customer mappings`);
 
     // Create file upload record
     const filename = filePath.split(/[/\\]/).pop() || 'unknown.xlsx';
@@ -103,10 +108,13 @@ export function processEMRFile(
       serviceLines: 0,
       paymentLines: 0,
       unmappedServices: new Set<string>(),
-      unmappedPaymentTypes: new Set<string>()
+      unmappedPaymentTypes: new Set<string>(),
+      customersMatched: 0,
+      newCustomersCreated: 0
     };
 
     const seenInvoices = new Set<string>();
+    const processedCustomers = new Set<string>(); // Track CIDs we've already processed
 
     for (const row of data) {
       const transactionId = uuidv4();
@@ -115,6 +123,25 @@ export function processEMRFile(
       const serviceName = row['Service/Product'] || null;
       const paymentType = row['Payment Type'] || null;
       const txnDate = formatDate(row.Date);
+
+      // Resolve customer UUID from EMR patient ID (CID)
+      let customerId: string | null = null;
+      if (cid && !processedCustomers.has(cid)) {
+        processedCustomers.add(cid);
+        // Check if already in the crosswalk
+        if (emrToCustomerMap.has(cid)) {
+          customerId = emrToCustomerMap.get(cid)!;
+          stats.customersMatched++;
+        } else {
+          // Create new customer with UUID from pool
+          const result = getOrCreateCustomerByEMRId(db, dbPath, cid);
+          customerId = result.customerId;
+          emrToCustomerMap.set(cid, customerId); // Update local map
+          stats.newCustomersCreated++;
+        }
+      } else if (cid) {
+        customerId = emrToCustomerMap.get(cid) || null;
+      }
 
       // Track unique invoices
       if (invoiceNumber && !seenInvoices.has(invoiceNumber)) {
@@ -160,17 +187,18 @@ export function processEMRFile(
         mappedData.category = pm.category;
       }
 
-      // Insert into staging table
+      // Insert into staging table (with customer_id UUID)
       db.run(`
         INSERT INTO transactions_staging (
-          id, upload_id, customer_cid, invoice_number, transaction_date,
+          id, upload_id, customer_cid, customer_id, invoice_number, transaction_date,
           service_name, quantity, price, amount, payment_type,
           transaction_data, mapped_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         transactionId,
         uploadId,
         cid,
+        customerId,
         invoiceNumber,
         txnDate,
         serviceName,
@@ -204,7 +232,9 @@ export function processEMRFile(
       serviceLines: stats.serviceLines,
       paymentLines: stats.paymentLines,
       unmappedServicesCount: stats.unmappedServices.size,
-      unmappedPaymentTypesCount: stats.unmappedPaymentTypes.size
+      unmappedPaymentTypesCount: stats.unmappedPaymentTypes.size,
+      customersMatched: stats.customersMatched,
+      newCustomersCreated: stats.newCustomersCreated
     });
 
     // Save database
@@ -219,7 +249,9 @@ export function processEMRFile(
         serviceLines: stats.serviceLines,
         paymentLines: stats.paymentLines,
         unmappedServices: Array.from(stats.unmappedServices),
-        unmappedPaymentTypes: Array.from(stats.unmappedPaymentTypes)
+        unmappedPaymentTypes: Array.from(stats.unmappedPaymentTypes),
+        customersMatched: stats.customersMatched,
+        newCustomersCreated: stats.newCustomersCreated
       }
     };
   } catch (error: any) {
@@ -239,7 +271,7 @@ export function processEMRFile(
     return {
       success: false,
       uploadId,
-      stats: { totalRows: 0, invoiceCount: 0, serviceLines: 0, paymentLines: 0, unmappedServices: [], unmappedPaymentTypes: [] },
+      stats: { totalRows: 0, invoiceCount: 0, serviceLines: 0, paymentLines: 0, unmappedServices: [], unmappedPaymentTypes: [], customersMatched: 0, newCustomersCreated: 0 },
       error: error.message
     };
   }
