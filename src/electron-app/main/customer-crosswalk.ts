@@ -24,7 +24,7 @@ function detectCSVTableType(columns: string[]): string | null {
   if (colSet.has('customer_id') && colSet.has('system_name') && colSet.has('external_id')) return 'customer_ids';
   if (colSet.has('customer_id') && !colSet.has('system_name') && !colSet.has('qb_display_name')) return 'customers';
   if (colSet.has('qb_listid') || colSet.has('qb_display_name')) return 'stg_qb_customers';
-  if (colSet.has('emr_patient_id') && colSet.has('full_name')) return 'stg_emr_patients';
+  if (colSet.has('emr_patient_id') && (colSet.has('full_name') || colSet.has('first_name') || colSet.has('last_name'))) return 'stg_emr_patients';
 
   return null;
 }
@@ -165,11 +165,19 @@ export function importCustomerCrosswalk(
           let emrPatientsImported = 0;
           for (const row of data) {
             const emrPatientId = row['emr_patient_id'];
-            const fullName = row['full_name'];
             if (!emrPatientId) continue;
+
+            // Support full_name or first_name + last_name
+            let fullName = row['full_name'];
+            if (!fullName && (row['first_name'] || row['last_name'])) {
+              fullName = [row['first_name'], row['last_name']].filter(Boolean).join(' ').trim();
+            }
+
+            const customerId = row['customer_id'] || row['UUID'] || row['uuid'] || null;
+
             try {
               db.run(`INSERT OR REPLACE INTO stg_emr_patients (emr_patient_id, full_name, customer_id) VALUES (?, ?, ?)`,
-                [emrPatientId, fullName || null, row['customer_id'] || null]);
+                [emrPatientId, fullName || null, customerId]);
               emrPatientsImported++;
             } catch (e) { console.error('Error inserting EMR patient:', e); }
           }
@@ -317,6 +325,40 @@ export function importCustomerCrosswalk(
         }
       }
       console.log(`Imported ${qbCustomersImported} QB customers`);
+    }
+
+    // 5. Import stg_emr_patients
+    let emrPatientsImported = 0;
+    if (workbook.SheetNames.includes('stg_emr_patients')) {
+      const emrSheet = workbook.Sheets['stg_emr_patients'];
+      const emrData = XLSX.utils.sheet_to_json<any>(emrSheet);
+
+      console.log(`Found ${emrData.length} EMR patients to import`);
+
+      for (const row of emrData) {
+        const emrPatientId = row['emr_patient_id'];
+        if (!emrPatientId) continue;
+
+        // Support full_name or first_name + last_name
+        let fullName = row['full_name'];
+        if (!fullName && (row['first_name'] || row['last_name'])) {
+          fullName = [row['first_name'], row['last_name']].filter(Boolean).join(' ').trim();
+        }
+
+        // Get customer_id from row
+        const customerId = row['customer_id'] || row['UUID'] || row['uuid'] || null;
+
+        try {
+          db.run(`
+            INSERT OR REPLACE INTO stg_emr_patients (emr_patient_id, full_name, customer_id)
+            VALUES (?, ?, ?)
+          `, [emrPatientId, fullName || null, customerId]);
+          emrPatientsImported++;
+        } catch (e) {
+          console.error('Error inserting EMR patient:', e);
+        }
+      }
+      console.log(`Imported ${emrPatientsImported} EMR patients`);
     }
 
     // Log the import

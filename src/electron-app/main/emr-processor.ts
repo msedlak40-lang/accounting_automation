@@ -10,6 +10,9 @@ interface EMRRow {
   'Invoice #': string;
   CID: number;
   customer_id: string;
+  Name: string | null;  // Customer/Patient name
+  'First Name': string | null;
+  'Last Name': string | null;
   'Service/Product': string | null;
   SKU: number | null;
   Staff: string | null;
@@ -124,6 +127,12 @@ export function processEMRFile(
       const paymentType = row['Payment Type'] || null;
       const txnDate = formatDate(row.Date);
 
+      // Get customer name from EMR row (Name field, or First Name + Last Name)
+      let customerName: string | null = row.Name || null;
+      if (!customerName && (row['First Name'] || row['Last Name'])) {
+        customerName = [row['First Name'], row['Last Name']].filter(Boolean).join(' ').trim() || null;
+      }
+
       // Resolve customer UUID from EMR patient ID (CID)
       let customerId: string | null = null;
       if (cid && !processedCustomers.has(cid)) {
@@ -132,9 +141,20 @@ export function processEMRFile(
         if (emrToCustomerMap.has(cid)) {
           customerId = emrToCustomerMap.get(cid)!;
           stats.customersMatched++;
+
+          // Update stg_emr_patients with name if we have one and it doesn't exist yet
+          if (customerName) {
+            db.run(`
+              INSERT INTO stg_emr_patients (emr_patient_id, full_name, customer_id)
+              VALUES (?, ?, ?)
+              ON CONFLICT(emr_patient_id) DO UPDATE SET
+                full_name = COALESCE(stg_emr_patients.full_name, excluded.full_name),
+                customer_id = COALESCE(stg_emr_patients.customer_id, excluded.customer_id)
+            `, [cid, customerName, customerId]);
+          }
         } else {
-          // Create new customer with UUID from pool
-          const result = getOrCreateCustomerByEMRId(db, dbPath, cid);
+          // Create new customer with UUID from pool, passing the name
+          const result = getOrCreateCustomerByEMRId(db, dbPath, cid, customerName || undefined);
           customerId = result.customerId;
           emrToCustomerMap.set(cid, customerId); // Update local map
           stats.newCustomersCreated++;
