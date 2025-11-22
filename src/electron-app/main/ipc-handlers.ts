@@ -16,10 +16,14 @@ import * as path from 'path';
  * All database operations happen here in the main process
  */
 export function setupIpcHandlers(db: Database, dbPath: string): void {
-  // Get all customers
+  // Get all customers (new UUID-based schema)
   ipcMain.handle('customers:getAll', async () => {
     try {
-      const result = db.exec('SELECT * FROM customers WHERE is_active = 1 ORDER BY customer_name_emr');
+      const result = db.exec(`
+        SELECT * FROM customers
+        WHERE status = 'active'
+        ORDER BY created_at DESC
+      `);
       const customers = result[0] ? result[0].values.map((row: any[]) => {
         const obj: any = {};
         result[0].columns.forEach((col: string, i: number) => {
@@ -33,31 +37,41 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  // Create customer
+  // Create customer (new UUID-based schema)
   ipcMain.handle('customers:create', async (event, customerData: any) => {
     try {
       const { v4: uuidv4 } = require('uuid');
-      const id = uuidv4();
+      const customerId = customerData.customer_id || uuidv4();
 
+      // Insert into customers table
       db.run(
-        `INSERT INTO customers (id, cid, customer_name_emr, emr_id, customer_name_qb, qb_list_id) VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          id,
-          customerData.cid,
-          customerData.customer_name_emr,
-          customerData.emr_id,
-          customerData.customer_name_qb || null,
-          customerData.qb_list_id || null
-        ]
+        `INSERT INTO customers (customer_id, status) VALUES (?, 'active')`,
+        [customerId]
       );
 
+      // If EMR ID provided, create mapping in customer_ids
+      if (customerData.emr_id) {
+        db.run(
+          `INSERT INTO customer_ids (customer_id, system_name, external_id) VALUES (?, 'EMR', ?)`,
+          [customerId, customerData.emr_id]
+        );
+      }
+
+      // If QB list ID provided, create mapping
+      if (customerData.qb_list_id) {
+        db.run(
+          `INSERT INTO customer_ids (customer_id, system_name, external_id) VALUES (?, 'QuickBooks', ?)`,
+          [customerId, customerData.qb_list_id]
+        );
+      }
+
       // Log to audit trail
-      logAudit(db, 'customer_created', 'customer', id, customerData);
+      logAudit(db, 'customer_created', 'customer', customerId, customerData);
 
       // Save database after write
       saveDatabase(db, dbPath);
 
-      return { success: true, data: { id } };
+      return { success: true, data: { id: customerId } };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
