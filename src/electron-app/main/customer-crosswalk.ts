@@ -412,6 +412,7 @@ export function getCrosswalkStats(db: Database): {
 
 /**
  * Get all customers with their mappings
+ * Handles variations in system_name: 'EMR', 'QB', 'QuickBooks', etc.
  */
 export function getAllCustomersWithMappings(db: Database): any[] {
   const result = db.exec(`
@@ -424,8 +425,8 @@ export function getAllCustomersWithMappings(db: Database): any[] {
       ep.full_name as emr_name,
       qbc.qb_display_name
     FROM customers c
-    LEFT JOIN customer_ids emr ON c.customer_id = emr.customer_id AND emr.system_name = 'EMR'
-    LEFT JOIN customer_ids qb ON c.customer_id = qb.customer_id AND qb.system_name = 'QuickBooks'
+    LEFT JOIN customer_ids emr ON c.customer_id = emr.customer_id AND (emr.system_name = 'EMR' OR emr.system_name LIKE '%EMR%')
+    LEFT JOIN customer_ids qb ON c.customer_id = qb.customer_id AND (qb.system_name = 'QuickBooks' OR qb.system_name = 'QB' OR qb.system_name LIKE '%QB%')
     LEFT JOIN stg_emr_patients ep ON emr.external_id = ep.emr_patient_id
     LEFT JOIN stg_qb_customers qbc ON qb.external_id = qbc.qb_listid OR qbc.customer_id = c.customer_id
     ORDER BY c.created_at DESC

@@ -16,6 +16,25 @@ import * as path from 'path';
  * All database operations happen here in the main process
  */
 export function setupIpcHandlers(db: Database, dbPath: string): void {
+  // Generic database query handler (for debugging)
+  ipcMain.handle('db:query', async (event, sql: string) => {
+    try {
+      const result = db.exec(sql);
+      if (result.length === 0) return { success: true, data: [] };
+
+      const data = result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      });
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
   // Get all customers (new UUID-based schema)
   ipcMain.handle('customers:getAll', async () => {
     try {
