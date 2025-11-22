@@ -2,6 +2,12 @@ import { ipcMain, dialog } from 'electron';
 import { Database, logAudit, saveDatabase } from './database';
 import { seedServiceMappings, seedPaymentTypeMappings } from './seed-data';
 import { processEMRFile, getStagedTransactionsSummary } from './emr-processor';
+import {
+  importCustomerCrosswalk,
+  getAllCustomersWithStatus,
+  getUnmappedCustomers,
+  updateCustomerQBName
+} from './customer-crosswalk';
 import * as path from 'path';
 
 /**
@@ -305,6 +311,73 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
         return obj;
       }) : [];
       return { success: true, data: uploads };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Customer crosswalk handlers
+  // Import customer crosswalk from Excel
+  ipcMain.handle('customers:importCrosswalk', async (event, excelPath?: string) => {
+    try {
+      const defaultPath = path.join(__dirname, '../../../../data/raw/Customer_ID_Crosswalk_Template.xlsx');
+      const filePath = excelPath || defaultPath;
+
+      console.log('Importing customer crosswalk from:', filePath);
+      const result = importCustomerCrosswalk(db, dbPath, filePath);
+      return result;
+    } catch (error: any) {
+      console.error('Error in customers:importCrosswalk handler:', error);
+      return { success: false, customersImported: 0, mappingsImported: 0, error: error.message };
+    }
+  });
+
+  // Get all customers with status
+  ipcMain.handle('customers:getAllWithStatus', async () => {
+    try {
+      const customers = getAllCustomersWithStatus(db);
+      return { success: true, data: customers };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get unmapped customers
+  ipcMain.handle('customers:getUnmapped', async () => {
+    try {
+      const unmapped = getUnmappedCustomers(db);
+      return { success: true, data: unmapped };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Update customer QB name
+  ipcMain.handle('customers:updateQBName', async (event, data: { cid: string; qbName: string; qbListId?: string }) => {
+    try {
+      const success = updateCustomerQBName(db, dbPath, data.cid, data.qbName, data.qbListId);
+      return { success };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Select crosswalk file dialog
+  ipcMain.handle('customers:selectCrosswalkFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Select Customer Crosswalk File',
+        filters: [
+          { name: 'Excel Files', extensions: ['xlsx', 'xls'] }
+        ],
+        properties: ['openFile']
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: false, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePaths[0] };
     } catch (error: any) {
       return { success: false, error: error.message };
     }

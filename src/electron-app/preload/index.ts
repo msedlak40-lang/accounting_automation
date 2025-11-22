@@ -13,6 +13,12 @@ const api = {
   customers: {
     getAll: () => ipcRenderer.invoke('customers:getAll'),
     create: (customerData: any) => ipcRenderer.invoke('customers:create', customerData),
+    getAllWithStatus: () => ipcRenderer.invoke('customers:getAllWithStatus'),
+    getUnmapped: () => ipcRenderer.invoke('customers:getUnmapped'),
+    updateQBName: (data: { cid: string; qbName: string; qbListId?: string }) =>
+      ipcRenderer.invoke('customers:updateQBName', data),
+    importCrosswalk: (excelPath?: string) => ipcRenderer.invoke('customers:importCrosswalk', excelPath),
+    selectCrosswalkFile: () => ipcRenderer.invoke('customers:selectCrosswalkFile'),
   },
 
   // Service mappings

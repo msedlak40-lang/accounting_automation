@@ -6,6 +6,17 @@ declare global {
     electronAPI: {
       customers: {
         getAll: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getAllWithStatus: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getUnmapped: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        updateQBName: (data: { cid: string; qbName: string; qbListId?: string }) =>
+          Promise<{ success: boolean; error?: string }>;
+        importCrosswalk: (excelPath?: string) => Promise<{
+          success: boolean;
+          customersImported: number;
+          mappingsImported: number;
+          error?: string;
+        }>;
+        selectCrosswalkFile: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
       };
       serviceMappings: {
         getAll: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
@@ -44,7 +55,7 @@ declare global {
   }
 }
 
-type TabType = 'dashboard' | 'transactions' | 'services' | 'payments' | 'audit';
+type TabType = 'dashboard' | 'transactions' | 'customers' | 'services' | 'payments' | 'audit';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -57,16 +68,22 @@ function App() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   // EMR upload state
   const [processing, setProcessing] = useState(false);
   const [processingResult, setProcessingResult] = useState<any>(null);
 
+  // Customer crosswalk state
+  const [importingCrosswalk, setImportingCrosswalk] = useState(false);
+  const [crosswalkResult, setCrosswalkResult] = useState<any>(null);
+
   // Search/filter state
   const [serviceSearch, setServiceSearch] = useState('');
   const [paymentSearch, setPaymentSearch] = useState('');
   const [txnSearch, setTxnSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState('');
 
   useEffect(() => {
     checkDatabase();
@@ -123,7 +140,43 @@ function App() {
     if (activeTab === 'transactions') {
       loadTransactions();
     }
+    if (activeTab === 'customers') {
+      loadCustomers();
+    }
   }, [activeTab]);
+
+  const loadCustomers = async () => {
+    const result = await window.electronAPI.customers.getAllWithStatus();
+    if (result.success) {
+      setCustomers(result.data || []);
+    }
+  };
+
+  const handleImportCrosswalk = async () => {
+    try {
+      // Open file dialog
+      const fileResult = await window.electronAPI.customers.selectCrosswalkFile();
+      if (!fileResult.success || fileResult.canceled || !fileResult.filePath) {
+        return;
+      }
+
+      setImportingCrosswalk(true);
+      setCrosswalkResult(null);
+
+      const result = await window.electronAPI.customers.importCrosswalk(fileResult.filePath);
+      setCrosswalkResult(result);
+
+      if (result.success) {
+        await refreshData();
+        await loadCustomers();
+      }
+    } catch (error: any) {
+      console.error('Crosswalk import error:', error);
+      setCrosswalkResult({ success: false, error: error.message });
+    } finally {
+      setImportingCrosswalk(false);
+    }
+  };
 
   const handleEMRUpload = async () => {
     try {
@@ -173,9 +226,17 @@ function App() {
     t.payment_type?.toLowerCase().includes(txnSearch.toLowerCase())
   );
 
+  // Filter customers
+  const filteredCustomers = customers.filter(c =>
+    c.cid?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.customer_name_emr?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.customer_name_qb?.toLowerCase().includes(customerSearch.toLowerCase())
+  );
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
     { id: 'transactions', label: `Transactions (${stats.transactions})`, icon: '📋' },
+    { id: 'customers', label: `Customers (${stats.customers})`, icon: '👥' },
     { id: 'services', label: `Service Mappings (${stats.mappings})`, icon: '🔗' },
     { id: 'payments', label: `Payment Types (${stats.paymentTypes})`, icon: '💳' },
     { id: 'audit', label: `Audit Log (${stats.logs})`, icon: '📝' },
@@ -468,6 +529,110 @@ function App() {
                 <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span> Mapped
                 <span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-3 mr-1"></span> Unmapped
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Customers Tab */}
+        {activeTab === 'customers' && (
+          <div className="space-y-4">
+            {/* Import Crosswalk Card */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold">Customer Crosswalk</h3>
+                  <p className="text-sm text-gray-500">Import customer ID mappings from Excel</p>
+                </div>
+                <button
+                  onClick={handleImportCrosswalk}
+                  disabled={importingCrosswalk}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 disabled:opacity-50"
+                >
+                  {importingCrosswalk ? 'Importing...' : 'Import Crosswalk'}
+                </button>
+              </div>
+
+              {crosswalkResult && (
+                <div className={`mt-3 p-3 rounded-lg text-sm ${crosswalkResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  {crosswalkResult.success
+                    ? `Imported ${crosswalkResult.customersImported} customers and ${crosswalkResult.mappingsImported} mappings`
+                    : `Error: ${crosswalkResult.error}`}
+                </div>
+              )}
+            </div>
+
+            {/* Customers Table */}
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 border-b flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold">Customer Registry</h2>
+                  <p className="text-sm text-gray-500">EMR CID to QuickBooks customer mapping</p>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search customers..."
+                  value={customerSearch}
+                  onChange={(e) => setCustomerSearch(e.target.value)}
+                  className="px-3 py-1.5 border rounded-md text-sm w-64"
+                />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">CID</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">EMR Name</th>
+                      <th className="px-4 py-3 text-left font-medium text-gray-600">QuickBooks Name</th>
+                      <th className="px-4 py-3 text-right font-medium text-gray-600">Transactions</th>
+                      <th className="px-4 py-3 text-center font-medium text-gray-600">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {filteredCustomers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                          {customerSearch ? 'No matching customers found' : 'No customers loaded. Import a crosswalk file or upload EMR transactions.'}
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredCustomers.slice(0, 100).map((customer, index) => (
+                        <tr key={customer.id || index} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 font-mono text-xs">{customer.cid}</td>
+                          <td className="px-4 py-3">{customer.customer_name_emr || <span className="text-gray-400">-</span>}</td>
+                          <td className="px-4 py-3">
+                            {customer.customer_name_qb ? (
+                              <span className="text-blue-600">{customer.customer_name_qb}</span>
+                            ) : (
+                              <span className="text-yellow-600 text-xs">Not mapped</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className={`px-2 py-0.5 rounded text-xs ${
+                              customer.transaction_count > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {customer.transaction_count || 0}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {customer.customer_name_qb ? (
+                              <span className="inline-block w-2 h-2 rounded-full bg-green-500" title="Mapped to QB"></span>
+                            ) : (
+                              <span className="inline-block w-2 h-2 rounded-full bg-yellow-500" title="Needs QB mapping"></span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-3 border-t text-sm text-gray-500 flex justify-between">
+                <span>Showing {Math.min(filteredCustomers.length, 100)} of {filteredCustomers.length} customers</span>
+                <span className="text-xs">
+                  <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span> QB Mapped
+                  <span className="inline-block w-2 h-2 rounded-full bg-yellow-500 ml-3 mr-1"></span> Needs Mapping
+                </span>
+              </div>
             </div>
           </div>
         )}
