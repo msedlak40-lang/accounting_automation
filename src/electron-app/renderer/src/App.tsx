@@ -111,6 +111,8 @@ function App() {
   const [paymentSearch, setPaymentSearch] = useState('');
   const [txnSearch, setTxnSearch] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
+  const [showUnmappedCustomersOnly, setShowUnmappedCustomersOnly] = useState(false);
+  const [showUnmappedTxnOnly, setShowUnmappedTxnOnly] = useState(false);
 
   // Add mapping modal state
   const [showAddService, setShowAddService] = useState(false);
@@ -373,20 +375,40 @@ function App() {
   );
 
   // Filter transactions
-  const filteredTransactions = transactions.filter(t =>
-    t.invoice_number?.toLowerCase().includes(txnSearch.toLowerCase()) ||
-    t.customer_cid?.toLowerCase().includes(txnSearch.toLowerCase()) ||
-    t.service_name?.toLowerCase().includes(txnSearch.toLowerCase()) ||
-    t.payment_type?.toLowerCase().includes(txnSearch.toLowerCase())
-  );
+  const filteredTransactions = transactions.filter(t => {
+    // Text search filter
+    const matchesSearch = !txnSearch ||
+      t.invoice_number?.toLowerCase().includes(txnSearch.toLowerCase()) ||
+      t.customer_cid?.toLowerCase().includes(txnSearch.toLowerCase()) ||
+      t.service_name?.toLowerCase().includes(txnSearch.toLowerCase()) ||
+      t.payment_type?.toLowerCase().includes(txnSearch.toLowerCase());
+
+    // Unmapped filter - show only transactions with unmapped services or payments
+    const isUnmapped = !t.service_mapped || !t.payment_mapped;
+    const matchesUnmapped = !showUnmappedTxnOnly || isUnmapped;
+
+    return matchesSearch && matchesUnmapped;
+  });
 
   // Filter customers (using new UUID-based schema fields)
-  const filteredCustomers = customers.filter(c =>
-    c.customer_id?.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.emr_patient_id?.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.emr_name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
-    c.qb_display_name?.toLowerCase().includes(customerSearch.toLowerCase())
-  );
+  const filteredCustomers = customers.filter(c => {
+    // Text search filter
+    const matchesSearch = !customerSearch ||
+      c.customer_id?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+      c.emr_patient_id?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+      c.emr_name?.toLowerCase().includes(customerSearch.toLowerCase()) ||
+      c.qb_display_name?.toLowerCase().includes(customerSearch.toLowerCase());
+
+    // Unmapped filter - show only customers without QB mapping
+    const isUnmapped = !c.qb_display_name;
+    const matchesUnmapped = !showUnmappedCustomersOnly || isUnmapped;
+
+    return matchesSearch && matchesUnmapped;
+  });
+
+  // Count unmapped items for display
+  const unmappedCustomerCount = customers.filter(c => !c.qb_display_name).length;
+  const unmappedTxnCount = transactions.filter(t => !t.service_mapped || !t.payment_mapped).length;
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -604,7 +626,7 @@ function App() {
                 <h2 className="text-lg font-semibold">Staged Transactions</h2>
                 <p className="text-sm text-gray-500">EMR transactions ready for export</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   placeholder="Search transactions..."
@@ -612,6 +634,16 @@ function App() {
                   onChange={(e) => setTxnSearch(e.target.value)}
                   className="px-3 py-1.5 border rounded-md text-sm w-64"
                 />
+                <button
+                  onClick={() => setShowUnmappedTxnOnly(!showUnmappedTxnOnly)}
+                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                    showUnmappedTxnOnly
+                      ? 'bg-red-100 text-red-700 border border-red-300'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {showUnmappedTxnOnly ? `Unmapped (${unmappedTxnCount})` : `Show Unmapped (${unmappedTxnCount})`}
+                </button>
                 <button
                   onClick={handleEMRUpload}
                   disabled={processing}
@@ -793,13 +825,25 @@ function App() {
                   <h2 className="text-lg font-semibold">Customer Registry</h2>
                   <p className="text-sm text-gray-500">EMR CID to QuickBooks customer mapping</p>
                 </div>
-                <input
-                  type="text"
-                  placeholder="Search customers..."
-                  value={customerSearch}
-                  onChange={(e) => setCustomerSearch(e.target.value)}
-                  className="px-3 py-1.5 border rounded-md text-sm w-64"
-                />
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="Search customers..."
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    className="px-3 py-1.5 border rounded-md text-sm w-64"
+                  />
+                  <button
+                    onClick={() => setShowUnmappedCustomersOnly(!showUnmappedCustomersOnly)}
+                    className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                      showUnmappedCustomersOnly
+                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {showUnmappedCustomersOnly ? `Unmapped (${unmappedCustomerCount})` : `Show Unmapped (${unmappedCustomerCount})`}
+                  </button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
