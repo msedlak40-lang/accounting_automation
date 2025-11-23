@@ -384,7 +384,10 @@ function App() {
       t.payment_type?.toLowerCase().includes(txnSearch.toLowerCase());
 
     // Unmapped filter - show only transactions with unmapped services or payments
-    const isUnmapped = !t.service_mapped || !t.payment_mapped;
+    // Only consider unmapped if there IS a service/payment that needs mapping
+    const hasUnmappedService = t.service_name && !t.service_mapped;
+    const hasUnmappedPayment = t.payment_type && !t.payment_mapped;
+    const isUnmapped = hasUnmappedService || hasUnmappedPayment;
     const matchesUnmapped = !showUnmappedTxnOnly || isUnmapped;
 
     return matchesSearch && matchesUnmapped;
@@ -408,7 +411,9 @@ function App() {
 
   // Count unmapped items for display
   const unmappedCustomerCount = customers.filter(c => !c.qb_display_name).length;
-  const unmappedTxnCount = transactions.filter(t => !t.service_mapped || !t.payment_mapped).length;
+  const unmappedTxnCount = transactions.filter(t =>
+    (t.service_name && !t.service_mapped) || (t.payment_type && !t.payment_mapped)
+  ).length;
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
