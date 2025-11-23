@@ -75,6 +75,36 @@ const api = {
     transactionPro: (data: { outputDir: string; uploadId?: string }) =>
       ipcRenderer.invoke('export:transactionPro', data),
   },
+
+  // CC Statement processing
+  cc: {
+    selectFile: () => ipcRenderer.invoke('cc:selectFile'),
+    processFile: (filePath: string) => ipcRenderer.invoke('cc:processFile', filePath),
+    getTransactions: (options?: { uploadId?: string; limit?: number }) =>
+      ipcRenderer.invoke('cc:getTransactions', options),
+    getSummary: (uploadId?: string) => ipcRenderer.invoke('cc:getSummary', uploadId),
+    getCategories: () => ipcRenderer.invoke('cc:getCategories'),
+    addCategory: (data: { merchant_pattern: string; category_name: string; expense_account: string; is_cogs?: boolean }) =>
+      ipcRenderer.invoke('cc:addCategory', data),
+    updateTransactionCategory: (data: { transactionId: string; categoryId: string | null }) =>
+      ipcRenderer.invoke('cc:updateTransactionCategory', data),
+  },
+
+  // Backup/Restore
+  backup: {
+    export: () => ipcRenderer.invoke('backup:export'),
+    import: () => ipcRenderer.invoke('backup:import'),
+  },
+
+  // Reports
+  reports: {
+    transactionsByDateRange: (data: { startDate: string; endDate: string }) =>
+      ipcRenderer.invoke('reports:transactionsByDateRange', data),
+    customerSummary: () => ipcRenderer.invoke('reports:customerSummary'),
+    serviceBreakdown: () => ipcRenderer.invoke('reports:serviceBreakdown'),
+    expenseSummary: () => ipcRenderer.invoke('reports:expenseSummary'),
+    dashboardStats: () => ipcRenderer.invoke('reports:dashboardStats'),
+  },
 };
 
 // Expose protected methods that allow the renderer process to use

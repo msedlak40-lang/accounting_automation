@@ -9,7 +9,9 @@ import {
   getCrosswalkStats
 } from './customer-crosswalk';
 import { exportToTransactionPro, getExportPreview } from './transaction-pro-exporter';
+import { processCCFile, getExpenseSummary } from './cc-processor';
 import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Setup IPC handlers for communication between main and renderer processes
@@ -547,6 +549,415 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     } catch (error: any) {
       console.error('Error in export:transactionPro handler:', error);
       return { success: false, invoicesExported: 0, paymentsExported: 0, error: error.message, warnings: [] };
+    }
+  });
+
+  // ==================== CC STATEMENT HANDLERS ====================
+
+  // Select CC statement file
+  ipcMain.handle('cc:selectFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Select CC Statement',
+        filters: [
+          { name: 'Spreadsheets', extensions: ['xlsx', 'xls', 'csv'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+        properties: ['openFile'],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: true, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePaths[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Process CC statement file
+  ipcMain.handle('cc:processFile', async (event, filePath: string) => {
+    try {
+      console.log('Processing CC file:', filePath);
+      const result = processCCFile(db, dbPath, filePath);
+      return result;
+    } catch (error: any) {
+      console.error('Error processing CC file:', error);
+      return {
+        success: false,
+        uploadId: '',
+        stats: { totalRows: 0, expenseCount: 0, creditCount: 0, categorizedCount: 0, uncategorizedMerchants: [] },
+        error: error.message,
+      };
+    }
+  });
+
+  // Get expense transactions
+  ipcMain.handle('cc:getTransactions', async (event, options?: { uploadId?: string; limit?: number }) => {
+    try {
+      let sql = `
+        SELECT
+          et.*,
+          ec.category_name,
+          ec.merchant_pattern
+        FROM expense_transactions et
+        LEFT JOIN expense_categories ec ON et.category_id = ec.id
+      `;
+
+      if (options?.uploadId) {
+        sql += ` WHERE et.upload_id = '${options.uploadId}'`;
+      }
+
+      sql += ' ORDER BY et.transaction_date DESC';
+
+      if (options?.limit) {
+        sql += ` LIMIT ${options.limit}`;
+      }
+
+      const result = db.exec(sql);
+      const transactions = result[0] ? result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      }) : [];
+
+      return { success: true, data: transactions };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get expense summary
+  ipcMain.handle('cc:getSummary', async (event, uploadId?: string) => {
+    try {
+      const summary = getExpenseSummary(db, uploadId);
+      return { success: true, data: summary };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get expense categories
+  ipcMain.handle('cc:getCategories', async () => {
+    try {
+      const result = db.exec(`
+        SELECT * FROM expense_categories WHERE is_active = 1 ORDER BY category_name
+      `);
+      const categories = result[0] ? result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      }) : [];
+
+      return { success: true, data: categories };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Add expense category
+  ipcMain.handle('cc:addCategory', async (event, data: {
+    merchant_pattern: string;
+    category_name: string;
+    expense_account: string;
+    is_cogs?: boolean;
+  }) => {
+    try {
+      const id = require('uuid').v4();
+      db.run(`
+        INSERT INTO expense_categories (id, merchant_pattern, category_name, expense_account, is_cogs)
+        VALUES (?, ?, ?, ?, ?)
+      `, [id, data.merchant_pattern.toLowerCase(), data.category_name, data.expense_account, data.is_cogs ? 1 : 0]);
+
+      logAudit(db, 'expense_category_created', 'expense_category', id, data);
+      saveDatabase(db, dbPath);
+
+      return { success: true, id };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Update expense transaction category
+  ipcMain.handle('cc:updateTransactionCategory', async (event, data: { transactionId: string; categoryId: string | null }) => {
+    try {
+      let expenseAccount = null;
+      if (data.categoryId) {
+        const catResult = db.exec(`SELECT expense_account FROM expense_categories WHERE id = ?`, [data.categoryId]);
+        if (catResult.length > 0 && catResult[0].values.length > 0) {
+          expenseAccount = catResult[0].values[0][0];
+        }
+      }
+
+      db.run(`
+        UPDATE expense_transactions
+        SET category_id = ?, expense_account = ?
+        WHERE id = ?
+      `, [data.categoryId, expenseAccount, data.transactionId]);
+
+      logAudit(db, 'expense_transaction_categorized', 'expense_transaction', data.transactionId, data);
+      saveDatabase(db, dbPath);
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // ==================== BACKUP/RESTORE HANDLERS ====================
+
+  // Export database backup
+  ipcMain.handle('backup:export', async () => {
+    try {
+      const result = await dialog.showSaveDialog({
+        title: 'Export Database Backup',
+        defaultPath: `medspa-backup-${new Date().toISOString().split('T')[0]}.db`,
+        filters: [
+          { name: 'SQLite Database', extensions: ['db'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      });
+
+      if (result.canceled || !result.filePath) {
+        return { success: true, canceled: true };
+      }
+
+      // Export database to binary
+      const data = db.export();
+      const buffer = Buffer.from(data);
+      fs.writeFileSync(result.filePath, buffer);
+
+      logAudit(db, 'database_backup_exported', 'system', null, { filePath: result.filePath });
+      saveDatabase(db, dbPath);
+
+      return { success: true, filePath: result.filePath };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Import database backup
+  ipcMain.handle('backup:import', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Import Database Backup',
+        filters: [
+          { name: 'SQLite Database', extensions: ['db'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+        properties: ['openFile'],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: true, canceled: true };
+      }
+
+      const backupPath = result.filePaths[0];
+
+      // Read backup file
+      const backupData = fs.readFileSync(backupPath);
+
+      // Save to current database path (overwrite)
+      fs.writeFileSync(dbPath, backupData);
+
+      logAudit(db, 'database_backup_imported', 'system', null, { filePath: backupPath });
+
+      return {
+        success: true,
+        message: 'Database restored. Please restart the application for changes to take effect.',
+        requiresRestart: true,
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // ==================== REPORTING HANDLERS ====================
+
+  // Get transaction report by date range
+  ipcMain.handle('reports:transactionsByDateRange', async (event, data: { startDate: string; endDate: string }) => {
+    try {
+      const result = db.exec(`
+        SELECT
+          transaction_date,
+          COUNT(DISTINCT invoice_number) as invoice_count,
+          COUNT(*) as line_count,
+          SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_revenue,
+          SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) as total_payments
+        FROM transactions_staging
+        WHERE transaction_date BETWEEN ? AND ?
+        GROUP BY transaction_date
+        ORDER BY transaction_date
+      `, [data.startDate, data.endDate]);
+
+      const report = result[0] ? result[0].values.map((row: any[]) => ({
+        date: row[0],
+        invoiceCount: row[1],
+        lineCount: row[2],
+        totalRevenue: row[3] || 0,
+        totalPayments: row[4] || 0,
+      })) : [];
+
+      return { success: true, data: report };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get customer summary report
+  ipcMain.handle('reports:customerSummary', async () => {
+    try {
+      const result = db.exec(`
+        SELECT
+          c.customer_id,
+          COALESCE(qb.qb_display_name, ep.full_name, ts.customer_cid) as customer_name,
+          COUNT(DISTINCT ts.invoice_number) as invoice_count,
+          SUM(CASE WHEN ts.amount > 0 THEN ts.amount ELSE 0 END) as total_revenue,
+          MIN(ts.transaction_date) as first_transaction,
+          MAX(ts.transaction_date) as last_transaction
+        FROM customers c
+        LEFT JOIN stg_qb_customers qb ON qb.customer_id = c.customer_id
+        LEFT JOIN customer_ids ci ON ci.customer_id = c.customer_id AND ci.system_name = 'EMR'
+        LEFT JOIN stg_emr_patients ep ON ep.emr_patient_id = ci.external_id
+        LEFT JOIN transactions_staging ts ON ts.customer_id = c.customer_id
+        WHERE c.status = 'active'
+        GROUP BY c.customer_id
+        HAVING invoice_count > 0
+        ORDER BY total_revenue DESC
+        LIMIT 100
+      `);
+
+      const report = result[0] ? result[0].values.map((row: any[]) => ({
+        customerId: row[0],
+        customerName: row[1] || 'Unknown',
+        invoiceCount: row[2] || 0,
+        totalRevenue: row[3] || 0,
+        firstTransaction: row[4],
+        lastTransaction: row[5],
+      })) : [];
+
+      return { success: true, data: report };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get service breakdown report
+  ipcMain.handle('reports:serviceBreakdown', async () => {
+    try {
+      const result = db.exec(`
+        SELECT
+          ts.service_name,
+          sm.qb_item_name,
+          sm.income_account,
+          COUNT(*) as usage_count,
+          SUM(ts.quantity) as total_quantity,
+          SUM(ts.amount) as total_revenue,
+          CASE WHEN sm.id IS NOT NULL THEN 1 ELSE 0 END as is_mapped
+        FROM transactions_staging ts
+        LEFT JOIN service_mappings sm ON ts.service_name = sm.emr_service_name AND sm.is_active = 1
+        WHERE ts.service_name IS NOT NULL AND ts.service_name != ''
+        GROUP BY ts.service_name
+        ORDER BY total_revenue DESC
+      `);
+
+      const report = result[0] ? result[0].values.map((row: any[]) => ({
+        serviceName: row[0],
+        qbItemName: row[1],
+        incomeAccount: row[2],
+        usageCount: row[3] || 0,
+        totalQuantity: row[4] || 0,
+        totalRevenue: row[5] || 0,
+        isMapped: row[6] === 1,
+      })) : [];
+
+      return { success: true, data: report };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get expense summary report
+  ipcMain.handle('reports:expenseSummary', async () => {
+    try {
+      const result = db.exec(`
+        SELECT
+          COALESCE(ec.category_name, 'Uncategorized') as category,
+          ec.expense_account,
+          COUNT(*) as transaction_count,
+          SUM(et.amount) as total_amount
+        FROM expense_transactions et
+        LEFT JOIN expense_categories ec ON et.category_id = ec.id
+        WHERE et.amount > 0
+        GROUP BY COALESCE(ec.category_name, 'Uncategorized')
+        ORDER BY total_amount DESC
+      `);
+
+      const report = result[0] ? result[0].values.map((row: any[]) => ({
+        category: row[0],
+        expenseAccount: row[1],
+        transactionCount: row[2] || 0,
+        totalAmount: row[3] || 0,
+      })) : [];
+
+      return { success: true, data: report };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get overview stats for dashboard
+  ipcMain.handle('reports:dashboardStats', async () => {
+    try {
+      // Revenue stats
+      const revenueResult = db.exec(`
+        SELECT
+          SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_revenue,
+          COUNT(DISTINCT invoice_number) as invoice_count,
+          COUNT(DISTINCT customer_id) as customer_count
+        FROM transactions_staging
+      `);
+
+      // Expense stats
+      const expenseResult = db.exec(`
+        SELECT
+          SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as total_expenses,
+          COUNT(*) as expense_count
+        FROM expense_transactions
+      `);
+
+      // Mapping stats
+      const mappingResult = db.exec(`
+        SELECT
+          (SELECT COUNT(*) FROM service_mappings WHERE is_active = 1) as service_mappings,
+          (SELECT COUNT(*) FROM payment_type_mappings WHERE is_active = 1) as payment_mappings,
+          (SELECT COUNT(*) FROM expense_categories WHERE is_active = 1) as expense_categories
+      `);
+
+      const revenue = revenueResult[0]?.values[0] || [0, 0, 0];
+      const expenses = expenseResult[0]?.values[0] || [0, 0];
+      const mappings = mappingResult[0]?.values[0] || [0, 0, 0];
+
+      return {
+        success: true,
+        data: {
+          totalRevenue: revenue[0] || 0,
+          invoiceCount: revenue[1] || 0,
+          customerCount: revenue[2] || 0,
+          totalExpenses: expenses[0] || 0,
+          expenseCount: expenses[1] || 0,
+          serviceMappings: mappings[0] || 0,
+          paymentMappings: mappings[1] || 0,
+          expenseCategories: mappings[2] || 0,
+        },
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message };
     }
   });
 

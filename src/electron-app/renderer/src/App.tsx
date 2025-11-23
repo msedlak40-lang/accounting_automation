@@ -73,11 +73,31 @@ declare global {
           warnings: string[];
         }>;
       };
+      cc: {
+        selectFile: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
+        processFile: (filePath: string) => Promise<any>;
+        getTransactions: (options?: any) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getSummary: (uploadId?: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+        getCategories: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        addCategory: (data: any) => Promise<{ success: boolean; id?: string; error?: string }>;
+        updateTransactionCategory: (data: any) => Promise<{ success: boolean; error?: string }>;
+      };
+      backup: {
+        export: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
+        import: () => Promise<{ success: boolean; canceled?: boolean; message?: string; requiresRestart?: boolean; error?: string }>;
+      };
+      reports: {
+        transactionsByDateRange: (data: { startDate: string; endDate: string }) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        customerSummary: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        serviceBreakdown: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        expenseSummary: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        dashboardStats: () => Promise<{ success: boolean; data?: any; error?: string }>;
+      };
     };
   }
 }
 
-type TabType = 'dashboard' | 'transactions' | 'customers' | 'services' | 'payments' | 'export' | 'audit';
+type TabType = 'dashboard' | 'transactions' | 'customers' | 'services' | 'payments' | 'expenses' | 'reports' | 'export' | 'audit';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -131,6 +151,18 @@ function App() {
   } | null>(null);
   const [savingCustomer, setSavingCustomer] = useState(false);
 
+  // CC/Expense state
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<any[]>([]);
+  const [ccProcessing, setCcProcessing] = useState(false);
+  const [ccResult, setCcResult] = useState<any>(null);
+  const [expenseSearch, setExpenseSearch] = useState('');
+
+  // Reports state
+  const [reportData, setReportData] = useState<any>(null);
+  const [reportType, setReportType] = useState<'customers' | 'services' | 'expenses'>('customers');
+  const [loadingReport, setLoadingReport] = useState(false);
+
   useEffect(() => {
     checkDatabase();
   }, []);
@@ -181,7 +213,7 @@ function App() {
     }
   };
 
-  // Load transactions when tab becomes active
+  // Load data when tab becomes active
   useEffect(() => {
     if (activeTab === 'transactions') {
       loadTransactions();
@@ -192,7 +224,13 @@ function App() {
     if (activeTab === 'export') {
       loadExportPreview();
     }
-  }, [activeTab]);
+    if (activeTab === 'expenses') {
+      loadExpenses();
+    }
+    if (activeTab === 'reports') {
+      loadReport();
+    }
+  }, [activeTab, reportType]);
 
   const loadExportPreview = async () => {
     const result = await window.electronAPI.export.preview();
@@ -205,6 +243,83 @@ function App() {
     const result = await window.electronAPI.customers.getAllWithMappings();
     if (result.success) {
       setCustomers(result.data || []);
+    }
+  };
+
+  const loadExpenses = async () => {
+    const [txnResult, catResult] = await Promise.all([
+      window.electronAPI.cc.getTransactions({ limit: 500 }),
+      window.electronAPI.cc.getCategories(),
+    ]);
+    if (txnResult.success) {
+      setExpenses(txnResult.data || []);
+    }
+    if (catResult.success) {
+      setExpenseCategories(catResult.data || []);
+    }
+  };
+
+  const loadReport = async () => {
+    setLoadingReport(true);
+    try {
+      let result;
+      if (reportType === 'customers') {
+        result = await window.electronAPI.reports.customerSummary();
+      } else if (reportType === 'services') {
+        result = await window.electronAPI.reports.serviceBreakdown();
+      } else {
+        result = await window.electronAPI.reports.expenseSummary();
+      }
+      if (result.success) {
+        setReportData(result.data || []);
+      }
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const handleCCUpload = async () => {
+    try {
+      const fileResult = await window.electronAPI.cc.selectFile();
+      if (!fileResult.success || fileResult.canceled || !fileResult.filePath) {
+        return;
+      }
+
+      setCcProcessing(true);
+      setCcResult(null);
+
+      const result = await window.electronAPI.cc.processFile(fileResult.filePath);
+      setCcResult(result);
+
+      if (result.success) {
+        await loadExpenses();
+      }
+    } catch (error: any) {
+      console.error('CC upload error:', error);
+      setCcResult({ success: false, error: error.message });
+    } finally {
+      setCcProcessing(false);
+    }
+  };
+
+  const handleBackupExport = async () => {
+    const result = await window.electronAPI.backup.export();
+    if (result.success && !result.canceled) {
+      alert(`Backup saved to: ${result.filePath}`);
+    } else if (!result.success) {
+      alert(`Backup failed: ${result.error}`);
+    }
+  };
+
+  const handleBackupImport = async () => {
+    if (!confirm('This will replace all current data. Are you sure you want to restore from a backup?')) {
+      return;
+    }
+    const result = await window.electronAPI.backup.import();
+    if (result.success && !result.canceled) {
+      alert(result.message || 'Backup restored successfully. Please restart the application.');
+    } else if (!result.success) {
+      alert(`Restore failed: ${result.error}`);
     }
   };
 
@@ -421,6 +536,8 @@ function App() {
     { id: 'customers', label: `Customers (${stats.customers})`, icon: '👥' },
     { id: 'services', label: `Service Mappings (${stats.mappings})`, icon: '🔗' },
     { id: 'payments', label: `Payment Types (${stats.paymentTypes})`, icon: '💳' },
+    { id: 'expenses', label: `Expenses (${expenses.length})`, icon: '💰' },
+    { id: 'reports', label: 'Reports', icon: '📈' },
     { id: 'export', label: 'Export', icon: '📥' },
     { id: 'audit', label: `Audit Log (${stats.logs})`, icon: '📝' },
   ];
@@ -540,10 +657,14 @@ function App() {
                   <div className="font-medium">{processing ? 'Processing...' : 'Upload EMR File'}</div>
                   <div className="text-sm text-gray-500">Import transactions</div>
                 </button>
-                <button className="p-4 border rounded-lg hover:bg-gray-50 text-left transition-colors opacity-50" disabled>
+                <button
+                  onClick={handleCCUpload}
+                  disabled={ccProcessing}
+                  className="p-4 border rounded-lg hover:bg-purple-50 text-left transition-colors disabled:opacity-50"
+                >
                   <div className="text-2xl mb-2">💳</div>
-                  <div className="font-medium">Upload CC Statement</div>
-                  <div className="text-sm text-gray-500">Coming soon</div>
+                  <div className="font-medium">{ccProcessing ? 'Processing...' : 'Upload CC Statement'}</div>
+                  <div className="text-sm text-gray-500">Import expenses</div>
                 </button>
                 <button
                   onClick={() => setActiveTab('export')}
@@ -592,6 +713,56 @@ function App() {
                   )}
                 </div>
               )}
+
+              {/* CC Processing Result */}
+              {ccResult && (
+                <div className={`mt-4 p-4 rounded-lg ${ccResult.success ? 'bg-purple-50 border border-purple-200' : 'bg-red-50 border border-red-200'}`}>
+                  {ccResult.success ? (
+                    <div>
+                      <div className="font-medium text-purple-700 mb-2">CC Statement Processed Successfully!</div>
+                      <div className="grid grid-cols-4 gap-4 text-sm">
+                        <div><span className="text-gray-600">Total Rows:</span> <span className="font-medium">{ccResult.stats.totalRows}</span></div>
+                        <div><span className="text-gray-600">Expenses:</span> <span className="font-medium">{ccResult.stats.expenseCount}</span></div>
+                        <div><span className="text-gray-600">Credits:</span> <span className="font-medium">{ccResult.stats.creditCount}</span></div>
+                        <div><span className="text-gray-600">Categorized:</span> <span className="font-medium">{ccResult.stats.categorizedCount}</span></div>
+                      </div>
+                      {ccResult.stats.uncategorizedMerchants?.length > 0 && (
+                        <div className="mt-3 p-2 bg-yellow-50 rounded border border-yellow-200">
+                          <div className="text-sm font-medium text-yellow-700">Uncategorized Merchants ({ccResult.stats.uncategorizedMerchants.length}):</div>
+                          <div className="text-xs text-yellow-600 mt-1 max-h-20 overflow-y-auto">
+                            {ccResult.stats.uncategorizedMerchants.slice(0, 10).join(', ')}
+                            {ccResult.stats.uncategorizedMerchants.length > 10 && ` ...and ${ccResult.stats.uncategorizedMerchants.length - 10} more`}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-red-700">
+                      <span className="font-medium">Error:</span> {ccResult.error}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Backup/Restore */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-4">Data Management</h2>
+              <div className="flex gap-4">
+                <button
+                  onClick={handleBackupExport}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm transition-colors"
+                >
+                  Export Backup
+                </button>
+                <button
+                  onClick={handleBackupImport}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm transition-colors"
+                >
+                  Restore Backup
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">Export your database to a file or restore from a previous backup</p>
             </div>
 
             {/* Recent Uploads */}
@@ -1286,6 +1457,206 @@ function App() {
                 <li>Then import the <strong>payments</strong> file (applies payments to invoices)</li>
                 <li>Verify the imported transactions in QuickBooks</li>
               </ol>
+            </div>
+          </div>
+        )}
+
+        {/* Expenses Tab */}
+        {activeTab === 'expenses' && (
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-semibold">Expense Transactions</h2>
+                <p className="text-sm text-gray-500">CC statement transactions</p>
+              </div>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  placeholder="Search expenses..."
+                  value={expenseSearch}
+                  onChange={(e) => setExpenseSearch(e.target.value)}
+                  className="px-3 py-1.5 border rounded-md text-sm w-64"
+                />
+                <button
+                  onClick={handleCCUpload}
+                  disabled={ccProcessing}
+                  className="px-4 py-1.5 bg-purple-500 text-white rounded-md text-sm hover:bg-purple-600 disabled:opacity-50"
+                >
+                  {ccProcessing ? 'Processing...' : 'Upload Statement'}
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600">Date</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600">Merchant</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600">Category</th>
+                    <th className="px-4 py-3 text-right font-medium text-gray-600">Amount</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600">Account</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {expenses.filter(e =>
+                    !expenseSearch ||
+                    e.merchant?.toLowerCase().includes(expenseSearch.toLowerCase()) ||
+                    e.category_name?.toLowerCase().includes(expenseSearch.toLowerCase())
+                  ).slice(0, 100).map((expense, index) => (
+                    <tr key={expense.id || index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-gray-500 text-xs font-mono">{expense.transaction_date}</td>
+                      <td className="px-4 py-3">{expense.merchant || '-'}</td>
+                      <td className="px-4 py-3">
+                        {expense.category_name ? (
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">{expense.category_name}</span>
+                        ) : (
+                          <span className="text-yellow-600 text-xs">Uncategorized</span>
+                        )}
+                      </td>
+                      <td className={`px-4 py-3 text-right font-medium ${expense.amount < 0 ? 'text-green-600' : ''}`}>
+                        {expense.amount < 0 ? '-' : ''}${Math.abs(expense.amount || 0).toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 text-xs">{expense.expense_account || '-'}</td>
+                    </tr>
+                  ))}
+                  {expenses.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                        No expense transactions. Upload a CC statement to get started.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-3 border-t text-sm text-gray-500">
+              Showing {Math.min(expenses.length, 100)} of {expenses.length} expenses
+            </div>
+          </div>
+        )}
+
+        {/* Reports Tab */}
+        {activeTab === 'reports' && (
+          <div className="space-y-4">
+            {/* Report Type Selector */}
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setReportType('customers')}
+                  className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                    reportType === 'customers' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                >
+                  Customer Summary
+                </button>
+                <button
+                  onClick={() => setReportType('services')}
+                  className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                    reportType === 'services' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                >
+                  Service Breakdown
+                </button>
+                <button
+                  onClick={() => setReportType('expenses')}
+                  className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                    reportType === 'expenses' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
+                >
+                  Expense Summary
+                </button>
+              </div>
+            </div>
+
+            {/* Report Data */}
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">
+                  {reportType === 'customers' ? 'Customer Summary' :
+                   reportType === 'services' ? 'Service Breakdown' : 'Expense Summary'}
+                </h2>
+              </div>
+              {loadingReport ? (
+                <div className="p-8 text-center text-gray-500">Loading report...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  {reportType === 'customers' && (
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">Customer</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-600">Invoices</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-600">Total Revenue</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">First Transaction</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">Last Transaction</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {(reportData || []).map((row: any, index: number) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 font-medium">{row.customerName}</td>
+                            <td className="px-4 py-3 text-right">{row.invoiceCount}</td>
+                            <td className="px-4 py-3 text-right font-medium text-green-600">${(row.totalRevenue || 0).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-gray-500 text-xs">{row.firstTransaction}</td>
+                            <td className="px-4 py-3 text-gray-500 text-xs">{row.lastTransaction}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  {reportType === 'services' && (
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">Service</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">QB Item</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-600">Usage Count</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-600">Total Revenue</th>
+                          <th className="px-4 py-3 text-center font-medium text-gray-600">Mapped</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {(reportData || []).map((row: any, index: number) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 font-medium">{row.serviceName}</td>
+                            <td className="px-4 py-3 text-blue-600">{row.qbItemName || '-'}</td>
+                            <td className="px-4 py-3 text-right">{row.usageCount}</td>
+                            <td className="px-4 py-3 text-right font-medium text-green-600">${(row.totalRevenue || 0).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-center">
+                              <span className={`inline-block w-2 h-2 rounded-full ${row.isMapped ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  {reportType === 'expenses' && (
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">Category</th>
+                          <th className="px-4 py-3 text-left font-medium text-gray-600">Account</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-600">Transactions</th>
+                          <th className="px-4 py-3 text-right font-medium text-gray-600">Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {(reportData || []).map((row: any, index: number) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 font-medium">{row.category}</td>
+                            <td className="px-4 py-3 text-gray-600">{row.expenseAccount || '-'}</td>
+                            <td className="px-4 py-3 text-right">{row.transactionCount}</td>
+                            <td className="px-4 py-3 text-right font-medium text-red-600">${(row.totalAmount || 0).toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  {(!reportData || reportData.length === 0) && (
+                    <div className="p-8 text-center text-gray-500">No data available for this report</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
