@@ -188,6 +188,8 @@ function createTables(database: Database): void {
       payment_type       TEXT,
       transaction_data   TEXT,
       mapped_data        TEXT,
+      needs_review       INTEGER DEFAULT 0,
+      potential_matches  TEXT,
       created_at         TEXT DEFAULT (datetime('now'))
     );
 
@@ -195,6 +197,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_customer_cid ON transactions_staging(customer_cid);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_customer_id ON transactions_staging(customer_id);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_date ON transactions_staging(transaction_date);
+    CREATE INDEX IF NOT EXISTS idx_transactions_staging_needs_review ON transactions_staging(needs_review);
 
     -- 10. Expense categories table
     CREATE TABLE IF NOT EXISTS expense_categories (

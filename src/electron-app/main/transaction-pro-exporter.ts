@@ -71,10 +71,10 @@ export function exportToTransactionPro(
     const customerMappings = getCustomerMappings(db);
     const customerMappingsByCID = getCustomerMappingsByCID(db);
 
-    // Get staged transactions
-    let whereClause = '';
+    // Get staged transactions (exclude those needing review)
+    let whereClause = 'WHERE needs_review = 0';
     if (uploadId) {
-      whereClause = `WHERE upload_id = '${uploadId}'`;
+      whereClause = `WHERE upload_id = '${uploadId}' AND needs_review = 0`;
     }
 
     const txnResult = db.exec(`
@@ -459,16 +459,16 @@ export function getExportPreview(
   const serviceMappings = getServiceMappings(db);
   const paymentMappings = getPaymentTypeMappings(db);
 
-  let whereClause = '';
+  let whereClause = 'WHERE needs_review = 0';
   if (uploadId) {
-    whereClause = `WHERE upload_id = '${uploadId}'`;
+    whereClause = `WHERE upload_id = '${uploadId}' AND needs_review = 0`;
   }
 
   // Count service lines
   const serviceResult = db.exec(`
     SELECT COUNT(*) as cnt FROM transactions_staging
     ${whereClause}
-    ${whereClause ? 'AND' : 'WHERE'} service_name IS NOT NULL AND service_name != ''
+    AND service_name IS NOT NULL AND service_name != ''
   `);
   const invoiceLines = serviceResult[0]?.values[0]?.[0] as number || 0;
 
@@ -476,7 +476,7 @@ export function getExportPreview(
   const paymentResult = db.exec(`
     SELECT COUNT(*) as cnt FROM transactions_staging
     ${whereClause}
-    ${whereClause ? 'AND' : 'WHERE'} payment_type IS NOT NULL AND payment_type != '' AND amount > 0
+    AND payment_type IS NOT NULL AND payment_type != '' AND amount > 0
   `);
   const paymentLines = paymentResult[0]?.values[0]?.[0] as number || 0;
 
@@ -484,7 +484,7 @@ export function getExportPreview(
   const unmappedServiceResult = db.exec(`
     SELECT DISTINCT service_name FROM transactions_staging
     ${whereClause}
-    ${whereClause ? 'AND' : 'WHERE'} service_name IS NOT NULL AND service_name != ''
+    AND service_name IS NOT NULL AND service_name != ''
   `);
   const unmappedServices: string[] = [];
   if (unmappedServiceResult.length > 0) {
@@ -500,7 +500,7 @@ export function getExportPreview(
   const unmappedPaymentResult = db.exec(`
     SELECT DISTINCT payment_type FROM transactions_staging
     ${whereClause}
-    ${whereClause ? 'AND' : 'WHERE'} payment_type IS NOT NULL AND payment_type != ''
+    AND payment_type IS NOT NULL AND payment_type != ''
   `);
   const unmappedPayments: string[] = [];
   if (unmappedPaymentResult.length > 0) {

@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase, logAudit } from './database';
-import { buildEMRToCustomerMap, getOrCreateCustomerByEMRId } from './customer-crosswalk';
+import { buildEMRToCustomerMap, getOrCreateCustomerByEMRId, getOrCreateCustomerByEMRIdWithMatching } from './customer-crosswalk';
 
 interface EMRRow {
   Date: Date;
@@ -135,6 +135,9 @@ export function processEMRFile(
 
       // Resolve customer UUID from EMR patient ID (CID)
       let customerId: string | null = null;
+      let needsReview = false;
+      let potentialMatches: any[] = [];
+
       if (cid && !processedCustomers.has(cid)) {
         processedCustomers.add(cid);
         // Check if already in the crosswalk
@@ -153,11 +156,21 @@ export function processEMRFile(
             `, [cid, customerName, customerId]);
           }
         } else {
-          // Create new customer with UUID from pool, passing the name
-          const result = getOrCreateCustomerByEMRId(db, dbPath, cid, customerName || undefined);
+          // Use new matching logic with first name checking
+          const result = getOrCreateCustomerByEMRIdWithMatching(db, dbPath, cid, customerName || undefined);
           customerId = result.customerId;
-          emrToCustomerMap.set(cid, customerId); // Update local map
-          stats.newCustomersCreated++;
+          needsReview = result.needsReview;
+          potentialMatches = result.potentialMatches;
+
+          if (result.needsReview) {
+            console.log(`Transaction flagged for review: ${customerName} (${cid})`);
+          } else if (result.isNew) {
+            emrToCustomerMap.set(cid, customerId!); // Update local map
+            stats.newCustomersCreated++;
+          } else if (customerId) {
+            emrToCustomerMap.set(cid, customerId); // Update local map
+            stats.customersMatched++;
+          }
         }
       } else if (cid) {
         customerId = emrToCustomerMap.get(cid) || null;
@@ -207,13 +220,13 @@ export function processEMRFile(
         mappedData.category = pm.category;
       }
 
-      // Insert into staging table (with customer_id UUID)
+      // Insert into staging table (with customer_id UUID and review flags)
       db.run(`
         INSERT INTO transactions_staging (
           id, upload_id, customer_cid, customer_id, invoice_number, transaction_date,
           service_name, quantity, price, amount, payment_type,
-          transaction_data, mapped_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          transaction_data, mapped_data, needs_review, potential_matches
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         transactionId,
         uploadId,
@@ -232,9 +245,12 @@ export function processEMRFile(
           discounts: row.Discounts,
           tax: row.Tax,
           totalDue: row['Total Due'],
-          customerId: row.customer_id
+          customerId: row.customer_id,
+          customerName: customerName
         }),
-        JSON.stringify(mappedData)
+        JSON.stringify(mappedData),
+        needsReview ? 1 : 0,
+        potentialMatches.length > 0 ? JSON.stringify(potentialMatches) : null
       ]);
     }
 
@@ -409,4 +425,42 @@ export function getStagedTransactionsSummary(
   const payments = paymentResult[0]?.values[0]?.[0] as number || 0;
 
   return { invoices, services, payments };
+}
+
+/**
+ * Get transactions that need review (flagged for potential duplicate customers)
+ */
+export function getFlaggedTransactions(db: Database): any[] {
+  const result = db.exec(`
+    SELECT
+      ts.id,
+      ts.customer_cid as emr_patient_id,
+      ts.invoice_number,
+      ts.transaction_date,
+      ts.service_name,
+      ts.amount,
+      ts.transaction_data,
+      ts.potential_matches
+    FROM transactions_staging ts
+    WHERE ts.needs_review = 1
+    ORDER BY ts.transaction_date DESC, ts.invoice_number
+  `);
+
+  if (result.length === 0) return [];
+
+  return result[0].values.map((row: any[]) => {
+    const transactionData = row[6] ? JSON.parse(row[6] as string) : {};
+    const potentialMatches = row[7] ? JSON.parse(row[7] as string) : [];
+
+    return {
+      id: row[0],
+      emr_patient_id: row[1],
+      invoice_number: row[2],
+      transaction_date: row[3],
+      service_name: row[4],
+      amount: row[5],
+      customer_name: transactionData.customerName || null,
+      potential_matches: potentialMatches
+    };
+  });
 }

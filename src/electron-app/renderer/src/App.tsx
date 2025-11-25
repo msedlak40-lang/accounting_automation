@@ -111,6 +111,7 @@ function App() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
+  const [flaggedTransactions, setFlaggedTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   // EMR upload state
@@ -213,10 +214,18 @@ function App() {
     }
   };
 
+  const loadFlaggedTransactions = async () => {
+    const result = await window.electronAPI.emr.getFlaggedTransactions();
+    if (result.success) {
+      setFlaggedTransactions(result.data || []);
+    }
+  };
+
   // Load data when tab becomes active
   useEffect(() => {
     if (activeTab === 'transactions') {
       loadTransactions();
+      loadFlaggedTransactions();
     }
     if (activeTab === 'customers') {
       loadCustomers();
@@ -474,6 +483,39 @@ function App() {
       console.error('Error saving customer:', error);
     } finally {
       setSavingCustomer(false);
+    }
+  };
+
+  const handleLinkTransaction = async (transactionId: string, customerId: string) => {
+    try {
+      const result = await window.electronAPI.customers.linkTransaction(transactionId, customerId);
+      if (result.success) {
+        await loadFlaggedTransactions();
+        await loadTransactions();
+        alert('Transaction linked to customer successfully');
+      } else {
+        alert(`Error linking transaction: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error linking transaction:', error);
+      alert('Error linking transaction');
+    }
+  };
+
+  const handleCreateNewCustomer = async (transactionId: string, emrPatientId: string, patientName: string) => {
+    try {
+      const result = await window.electronAPI.customers.createFromFlaggedTransaction(transactionId, emrPatientId, patientName);
+      if (result.success) {
+        await loadFlaggedTransactions();
+        await loadTransactions();
+        await loadCustomers();
+        alert('New customer created successfully');
+      } else {
+        alert(`Error creating customer: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      alert('Error creating customer');
     }
   };
 
@@ -796,12 +838,84 @@ function App() {
 
         {/* Transactions Tab */}
         {activeTab === 'transactions' && (
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-semibold">Staged Transactions</h2>
-                <p className="text-sm text-gray-500">EMR transactions ready for export</p>
+          <div className="space-y-4">
+            {/* Flagged Transactions Section */}
+            {flaggedTransactions.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg shadow">
+                <div className="p-4 border-b border-yellow-200 bg-yellow-100">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                      <h3 className="text-md font-semibold text-yellow-800">
+                        Transactions Needing Review ({flaggedTransactions.length})
+                      </h3>
+                      <p className="text-sm text-yellow-700">Potential duplicate customers detected - please review and resolve</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 space-y-3">
+                  {flaggedTransactions.map((flagged) => (
+                    <div key={flagged.id} className="bg-white border border-yellow-300 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="font-semibold text-lg text-gray-900">{flagged.customer_name || 'Unknown'}</div>
+                          <div className="text-sm text-gray-600">
+                            EMR Patient ID: {flagged.emr_patient_id} | Invoice: {flagged.invoice_number} | Date: {flagged.transaction_date}
+                          </div>
+                          {flagged.service_name && (
+                            <div className="text-sm text-gray-500 mt-1">Service: {flagged.service_name} - ${Number(flagged.amount || 0).toFixed(2)}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-3 mt-3">
+                        <div className="text-sm font-medium text-gray-700 mb-2">
+                          Possible matches (same first name):
+                        </div>
+                        <div className="space-y-2">
+                          {flagged.potential_matches && flagged.potential_matches.map((match: any, idx: number) => (
+                            <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded p-3">
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{match.emr_name}</div>
+                                <div className="text-xs text-gray-600">
+                                  EMR ID: {match.emr_patient_id}
+                                  {match.qb_display_name && <span> | QB Name: {match.qb_display_name}</span>}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleLinkTransaction(flagged.id, match.customer_id)}
+                                className="ml-3 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                              >
+                                Link to This Customer
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-3 mt-3 flex justify-end">
+                        <button
+                          onClick={() => handleCreateNewCustomer(flagged.id, flagged.emr_patient_id, flagged.customer_name)}
+                          className="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                        >
+                          Create as New Customer
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
+
+            {/* Staged Transactions Section */}
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 border-b flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold">Staged Transactions</h2>
+                  <p className="text-sm text-gray-500">EMR transactions ready for export</p>
+                </div>
               <div className="flex gap-2 items-center">
                 <input
                   type="text"
@@ -896,6 +1010,7 @@ function App() {
                 <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span> Mapped
                 <span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-3 mr-1"></span> Unmapped
               </span>
+            </div>
             </div>
           </div>
         )}

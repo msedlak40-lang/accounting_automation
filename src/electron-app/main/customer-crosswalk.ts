@@ -652,3 +652,199 @@ export function getUnmappedEMRPatients(db: Database): any[] {
     transaction_count: row[1]
   }));
 }
+
+/**
+ * Extract first name from full name
+ * Handles formats like "Jane Doe", "Doe, Jane", etc.
+ */
+export function extractFirstName(fullName: string | null | undefined): string | null {
+  if (!fullName) return null;
+
+  const trimmed = fullName.trim();
+
+  // Handle "Last, First" format
+  if (trimmed.includes(',')) {
+    const parts = trimmed.split(',').map(p => p.trim());
+    return parts[1] || parts[0] || null;
+  }
+
+  // Handle "First Last" format
+  const parts = trimmed.split(/\s+/);
+  return parts[0] || null;
+}
+
+/**
+ * Find existing customers by first name (case-insensitive exact match)
+ * Returns array of customers with matching first name
+ */
+export function findCustomersByFirstName(db: Database, firstName: string): any[] {
+  if (!firstName) return [];
+
+  const normalizedFirstName = firstName.toLowerCase().trim();
+
+  // Get all customers with EMR names
+  const result = db.exec(`
+    SELECT
+      c.customer_id,
+      ep.full_name as emr_name,
+      ep.emr_patient_id,
+      qbc.qb_display_name
+    FROM customers c
+    LEFT JOIN stg_emr_patients ep ON ep.customer_id = c.customer_id
+    LEFT JOIN stg_qb_customers qbc ON qbc.customer_id = c.customer_id
+    WHERE ep.full_name IS NOT NULL
+    ORDER BY c.created_at DESC
+  `);
+
+  if (result.length === 0) return [];
+
+  // Filter by first name match
+  const matches: any[] = [];
+  for (const row of result[0].values) {
+    const customerId = row[0] as string;
+    const emrName = row[1] as string;
+    const emrPatientId = row[2] as string;
+    const qbDisplayName = row[3] as string | null;
+
+    const customerFirstName = extractFirstName(emrName);
+    if (customerFirstName && customerFirstName.toLowerCase() === normalizedFirstName) {
+      matches.push({
+        customer_id: customerId,
+        emr_name: emrName,
+        emr_patient_id: emrPatientId,
+        qb_display_name: qbDisplayName
+      });
+    }
+  }
+
+  return matches;
+}
+
+/**
+ * Get customer UUID by EMR patient ID with first name matching
+ * If not found, checks for existing customers with same first name
+ * Returns customer info with potential matches if any
+ */
+export function getOrCreateCustomerByEMRIdWithMatching(
+  db: Database,
+  dbPath: string,
+  emrPatientId: string,
+  patientName?: string
+): {
+  customerId: string | null;
+  isNew: boolean;
+  needsReview: boolean;
+  potentialMatches: any[];
+} {
+  // Normalize the EMR ID
+  const normalizedEmrId = String(emrPatientId).trim();
+
+  // Look up existing mapping
+  const existingResult = db.exec(`
+    SELECT customer_id FROM customer_ids
+    WHERE system_name = 'EMR' AND external_id = ?
+  `, [normalizedEmrId]);
+
+  if (existingResult.length > 0 && existingResult[0].values.length > 0) {
+    return {
+      customerId: existingResult[0].values[0][0] as string,
+      isNew: false,
+      needsReview: false,
+      potentialMatches: []
+    };
+  }
+
+  // Customer not found - check for first name matches
+  if (patientName) {
+    const firstName = extractFirstName(patientName);
+    if (firstName) {
+      const matches = findCustomersByFirstName(db, firstName);
+
+      if (matches.length > 0) {
+        // Flag for review - don't auto-create
+        console.log(`Found ${matches.length} potential match(es) for first name "${firstName}"`);
+        return {
+          customerId: null,
+          isNew: false,
+          needsReview: true,
+          potentialMatches: matches
+        };
+      }
+    }
+  }
+
+  // No matches found - auto-create new customer
+  const result = getOrCreateCustomerByEMRId(db, dbPath, normalizedEmrId, patientName);
+  return {
+    customerId: result.customerId,
+    isNew: result.isNew,
+    needsReview: false,
+    potentialMatches: []
+  };
+}
+
+/**
+ * Link a flagged transaction to an existing customer
+ */
+export function linkTransactionToCustomer(
+  db: Database,
+  dbPath: string,
+  transactionId: string,
+  customerId: string
+): { success: boolean; error?: string } {
+  try {
+    // Update the transaction with customer_id and clear review flag
+    db.run(`
+      UPDATE transactions_staging
+      SET customer_id = ?, needs_review = 0, potential_matches = NULL
+      WHERE id = ?
+    `, [customerId, transactionId]);
+
+    logAudit(db, 'transaction_linked_to_customer', 'transaction', transactionId, {
+      customerId
+    });
+
+    saveDatabase(db, dbPath);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error linking transaction to customer:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Create new customer from flagged transaction
+ */
+export function createCustomerFromFlaggedTransaction(
+  db: Database,
+  dbPath: string,
+  transactionId: string,
+  emrPatientId: string,
+  patientName: string
+): { success: boolean; customerId?: string; error?: string } {
+  try {
+    // Create the customer
+    const result = getOrCreateCustomerByEMRId(db, dbPath, emrPatientId, patientName);
+
+    // Update the transaction
+    db.run(`
+      UPDATE transactions_staging
+      SET customer_id = ?, needs_review = 0, potential_matches = NULL
+      WHERE id = ?
+    `, [result.customerId, transactionId]);
+
+    logAudit(db, 'customer_created_from_flagged_transaction', 'transaction', transactionId, {
+      customerId: result.customerId,
+      emrPatientId,
+      patientName
+    });
+
+    saveDatabase(db, dbPath);
+
+    return { success: true, customerId: result.customerId };
+  } catch (error: any) {
+    console.error('Error creating customer from flagged transaction:', error);
+    return { success: false, error: error.message };
+  }
+}

@@ -24,6 +24,10 @@ const api = {
       emr_name?: string;
       emr_patient_id?: string;
     }) => ipcRenderer.invoke('customers:updateNames', data),
+    linkTransaction: (transactionId: string, customerId: string) =>
+      ipcRenderer.invoke('customers:linkTransaction', transactionId, customerId),
+    createFromFlaggedTransaction: (transactionId: string, emrPatientId: string, patientName: string) =>
+      ipcRenderer.invoke('customers:createFromFlaggedTransaction', transactionId, emrPatientId, patientName),
   },
 
   // Service mappings
@@ -58,6 +62,7 @@ const api = {
       ipcRenderer.invoke('emr:getStagedTransactions', options),
     getSummary: (uploadId?: string) => ipcRenderer.invoke('emr:getSummary', uploadId),
     getUploads: () => ipcRenderer.invoke('emr:getUploads'),
+    getFlaggedTransactions: () => ipcRenderer.invoke('emr:getFlaggedTransactions'),
   },
 
   // Database seeding

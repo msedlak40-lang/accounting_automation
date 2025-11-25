@@ -1,12 +1,14 @@
 import { ipcMain, dialog } from 'electron';
 import { Database, logAudit, saveDatabase } from './database';
 import { seedServiceMappings, seedPaymentTypeMappings } from './seed-data';
-import { processEMRFile, getStagedTransactionsSummary } from './emr-processor';
+import { processEMRFile, getStagedTransactionsSummary, getFlaggedTransactions } from './emr-processor';
 import {
   importCustomerCrosswalk,
   getAllCustomersWithMappings,
   getUnmappedEMRPatients,
-  getCrosswalkStats
+  getCrosswalkStats,
+  linkTransactionToCustomer,
+  createCustomerFromFlaggedTransaction
 } from './customer-crosswalk';
 import { exportToTransactionPro, getExportPreview } from './transaction-pro-exporter';
 import { processCCFile, getExpenseSummary } from './cc-processor';
@@ -374,6 +376,36 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
         return obj;
       }) : [];
       return { success: true, data: uploads };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get transactions flagged for review
+  ipcMain.handle('emr:getFlaggedTransactions', async () => {
+    try {
+      const flagged = getFlaggedTransactions(db);
+      return { success: true, data: flagged };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Link flagged transaction to existing customer
+  ipcMain.handle('customers:linkTransaction', async (event, transactionId: string, customerId: string) => {
+    try {
+      const result = linkTransactionToCustomer(db, dbPath, transactionId, customerId);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Create new customer from flagged transaction
+  ipcMain.handle('customers:createFromFlaggedTransaction', async (event, transactionId: string, emrPatientId: string, patientName: string) => {
+    try {
+      const result = createCustomerFromFlaggedTransaction(db, dbPath, transactionId, emrPatientId, patientName);
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
