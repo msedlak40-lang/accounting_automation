@@ -188,7 +188,7 @@ export function exportToTransactionPro(
         paymentLines.push({
           Customer: customerName,
           TxnDate: formatDateForQB(txnDate),
-          RefNumber: `PMT-${invoiceNumber}`,
+          RefNumber: invoiceNumber,
           Amount: txn.amount,
           PaymentMethod: paymentType,
           DepositToAccount: clearingAccount,
