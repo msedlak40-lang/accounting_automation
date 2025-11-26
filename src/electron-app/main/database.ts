@@ -236,7 +236,47 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_merchant ON expense_transactions(merchant);
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_status ON expense_transactions(status);
 
-    -- 12. Audit log table
+    -- 12. Gravity payment transactions table
+    CREATE TABLE IF NOT EXISTS gravity_payments (
+      id                 TEXT PRIMARY KEY,
+      upload_id          TEXT REFERENCES file_uploads(id),
+      transaction_date   TEXT,
+      approval_code      TEXT,
+      transaction_type   TEXT,
+      card_last_four     TEXT,
+      sale_amount        REAL,
+      tip_amount         REAL,
+      total_amount       REAL,
+      cashier            TEXT,
+      source             TEXT,
+      card_type          TEXT,
+      transaction_data   TEXT,
+      created_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_gravity_payments_upload_id ON gravity_payments(upload_id);
+    CREATE INDEX IF NOT EXISTS idx_gravity_payments_date ON gravity_payments(transaction_date);
+    CREATE INDEX IF NOT EXISTS idx_gravity_payments_amount ON gravity_payments(total_amount);
+
+    -- 13. Payment matches table (links Gravity payments to EMR invoices)
+    CREATE TABLE IF NOT EXISTS payment_matches (
+      id                 TEXT PRIMARY KEY,
+      gravity_payment_id TEXT REFERENCES gravity_payments(id),
+      transaction_id     TEXT REFERENCES transactions_staging(id),
+      invoice_number     TEXT,
+      customer_id        TEXT REFERENCES customers(customer_id),
+      match_confidence   TEXT,
+      amount             REAL,
+      matched_at         TEXT DEFAULT (datetime('now')),
+      status             TEXT DEFAULT 'pending'
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_payment_matches_gravity ON payment_matches(gravity_payment_id);
+    CREATE INDEX IF NOT EXISTS idx_payment_matches_transaction ON payment_matches(transaction_id);
+    CREATE INDEX IF NOT EXISTS idx_payment_matches_invoice ON payment_matches(invoice_number);
+    CREATE INDEX IF NOT EXISTS idx_payment_matches_status ON payment_matches(status);
+
+    -- 14. Audit log table
     CREATE TABLE IF NOT EXISTS audit_log (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp          TEXT DEFAULT (datetime('now')),

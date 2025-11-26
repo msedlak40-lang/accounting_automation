@@ -12,6 +12,7 @@ import {
 } from './customer-crosswalk';
 import { exportToTransactionPro, getExportPreview } from './transaction-pro-exporter';
 import { processCCFile, getExpenseSummary } from './cc-processor';
+import { processGravityFile, matchGravityPayments, getGravitySummary, getPaymentMatches } from './gravity-processor';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -733,6 +734,159 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       `, [data.categoryId, expenseAccount, data.transactionId]);
 
       logAudit(db, 'expense_transaction_categorized', 'expense_transaction', data.transactionId, data);
+      saveDatabase(db, dbPath);
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // ==================== GRAVITY PAYMENT HANDLERS ====================
+
+  // Select Gravity payment file
+  ipcMain.handle('gravity:selectFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        title: 'Select Gravity Payments File',
+        filters: [
+          { name: 'CSV Files', extensions: ['csv'] },
+          { name: 'Excel Files', extensions: ['xlsx', 'xls'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+        properties: ['openFile'],
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: true, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePaths[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Process Gravity payment file
+  ipcMain.handle('gravity:processFile', async (event, filePath: string) => {
+    try {
+      console.log('Processing Gravity file:', filePath);
+      const result = processGravityFile(db, dbPath, filePath);
+      return result;
+    } catch (error: any) {
+      console.error('Error processing Gravity file:', error);
+      return {
+        success: false,
+        uploadId: '',
+        stats: { totalRows: 0, paymentCount: 0, totalAmount: 0 },
+        error: error.message,
+      };
+    }
+  });
+
+  // Match Gravity payments to EMR invoices
+  ipcMain.handle('gravity:matchPayments', async (event, uploadId?: string) => {
+    try {
+      console.log('Matching Gravity payments:', uploadId);
+      const result = matchGravityPayments(db, dbPath, uploadId);
+      return result;
+    } catch (error: any) {
+      console.error('Error matching Gravity payments:', error);
+      return {
+        success: false,
+        matchCount: 0,
+        unmatchedCount: 0,
+        matches: [],
+        error: error.message,
+      };
+    }
+  });
+
+  // Get Gravity payment summary
+  ipcMain.handle('gravity:getSummary', async (event, uploadId?: string) => {
+    try {
+      const summary = getGravitySummary(db, uploadId);
+      return { success: true, data: summary };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get payment matches
+  ipcMain.handle('gravity:getMatches', async (event, uploadId?: string) => {
+    try {
+      const matches = getPaymentMatches(db, uploadId);
+      return { success: true, data: matches };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Get Gravity transactions
+  ipcMain.handle('gravity:getTransactions', async (event, options?: { uploadId?: string; limit?: number }) => {
+    try {
+      let sql = `
+        SELECT
+          gp.*,
+          pm.id as match_id,
+          pm.invoice_number as matched_invoice
+        FROM gravity_payments gp
+        LEFT JOIN payment_matches pm ON pm.gravity_payment_id = gp.id
+      `;
+
+      if (options?.uploadId) {
+        sql += ` WHERE gp.upload_id = '${options.uploadId}'`;
+      }
+
+      sql += ' ORDER BY gp.transaction_date DESC';
+
+      if (options?.limit) {
+        sql += ` LIMIT ${options.limit}`;
+      }
+
+      const result = db.exec(sql);
+      const transactions = result[0] ? result[0].values.map((row: any[]) => {
+        const obj: any = {};
+        result[0].columns.forEach((col: string, i: number) => {
+          obj[col] = row[i];
+        });
+        return obj;
+      }) : [];
+
+      return { success: true, data: transactions };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Approve payment match
+  ipcMain.handle('gravity:approveMatch', async (event, matchId: string) => {
+    try {
+      db.run(`
+        UPDATE payment_matches
+        SET status = 'approved'
+        WHERE id = ?
+      `, [matchId]);
+
+      logAudit(db, 'payment_match_approved', 'payment_match', matchId);
+      saveDatabase(db, dbPath);
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Reject payment match
+  ipcMain.handle('gravity:rejectMatch', async (event, matchId: string) => {
+    try {
+      db.run(`
+        UPDATE payment_matches
+        SET status = 'rejected'
+        WHERE id = ?
+      `, [matchId]);
+
+      logAudit(db, 'payment_match_rejected', 'payment_match', matchId);
       saveDatabase(db, dbPath);
 
       return { success: true };

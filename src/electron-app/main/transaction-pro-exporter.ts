@@ -37,8 +37,10 @@ interface ExportResult {
   success: boolean;
   invoicesExported: number;
   paymentsExported: number;
+  gravityPaymentsExported: number;
   invoiceFilePath?: string;
   paymentsFilePath?: string;
+  gravityPaymentsFilePath?: string;
   error?: string;
   warnings: string[];
 }
@@ -222,12 +224,62 @@ export function exportToTransactionPro(
       console.log(`Wrote ${paymentLines.length} payment lines to ${paymentsFilePath}`);
     }
 
+    // Export Gravity payment matches
+    const gravityPaymentLines: PaymentLine[] = [];
+    const gravityResult = db.exec(`
+      SELECT
+        pm.invoice_number,
+        pm.amount,
+        gp.transaction_date,
+        gp.card_type,
+        gp.approval_code,
+        COALESCE(qb.qb_display_name, ep.full_name, ts.customer_cid) as customer_name
+      FROM payment_matches pm
+      INNER JOIN gravity_payments gp ON gp.id = pm.gravity_payment_id
+      INNER JOIN transactions_staging ts ON ts.id = pm.transaction_id
+      LEFT JOIN stg_qb_customers qb ON qb.customer_id = pm.customer_id
+      LEFT JOIN customer_ids ci ON ci.customer_id = pm.customer_id AND ci.system_name = 'EMR'
+      LEFT JOIN stg_emr_patients ep ON ep.emr_patient_id = ci.external_id
+      WHERE pm.status = 'approved'
+      ORDER BY gp.transaction_date
+    `);
+
+    if (gravityResult.length > 0 && gravityResult[0].values) {
+      for (const row of gravityResult[0].values) {
+        const [invoiceNumber, amount, txnDate, cardType, approvalCode, customerName] = row;
+
+        gravityPaymentLines.push({
+          Customer: customerName as string || 'Unknown',
+          TxnDate: formatDateForQB(txnDate as string),
+          RefNumber: approvalCode as string || '',
+          Amount: amount as number,
+          PaymentMethod: cardType as string || 'Credit Card',
+          DepositToAccount: '1030 Merchant Clearing',
+          ApplyToRefNumber: invoiceNumber as string
+        });
+      }
+    }
+
+    // Write Gravity Payments CSV
+    let gravityPaymentsFilePath: string | undefined;
+    if (gravityPaymentLines.length > 0) {
+      gravityPaymentsFilePath = path.join(outputDir, `gravity_payments_${timestamp}.csv`);
+      const gravityCsv = generateCSV(gravityPaymentLines, [
+        'Customer', 'TxnDate', 'RefNumber', 'Amount', 'PaymentMethod',
+        'DepositToAccount', 'ApplyToRefNumber'
+      ]);
+      fs.writeFileSync(gravityPaymentsFilePath, gravityCsv);
+      console.log(`Wrote ${gravityPaymentLines.length} Gravity payment lines to ${gravityPaymentsFilePath}`);
+    }
+
     // Log the export
     logAudit(db, 'transaction_pro_export', 'export', null, {
       invoicesExported: invoiceLines.length,
       paymentsExported: paymentLines.length,
+      gravityPaymentsExported: gravityPaymentLines.length,
       invoiceFilePath,
       paymentsFilePath,
+      gravityPaymentsFilePath,
       warningsCount: warnings.length
     });
 
@@ -237,8 +289,10 @@ export function exportToTransactionPro(
       success: true,
       invoicesExported: invoiceLines.length,
       paymentsExported: paymentLines.length,
+      gravityPaymentsExported: gravityPaymentLines.length,
       invoiceFilePath: invoiceLines.length > 0 ? invoiceFilePath : undefined,
       paymentsFilePath: paymentLines.length > 0 ? paymentsFilePath : undefined,
+      gravityPaymentsFilePath: gravityPaymentLines.length > 0 ? gravityPaymentsFilePath : undefined,
       warnings
     };
   } catch (error: any) {
@@ -247,6 +301,7 @@ export function exportToTransactionPro(
       success: false,
       invoicesExported: 0,
       paymentsExported: 0,
+      gravityPaymentsExported: 0,
       error: error.message,
       warnings
     };
