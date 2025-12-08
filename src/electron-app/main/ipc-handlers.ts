@@ -1131,5 +1131,58 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
+  // ===== Bank Reconciliation Matching Handlers =====
+
+  ipcMain.handle('bank:matchDeposits', async (event, criteria?: any) => {
+    try {
+      const { matchBankDeposits } = require('./bank-reconciliation-matcher');
+      const result = await matchBankDeposits(db, dbPath, criteria);
+      saveDatabase(db, dbPath);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:getMatches', async (event, status?: string) => {
+    try {
+      const { getDepositMatches } = require('./bank-reconciliation-matcher');
+      const data = getDepositMatches(db, status);
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:getMatchSummary', async () => {
+    try {
+      const { getDepositMatchSummary } = require('./bank-reconciliation-matcher');
+      const data = getDepositMatchSummary(db);
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:approveMatch', async (event, matchId: string) => {
+    try {
+      const { approveDepositMatch } = require('./bank-reconciliation-matcher');
+      const result = approveDepositMatch(db, dbPath, matchId);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:rejectMatch', async (event, matchId: string) => {
+    try {
+      const { rejectDepositMatch } = require('./bank-reconciliation-matcher');
+      const result = rejectDepositMatch(db, dbPath, matchId);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
   console.log('IPC handlers registered successfully');
 }

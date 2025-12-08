@@ -130,6 +130,15 @@ declare global {
         getStatements: (options?: { uploadId?: string; limit?: number }) => Promise<{ success: boolean; data?: any[]; error?: string }>;
         getSummary: (uploadId?: string) => Promise<{ success: boolean; data?: any; error?: string }>;
         getDepositsByProcessor: (uploadId?: string) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        matchDeposits: (criteria?: any) => Promise<{
+          success: boolean;
+          stats: { totalDeposits: number; highConfidenceMatches: number; mediumConfidenceMatches: number; lowConfidenceMatches: number; unmatched: number };
+          error?: string;
+        }>;
+        getMatches: (status?: string) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getMatchSummary: () => Promise<{ success: boolean; data?: any; error?: string }>;
+        approveMatch: (matchId: string) => Promise<{ success: boolean; error?: string }>;
+        rejectMatch: (matchId: string) => Promise<{ success: boolean; error?: string }>;
       };
     };
   }
@@ -228,6 +237,12 @@ function App() {
   const [bankStatements, setBankStatements] = useState<any[]>([]);
   const [depositsByProcessor, setDepositsByProcessor] = useState<any[]>([]);
 
+  // Bank reconciliation matching state
+  const [bankMatching, setBankMatching] = useState(false);
+  const [bankMatchResult, setBankMatchResult] = useState<any>(null);
+  const [bankMatches, setBankMatches] = useState<any[]>([]);
+  const [bankMatchSummary, setBankMatchSummary] = useState<any>(null);
+
   useEffect(() => {
     checkDatabase();
   }, []);
@@ -308,6 +323,9 @@ function App() {
     }
     if (activeTab === 'review' && reviewSubTab === 'payment-matching') {
       loadGravityData();
+    }
+    if (activeTab === 'review' && reviewSubTab === 'bank-reconciliation') {
+      loadBankReconciliationData();
     }
     if (activeTab === 'export' && exportSubTab === 'reports') {
       loadReport();
@@ -529,6 +547,57 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading bank data:', error);
+    }
+  };
+
+  const handleBankMatchDeposits = async () => {
+    try {
+      setBankMatching(true);
+      setBankMatchResult(null);
+
+      const result = await window.electronAPI.bank.matchDeposits();
+      setBankMatchResult(result);
+
+      if (result.success) {
+        await loadBankReconciliationData();
+      }
+    } catch (error: any) {
+      console.error('Bank matching error:', error);
+      setBankMatchResult({ success: false, error: error.message });
+    } finally {
+      setBankMatching(false);
+    }
+  };
+
+  const loadBankReconciliationData = async () => {
+    try {
+      const [matchesResult, summaryResult] = await Promise.all([
+        window.electronAPI.bank.getMatches(),
+        window.electronAPI.bank.getMatchSummary()
+      ]);
+
+      if (matchesResult.success) {
+        setBankMatches(matchesResult.data || []);
+      }
+      if (summaryResult.success) {
+        setBankMatchSummary(summaryResult.data);
+      }
+    } catch (error) {
+      console.error('Error loading bank reconciliation data:', error);
+    }
+  };
+
+  const handleApproveBankMatch = async (matchId: string) => {
+    const result = await window.electronAPI.bank.approveMatch(matchId);
+    if (result.success) {
+      await loadBankReconciliationData();
+    }
+  };
+
+  const handleRejectBankMatch = async (matchId: string) => {
+    const result = await window.electronAPI.bank.rejectMatch(matchId);
+    if (result.success) {
+      await loadBankReconciliationData();
     }
   };
 
@@ -2575,31 +2644,170 @@ function App() {
 
         {/* Review Tab - Bank Reconciliation Sub-Tab */}
         {activeTab === 'review' && reviewSubTab === 'bank-reconciliation' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">✅</div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Bank Reconciliation</h2>
-              <p className="text-gray-600 mb-6">
-                Match bank deposits to payment batches and approve reconciliation transactions.
-              </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto mb-6">
-                <div className="flex items-start gap-2">
-                  <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-yellow-800">Feature Coming Soon</p>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Bank reconciliation review functionality is currently in development. This will integrate with
-                      the Gravity payment matching workflow to automatically reconcile bank deposits.
-                    </p>
+          <div className="space-y-6">
+            {/* Summary Card */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Bank Reconciliation</h2>
+                <button
+                  onClick={handleBankMatchDeposits}
+                  disabled={bankMatching}
+                  className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50"
+                >
+                  {bankMatching ? 'Matching...' : 'Run Auto-Match'}
+                </button>
+              </div>
+
+              {/* Match Result */}
+              {bankMatchResult && (
+                <div className={`mb-4 p-4 rounded-lg ${bankMatchResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                  {bankMatchResult.success ? (
+                    <div>
+                      <p className="font-medium">✓ Matching complete!</p>
+                      <p className="text-sm mt-1">
+                        {bankMatchResult.stats.totalDeposits} deposits processed: {bankMatchResult.stats.highConfidenceMatches} high confidence, {bankMatchResult.stats.mediumConfidenceMatches} medium confidence, {bankMatchResult.stats.lowConfidenceMatches} low confidence, {bankMatchResult.stats.unmatched} unmatched
+                      </p>
+                    </div>
+                  ) : (
+                    <p>✗ Error: {bankMatchResult.error}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Summary Statistics */}
+              {bankMatchSummary && (
+                <div className="grid grid-cols-5 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-blue-700">{bankMatchSummary.totalMatches}</div>
+                    <div className="text-sm text-blue-600">Total Matches</div>
+                  </div>
+                  <div className="bg-yellow-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-yellow-700">{bankMatchSummary.pendingMatches}</div>
+                    <div className="text-sm text-yellow-600">Pending Review</div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-green-700">{bankMatchSummary.approvedMatches}</div>
+                    <div className="text-sm text-green-600">Approved</div>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-purple-700">${(bankMatchSummary.totalDepositAmount || 0).toFixed(2)}</div>
+                    <div className="text-sm text-purple-600">Deposit Amount</div>
+                  </div>
+                  <div className="bg-red-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-red-700">${(bankMatchSummary.totalMerchantFees || 0).toFixed(2)}</div>
+                    <div className="text-sm text-red-600">Merchant Fees</div>
                   </div>
                 </div>
-              </div>
-              <p className="text-sm text-gray-500">
-                Expected features: Auto-matching of deposits, merchant fee calculation, approval workflow, discrepancy resolution
-              </p>
+              )}
             </div>
+
+            {/* Deposit Matches Table */}
+            {bankMatches.length > 0 && (
+              <div className="bg-white rounded-lg shadow">
+                <div className="p-4 border-b">
+                  <h3 className="text-lg font-semibold">Deposit Matches</h3>
+                  <p className="text-sm text-gray-500">Review and approve bank deposit reconciliation matches</p>
+                </div>
+                <div className="divide-y">
+                  {bankMatches.map((match: any) => (
+                    <div key={match.id} className="p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              match.match_confidence >= 90 ? 'bg-green-100 text-green-700' :
+                              match.match_confidence >= 70 ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-orange-100 text-orange-700'
+                            }`}>
+                              {match.match_confidence?.toFixed(0)}% Confidence
+                            </span>
+                            <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                              {match.processor}
+                            </span>
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              match.status === 'approved' ? 'bg-green-100 text-green-700' :
+                              match.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {match.status}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <div className="text-gray-600">Deposit Date</div>
+                              <div className="font-medium">{match.deposit_date}</div>
+                            </div>
+                            <div>
+                              <div className="text-gray-600">Bank Description</div>
+                              <div className="font-medium text-xs">{(match.bank_description || '').substring(0, 50)}</div>
+                            </div>
+                            <div>
+                              <div className="text-gray-600">Bank Deposit Amount</div>
+                              <div className="font-bold text-green-600 text-lg">${Number(match.bank_deposit_amount).toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div className="text-gray-600">Payment Batch Total</div>
+                              <div className="font-bold text-blue-600 text-lg">${Number(match.payment_batch_total).toFixed(2)}</div>
+                            </div>
+                            <div>
+                              <div className="text-gray-600">Merchant Discount Fee</div>
+                              <div className="font-bold text-red-600 text-lg">
+                                ${Number(match.merchant_discount_fee).toFixed(2)}
+                                <span className="text-sm ml-2">({Number(match.fee_percentage).toFixed(2)}%)</span>
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-gray-600">Payment Count</div>
+                              <div className="font-medium">{match.payment_ids_array?.length || 0} payments</div>
+                            </div>
+                          </div>
+
+                          {match.notes && (
+                            <div className="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded">
+                              <strong>Match Reason:</strong> {match.notes}
+                            </div>
+                          )}
+                        </div>
+
+                        {match.status === 'pending' && (
+                          <div className="flex gap-2 ml-4">
+                            <button
+                              onClick={() => handleApproveBankMatch(match.id)}
+                              className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectBankMatch(match.id)}
+                              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-3 border-t text-sm text-gray-500">
+                  Showing {bankMatches.length} matches
+                </div>
+              </div>
+            )}
+
+            {bankMatches.length === 0 && !bankMatching && (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Matches Found</h3>
+                <p className="text-gray-600 mb-4">
+                  Click "Run Auto-Match" to automatically match bank deposits to payment batches.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Make sure you have uploaded both a bank statement and processed Gravity payments.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </main>
