@@ -1372,7 +1372,7 @@ function App() {
                   ) : (
                     filteredTransactions.slice(0, 100).map((txn, index) => (
                       <tr key={txn.id || index} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 text-gray-500 text-xs font-mono">{txn.transaction_date}</td>
+                        <td className="px-3 py-2 text-gray-500 text-xs font-mono">{txn.transaction_date ? txn.transaction_date.split('T')[0] : '-'}</td>
                         <td className="px-3 py-2 font-medium">{txn.invoice_number}</td>
                         <td className="px-3 py-2">{txn.customer_cid}</td>
                         <td className="px-3 py-2">

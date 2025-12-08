@@ -232,6 +232,12 @@ export function processEMRFile(
         mappedData.tax_code = sm.tax_code;
       }
 
+      // Calculate amount for service lines as QTY * Price
+      // (Amount field in EMR is 0 for service lines; actual amount is in separate payment records)
+      const quantity = row.QTY || 0;
+      const price = row.Price || 0;
+      const serviceAmount = quantity * price;
+
       // Insert into staging table (with customer_id UUID) - SERVICES ONLY
       db.run(`
         INSERT INTO transactions_staging (
@@ -249,7 +255,7 @@ export function processEMRFile(
         serviceName,
         row.QTY || null,
         row.Price || null,
-        row.Amount || null,
+        serviceAmount,
         null, // No payment type for service lines
         JSON.stringify({
           sku: row.SKU,
