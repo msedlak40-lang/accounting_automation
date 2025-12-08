@@ -1,0 +1,1014 @@
+Customer,TxnDate,RefNumber,Amount,PaymentMethod,DepositToAccount,ApplyToRefNumber
+Kristy Blomquist,01/02/2025,PMT-00030993,142.16,Visa,1030 Merchant Clearing,00030993
+Ashley Knecht,01/02/2025,PMT-00030995,441.66,Visa,1030 Merchant Clearing,00030995
+Emily Conaty,01/02/2025,PMT-00030997,500,Visa,1030 Merchant Clearing,00030997
+Cristen Frederick,01/02/2025,PMT-00030999,680.76,Client Bank,1100 Client Bank / Prepaid Liab,00030999
+Kelli Deuth,01/02/2025,PMT-00031002,300,Client Bank,1100 Client Bank / Prepaid Liab,00031002
+Amy Morris,01/02/2025,PMT-00031004,600,Client Bank,1100 Client Bank / Prepaid Liab,00031004
+Sara Stults,01/02/2025,PMT-00031005,500,Visa,1030 Merchant Clearing,00031005
+Jennifer Stauffer,01/02/2025,PMT-00031013,20,Aspire Awards,1220 Vendor Rec: Galderma,00031013
+Jennifer Stauffer,01/02/2025,PMT-00031013,711.46,Visa,1030 Merchant Clearing,00031013
+Jennifer Stauffer,01/02/2025,PMT-00031013,100,Alle Rewards,1210 Vendor Rec: Allergan,00031013
+Tara Spilker,01/02/2025,PMT-00031014,20,Aspire Awards,1220 Vendor Rec: Galderma,00031014
+Tara Spilker,01/02/2025,PMT-00031014,580,Visa,1030 Merchant Clearing,00031014
+Brittany Young-Kenis,01/05/2025,PMT-00029983,250,Visa,1030 Merchant Clearing,00029983
+Tyler Randall,01/05/2025,PMT-00031030,500,MasterCard,1030 Merchant Clearing,00031030
+10502,01/07/2025,PMT-00031033,1353.71,MasterCard,1030 Merchant Clearing,00031033
+Kristen Swim,01/07/2025,PMT-00031036,350,Visa,1030 Merchant Clearing,00031036
+Jared Bahr,01/10/2025,PMT-00031044,500,Visa,1030 Merchant Clearing,00031044
+Jo Ann Sedlak,01/10/2025,PMT-00031048,161.84,Discover,1030 Merchant Clearing,00031048
+Abby Nottberg,01/10/2025,PMT-00031052,69.98,MasterCard,1030 Merchant Clearing,00031052
+Julie Dehner,01/14/2025,PMT-00031027,500,Cash,1030 Merchant Clearing,00031027
+Shannon Yeates,01/14/2025,PMT-00031065,308,Visa,1030 Merchant Clearing,00031065
+Tracy Jarvis-Hennessy,01/14/2025,PMT-00031066,400,Visa,1030 Merchant Clearing,00031066
+Julie Colahan,01/14/2025,PMT-00031068,50,Aspire Awards,1220 Vendor Rec: Galderma,00031068
+Julie Colahan,01/14/2025,PMT-00031068,508.57,Visa,1030 Merchant Clearing,00031068
+10518,01/14/2025,PMT-00031069,390,Visa,1030 Merchant Clearing,00031069
+Breanna Heuiser,01/14/2025,PMT-00031070,496.01,Visa,1030 Merchant Clearing,00031070
+Cassidy Wheeler,01/14/2025,PMT-00031072,702,Visa,1030 Merchant Clearing,00031072
+Matt Sutton,01/16/2025,PMT-00031059,250,Amex,1030 Merchant Clearing,00031059
+Kelsey Bowman,01/16/2025,PMT-00031079,20,Aspire Awards,1220 Vendor Rec: Galderma,00031079
+Kelsey Bowman,01/16/2025,PMT-00031079,1032.57,Visa,1030 Merchant Clearing,00031079
+Mary Walker,01/16/2025,PMT-00031081,585,Visa,1030 Merchant Clearing,00031081
+Megan Pederson,01/16/2025,PMT-00031083,20,Aspire Awards,1220 Vendor Rec: Galderma,00031083
+Megan Pederson,01/16/2025,PMT-00031083,50,Reward Points,1100 Client Bank / Prepaid Liab,00031083
+Megan Pederson,01/16/2025,PMT-00031083,683.42,Visa,1030 Merchant Clearing,00031083
+Kari Playter,01/16/2025,PMT-00031085,160,Cash,1030 Merchant Clearing,00031085
+10522,01/16/2025,PMT-00031086,300,Alle Rewards,1210 Vendor Rec: Allergan,00031086
+10522,01/16/2025,PMT-00031086,350,Visa,1030 Merchant Clearing,00031086
+11533,01/19/2025,PMT-00031090,30,Visa,1030 Merchant Clearing,00031090
+Tracy Jarvis-Hennessy,01/21/2025,PMT-00031063,442,Visa,1030 Merchant Clearing,00031063
+Daniela Randall,01/21/2025,PMT-00031108,130,Alle Rewards,1210 Vendor Rec: Allergan,00031108
+Daniela Randall,01/21/2025,PMT-00031108,1000,Cash,1030 Merchant Clearing,00031108
+Daniela Randall,01/21/2025,PMT-00031108,628.8,Amex,1030 Merchant Clearing,00031108
+Andrea Bocks,01/21/2025,PMT-00031111,20,Alle Rewards,1210 Vendor Rec: Allergan,00031111
+Andrea Bocks,01/21/2025,PMT-00031111,748.83,MasterCard,1030 Merchant Clearing,00031111
+Julie Albin,01/21/2025,PMT-00031112,637,Cash,1030 Merchant Clearing,00031112
+Daniela Randall,01/22/2025,PMT-00029944,178.46,Discover,1030 Merchant Clearing,00029944
+Wim Kenis,01/22/2025,PMT-00031120,250,Visa,1030 Merchant Clearing,00031120
+Sam Larsen,01/23/2025,PMT-00031019,75,Aspire Awards,1220 Vendor Rec: Galderma,00031019
+Sam Larsen,01/23/2025,PMT-00031019,575,MasterCard,1030 Merchant Clearing,00031019
+Elizabeth Hoover,01/23/2025,PMT-00031124,50,Aspire Awards,1220 Vendor Rec: Galderma,00031124
+Elizabeth Hoover,01/23/2025,PMT-00031124,600,Visa,1030 Merchant Clearing,00031124
+Tamie Hitschmann,01/23/2025,PMT-00031126,50,Aspire Awards,1220 Vendor Rec: Galderma,00031126
+Tamie Hitschmann,01/23/2025,PMT-00031126,2282.77,Cherry ,1030 Merchant Clearing,00031126
+Lauren Camenzind,01/23/2025,PMT-00031130,20,Alle Rewards,1210 Vendor Rec: Allergan,00031130
+Lauren Camenzind,01/23/2025,PMT-00031130,20,Aspire Awards,1220 Vendor Rec: Galderma,00031130
+Lauren Camenzind,01/23/2025,PMT-00031130,1264,Visa,1030 Merchant Clearing,00031130
+Sara Stults,01/27/2025,PMT-00031138,500,Visa,1030 Merchant Clearing,00031138
+Darcy Richardson,01/28/2025,PMT-00031150,50,Aspire Awards,1220 Vendor Rec: Galderma,00031150
+Darcy Richardson,01/28/2025,PMT-00031150,323.32,Check,1030 Merchant Clearing,00031150
+Ali Schuller,01/28/2025,PMT-00031151,20,Alle Rewards,1210 Vendor Rec: Allergan,00031151
+Ali Schuller,01/28/2025,PMT-00031151,1358,Visa,1030 Merchant Clearing,00031151
+Ayla McCalley,01/28/2025,PMT-00031153,20,Alle Rewards,1210 Vendor Rec: Allergan,00031153
+Ayla McCalley,01/28/2025,PMT-00031153,565,Visa,1030 Merchant Clearing,00031153
+Kristy Blomquist,01/28/2025,PMT-00031155,100,Visa,1030 Merchant Clearing,00031155
+Kristy Blomquist,01/28/2025,PMT-00031155,300,Square Gift Card,1150 Gift Card Liability,00031155
+Erin Ostgulen,01/28/2025,PMT-00031156,140,Alle Rewards,1210 Vendor Rec: Allergan,00031156
+Erin Ostgulen,01/28/2025,PMT-00031156,672,Visa,1030 Merchant Clearing,00031156
+Erin Ostgulen,01/28/2025,PMT-00031156,150,Square Gift Card,1150 Gift Card Liability,00031156
+Vicki Young,01/28/2025,PMT-00031158,100,Alle Rewards,1210 Vendor Rec: Allergan,00031158
+Heidi Mueller,01/29/2025,PMT-00031162,30,Alle Rewards,1210 Vendor Rec: Allergan,00031162
+Heidi Mueller,01/29/2025,PMT-00031162,1202,Client Bank,1100 Client Bank / Prepaid Liab,00031162
+Chassidy Hansen,01/30/2025,PMT-00031165,20,Alle Rewards,1210 Vendor Rec: Allergan,00031165
+Chassidy Hansen,01/30/2025,PMT-00031165,786,Visa,1030 Merchant Clearing,00031165
+Andrea Eby,01/30/2025,PMT-00031167,40,Alle Rewards,1210 Vendor Rec: Allergan,00031167
+Andrea Eby,01/30/2025,PMT-00031167,688,Visa,1030 Merchant Clearing,00031167
+Carrie Babbitt,01/30/2025,PMT-00031170,500,Visa,1030 Merchant Clearing,00031170
+Sarah Carney,01/30/2025,PMT-00031171,438,Visa,1030 Merchant Clearing,00031171
+Paiton Trujillo1,01/30/2025,PMT-00031173,64.52,Cash,1030 Merchant Clearing,00031173
+Jackie Foster,01/30/2025,PMT-00031174,30,Alle Rewards,1210 Vendor Rec: Allergan,00031174
+Jackie Foster,01/30/2025,PMT-00031174,156.02,MasterCard,1030 Merchant Clearing,00031174
+Deana Tatum,01/30/2025,PMT-00031175,20,Aspire Awards,1220 Vendor Rec: Galderma,00031175
+Deana Tatum,01/30/2025,PMT-00031175,733.42,Visa,1030 Merchant Clearing,00031175
+11527,01/30/2025,PMT-00031178,50,Aspire Awards,1220 Vendor Rec: Galderma,00031178
+11527,01/30/2025,PMT-00031178,633.63,MasterCard,1030 Merchant Clearing,00031178
+11536,01/31/2025,PMT-00031114,407,Visa,1030 Merchant Clearing,00031114
+11537,01/31/2025,PMT-00031115,30,Visa,1030 Merchant Clearing,00031115
+11540,01/31/2025,PMT-00031154,75,Visa,1030 Merchant Clearing,00031154
+Danielle Hinton (Burriss),01/31/2025,PMT-00031182,30,Cash,1030 Merchant Clearing,00031182
+Melissa Middlemas2,02/02/2025,PMT-00032187,818.6,Cash,1030 Merchant Clearing,00032187
+Megan Giorgini,02/04/2025,PMT-00031067,20,Alle Rewards,1210 Vendor Rec: Allergan,00031067
+Megan Giorgini,02/04/2025,PMT-00031067,400,Cash,1030 Merchant Clearing,00031067
+Megan Giorgini,02/04/2025,PMT-00031067,178,Visa,1030 Merchant Clearing,00031067
+Jesse Anderson,02/04/2025,PMT-00031148,40,Alle Rewards,1210 Vendor Rec: Allergan,00031148
+Jesse Anderson,02/04/2025,PMT-00031148,642,Visa,1030 Merchant Clearing,00031148
+11532,02/04/2025,PMT-00032194,1050,Visa,1030 Merchant Clearing,00032194
+Mary Horsch,02/04/2025,PMT-00032197,37.18,Cash,1030 Merchant Clearing,00032197
+Angeline Sutton,02/04/2025,PMT-00032198,688.53,Visa,1030 Merchant Clearing,00032198
+Angeline Sutton,02/04/2025,PMT-00032200,20,Alle Rewards,1210 Vendor Rec: Allergan,00032200
+Angeline Sutton,02/04/2025,PMT-00032200,1180,Visa,1030 Merchant Clearing,00032200
+11531,02/04/2025,PMT-00032201,510.66,Visa,1030 Merchant Clearing,00032201
+Ziyan Pessetto,02/05/2025,PMT-00032185,500,MasterCard,1030 Merchant Clearing,00032185
+Emily Conaty,02/05/2025,PMT-00032186,500,Visa,1030 Merchant Clearing,00032186
+Julie Huebner,02/06/2025,PMT-00030991,523.17,Visa,1030 Merchant Clearing,00030991
+Callie Evans,02/06/2025,PMT-00032212,20,Alle Rewards,1210 Vendor Rec: Allergan,00032212
+Callie Evans,02/06/2025,PMT-00032212,20,Aspire Awards,1220 Vendor Rec: Galderma,00032212
+Callie Evans,02/06/2025,PMT-00032212,541.61,MasterCard,1030 Merchant Clearing,00032212
+Brandi Shoemaker,02/06/2025,PMT-00032214,20,Aspire Awards,1220 Vendor Rec: Galderma,00032214
+Brandi Shoemaker,02/06/2025,PMT-00032214,20,Alle Rewards,1210 Vendor Rec: Allergan,00032214
+Brandi Shoemaker,02/06/2025,PMT-00032214,947.5,Amex,1030 Merchant Clearing,00032214
+Kelli Deuth,02/06/2025,PMT-00032219,20,Aspire Awards,1220 Vendor Rec: Galderma,00032219
+Kelli Deuth,02/06/2025,PMT-00032219,812.68,Visa,1030 Merchant Clearing,00032219
+Dustin Andersen,02/07/2025,PMT-00031016,819,Visa,1030 Merchant Clearing,00031016
+Keli Andersen,02/07/2025,PMT-00031017,676,Visa,1030 Merchant Clearing,00031017
+Stacy Parker,02/07/2025,PMT-00031018,635,Visa,1030 Merchant Clearing,00031018
+Zoe Shepherd,02/07/2025,PMT-00032229,120,Alle Rewards,1210 Vendor Rec: Allergan,00032229
+Zoe Shepherd,02/07/2025,PMT-00032229,672,Visa,1030 Merchant Clearing,00032229
+11546,02/10/2025,PMT-00031181,264,Visa,1030 Merchant Clearing,00031181
+Amber Manning,02/10/2025,PMT-00032243,50,Aspire Awards,1220 Vendor Rec: Galderma,00032243
+Amber Manning,02/10/2025,PMT-00032243,40,Alle Rewards,1210 Vendor Rec: Allergan,00032243
+Amber Manning,02/10/2025,PMT-00032243,230,Amex,1030 Merchant Clearing,00032243
+Amber Manning,02/10/2025,PMT-00032243,229.24,Cash,1030 Merchant Clearing,00032243
+11544,02/10/2025,PMT-00032244,50,Aspire Awards,1220 Vendor Rec: Galderma,00032244
+11544,02/10/2025,PMT-00032244,469.6,MasterCard,1030 Merchant Clearing,00032244
+Tiffany Ruhmann,02/10/2025,PMT-00032247,550,Visa,1030 Merchant Clearing,00032247
+11529,02/11/2025,PMT-00031054,354.29,Visa,1030 Merchant Clearing,00031054
+Darcy Richardson,02/11/2025,PMT-00032254,400,Cash,1030 Merchant Clearing,00032254
+Mary Horsch,02/11/2025,PMT-00032255,500,Cash,1030 Merchant Clearing,00032255
+Betsey Rohr,02/12/2025,PMT-00032249,30,Square Gift Card,1150 Gift Card Liability,00032249
+11529,02/13/2025,PMT-00032257,328.05,Visa,1030 Merchant Clearing,00032257
+Sylvonna Singleton,02/13/2025,PMT-00032264,300,Client Bank,1100 Client Bank / Prepaid Liab,00032264
+11528,02/13/2025,PMT-00032265,20,Alle Rewards,1210 Vendor Rec: Allergan,00032265
+11528,02/13/2025,PMT-00032265,50,Aspire Awards,1220 Vendor Rec: Galderma,00032265
+11528,02/13/2025,PMT-00032265,475.66,Amex,1030 Merchant Clearing,00032265
+Darcie Giles,02/13/2025,PMT-00032268,300,Cash,1030 Merchant Clearing,00032268
+Darcie Giles,02/13/2025,PMT-00032268,863.87,Visa,1030 Merchant Clearing,00032268
+Emily Conaty,02/13/2025,PMT-00032271,60,Alle Rewards,1210 Vendor Rec: Allergan,00032271
+Emily Conaty,02/13/2025,PMT-00032271,512,Visa,1030 Merchant Clearing,00032271
+Joni Williams,02/13/2025,PMT-00032273,20,Alle Rewards,1210 Vendor Rec: Allergan,00032273
+Joni Williams,02/13/2025,PMT-00032273,799.62,Cherry ,1030 Merchant Clearing,00032273
+11527,02/13/2025,PMT-00032276,25,Visa,1030 Merchant Clearing,00032276
+Tracy Jarvis-Hennessy,02/13/2025,PMT-00032277,500,Visa,1030 Merchant Clearing,00032277
+Mary Horsch,02/13/2025,PMT-00032280,315.28,Cash,1030 Merchant Clearing,00032280
+Keli Andersen,02/15/2025,PMT-00032284,218.7,Square Gift Card,1150 Gift Card Liability,00032284
+Ardis McFarlane,02/17/2025,PMT-00032233,250,Visa,1030 Merchant Clearing,00032233
+Kari Playter,02/18/2025,PMT-00032293,200,Cash,1030 Merchant Clearing,00032293
+Avy Willis,02/18/2025,PMT-00032297,40,Alle Rewards,1210 Vendor Rec: Allergan,00032297
+Avy Willis,02/18/2025,PMT-00032297,584,Amex,1030 Merchant Clearing,00032297
+Erin Ostgulen,02/18/2025,PMT-00032298,100,Square Gift Card,1150 Gift Card Liability,00032298
+Erin Ostgulen,02/18/2025,PMT-00032298,300,Visa,1030 Merchant Clearing,00032298
+Nikki Birk,02/18/2025,PMT-00032300,80,Alle Rewards,1210 Vendor Rec: Allergan,00032300
+Nikki Birk,02/18/2025,PMT-00032300,500,Cash,1030 Merchant Clearing,00032300
+Nikki Birk,02/18/2025,PMT-00032300,1227,Visa,1030 Merchant Clearing,00032300
+Jacqueline Coleman,02/18/2025,PMT-00032301,20,Alle Rewards,1210 Vendor Rec: Allergan,00032301
+Jacqueline Coleman,02/18/2025,PMT-00032301,630,Visa,1030 Merchant Clearing,00032301
+11545,02/18/2025,PMT-00032302,100,Alle Rewards,1210 Vendor Rec: Allergan,00032302
+11545,02/18/2025,PMT-00032302,50,Aspire Awards,1220 Vendor Rec: Galderma,00032302
+11545,02/18/2025,PMT-00032302,447.88,MasterCard,1030 Merchant Clearing,00032302
+Jill Minton,02/18/2025,PMT-00032304,40,Alle Rewards,1210 Vendor Rec: Allergan,00032304
+Jill Minton,02/18/2025,PMT-00032304,866.36,Visa,1030 Merchant Clearing,00032304
+12548,02/18/2025,PMT-00032306,1104.81,Discover,1030 Merchant Clearing,00032306
+12548,02/18/2025,PMT-00032306,25,Alle Rewards,1210 Vendor Rec: Allergan,00032306
+Valerie Pedersen-Barr,02/18/2025,PMT-00032309,40,Alle Rewards,1210 Vendor Rec: Allergan,00032309
+Valerie Pedersen-Barr,02/18/2025,PMT-00032309,248,MasterCard,1030 Merchant Clearing,00032309
+10502,02/18/2025,PMT-00032311,191.36,MasterCard,1030 Merchant Clearing,00032311
+11533,02/19/2025,PMT-00031141,350,Visa,1030 Merchant Clearing,00031141
+Taylor Anvik,02/19/2025,PMT-00032308,30,Visa,1030 Merchant Clearing,00032308
+11539,02/20/2025,PMT-00031145,50,Aspire Awards,1220 Vendor Rec: Galderma,00031145
+11539,02/20/2025,PMT-00031145,1150,Visa,1030 Merchant Clearing,00031145
+Ali Schuller,02/20/2025,PMT-00032282,550,Visa,1030 Merchant Clearing,00032282
+Lily Yohn,02/20/2025,PMT-00032317,71.08,Visa,1030 Merchant Clearing,00032317
+Brandi Shoemaker,02/20/2025,PMT-00032319,109.5,Visa,1030 Merchant Clearing,00032319
+Emily Griggs,02/20/2025,PMT-00032322,350,Visa,1030 Merchant Clearing,00032322
+Matt Schuller,02/20/2025,PMT-00032325,922.29,Visa,1030 Merchant Clearing,00032325
+Kendra Howze,02/20/2025,PMT-00032329,20,Alle Rewards,1210 Vendor Rec: Allergan,00032329
+Kendra Howze,02/20/2025,PMT-00032329,720.47,Visa,1030 Merchant Clearing,00032329
+Matt Sutton,02/23/2025,PMT-00032312,250,Amex,1030 Merchant Clearing,00032312
+Rebecca Wayland,02/25/2025,PMT-00031046,398.04,Visa,1030 Merchant Clearing,00031046
+Kristy Blomquist,02/25/2025,PMT-00032226,150,Alle Rewards,1210 Vendor Rec: Allergan,00032226
+Kristy Blomquist,02/25/2025,PMT-00032226,478,Visa,1030 Merchant Clearing,00032226
+Amy Morris,02/25/2025,PMT-00032349,600,Client Bank,1100 Client Bank / Prepaid Liab,00032349
+12550,02/25/2025,PMT-00032354,20,Alle Rewards,1210 Vendor Rec: Allergan,00032354
+12550,02/25/2025,PMT-00032354,214,Visa,1030 Merchant Clearing,00032354
+Emily Bellassai,02/25/2025,PMT-00032355,20,Alle Rewards,1210 Vendor Rec: Allergan,00032355
+Emily Bellassai,02/25/2025,PMT-00032355,331,Amex,1030 Merchant Clearing,00032355
+Courtney Hill,02/25/2025,PMT-00032357,68.89,Discover,1030 Merchant Clearing,00032357
+Ashley Sedler,02/25/2025,PMT-00032358,542.38,Visa,1030 Merchant Clearing,00032358
+Nicholas Hunt,02/26/2025,PMT-00032337,500,MasterCard,1030 Merchant Clearing,00032337
+Sally Determan,02/27/2025,PMT-00032331,250,Cash,1030 Merchant Clearing,00032331
+Ann Arkebauer,02/27/2025,PMT-00032369,20,Alle Rewards,1210 Vendor Rec: Allergan,00032369
+Ann Arkebauer,02/27/2025,PMT-00032369,2806.04,Visa,1030 Merchant Clearing,00032369
+Ann Arkebauer,02/27/2025,PMT-00032371,30,Visa,1030 Merchant Clearing,00032371
+Tara Spilker,02/27/2025,PMT-00032372,20,Alle Rewards,1210 Vendor Rec: Allergan,00032372
+Tara Spilker,02/27/2025,PMT-00032372,1022,Amex,1030 Merchant Clearing,00032372
+Amy Wegner,02/27/2025,PMT-00032373,680.76,Client Bank,1100 Client Bank / Prepaid Liab,00032373
+Amy Wegner,02/27/2025,PMT-00032373,332.46,MasterCard,1030 Merchant Clearing,00032373
+Emily Griggs,02/27/2025,PMT-00032374,30,Alle Rewards,1210 Vendor Rec: Allergan,00032374
+Emily Griggs,02/27/2025,PMT-00032374,97,Visa,1030 Merchant Clearing,00032374
+Heidi Mueller,02/27/2025,PMT-00032375,500,MasterCard,1030 Merchant Clearing,00032375
+11542,02/27/2025,PMT-00032377,75,Visa,1030 Merchant Clearing,00032377
+11543,02/27/2025,PMT-00032378,75,Visa,1030 Merchant Clearing,00032378
+11535,03/02/2025,PMT-00032267,286,Visa,1030 Merchant Clearing,00032267
+12561,03/02/2025,PMT-00032381,299,MasterCard,1030 Merchant Clearing,00032381
+12562,03/02/2025,PMT-00032382,682,Visa,1030 Merchant Clearing,00032382
+12563,03/02/2025,PMT-00032384,704,Amex,1030 Merchant Clearing,00032384
+11535,03/02/2025,PMT-00032400,262.44,Visa,1030 Merchant Clearing,00032400
+12553,03/04/2025,PMT-00032263,350,Discover,1030 Merchant Clearing,00032263
+Darcy Richardson,03/04/2025,PMT-00032410,27.34,Cash,1030 Merchant Clearing,00032410
+Kelli Deuth,03/04/2025,PMT-00032412,300,Client Bank,1100 Client Bank / Prepaid Liab,00032412
+Renu Mehra,03/04/2025,PMT-00032414,40,Alle Rewards,1210 Vendor Rec: Allergan,00032414
+Renu Mehra,03/04/2025,PMT-00032414,311,Amex,1030 Merchant Clearing,00032414
+Abby Chitwood,03/04/2025,PMT-00032416,40,Alle Rewards,1210 Vendor Rec: Allergan,00032416
+Abby Chitwood,03/04/2025,PMT-00032416,584,Visa,1030 Merchant Clearing,00032416
+Stacey Hesting,03/04/2025,PMT-00032417,50,Alle Rewards,1210 Vendor Rec: Allergan,00032417
+Stacey Hesting,03/04/2025,PMT-00032417,20,Aspire Awards,1220 Vendor Rec: Galderma,00032417
+Stacey Hesting,03/04/2025,PMT-00032417,943.26,Visa,1030 Merchant Clearing,00032417
+Valerie Pedersen-Barr,03/05/2025,PMT-00032310,288,Cash,1030 Merchant Clearing,00032310
+Kendra Howze,03/05/2025,PMT-00032426,123.57,Visa,1030 Merchant Clearing,00032426
+12548,03/06/2025,PMT-00032305,453.81,Discover,1030 Merchant Clearing,00032305
+Morgan Rezaei,03/06/2025,PMT-00032431,70,Alle Rewards,1210 Vendor Rec: Allergan,00032431
+Morgan Rezaei,03/06/2025,PMT-00032431,892,Amex,1030 Merchant Clearing,00032431
+Megan Belgeri,03/06/2025,PMT-00032432,20,Alle Rewards,1210 Vendor Rec: Allergan,00032432
+Megan Belgeri,03/06/2025,PMT-00032432,408.67,Visa,1030 Merchant Clearing,00032432
+10524,03/06/2025,PMT-00032433,64,Alle Rewards,1210 Vendor Rec: Allergan,00032433
+10524,03/06/2025,PMT-00032433,486,Visa,1030 Merchant Clearing,00032433
+12548,03/06/2025,PMT-00032434,20,Alle Rewards,1210 Vendor Rec: Allergan,00032434
+12548,03/06/2025,PMT-00032434,925.13,Discover,1030 Merchant Clearing,00032434
+12548,03/06/2025,PMT-00032436,42.65,Discover,1030 Merchant Clearing,00032436
+11530,03/06/2025,PMT-00032438,299,Discover,1030 Merchant Clearing,00032438
+11539,03/06/2025,PMT-00032441,40,Aspire Awards,1220 Vendor Rec: Galderma,00032441
+11539,03/06/2025,PMT-00032441,20,Alle Rewards,1210 Vendor Rec: Allergan,00032441
+11539,03/06/2025,PMT-00032441,418,Visa,1030 Merchant Clearing,00032441
+Wim Kenis,03/07/2025,PMT-00032368,250,Visa,1030 Merchant Clearing,00032368
+Tamara Kettler,03/09/2025,PMT-00032443,200,Cash,1030 Merchant Clearing,00032443
+Jared Bahr,03/09/2025,PMT-00032448,500,Visa,1030 Merchant Clearing,00032448
+Ashley Sedler,03/09/2025,PMT-00032453,224,Visa,1030 Merchant Clearing,00032453
+Emily Conaty,03/09/2025,PMT-00032454,199,Visa,1030 Merchant Clearing,00032454
+Ashley Sedler,03/09/2025,PMT-00032457,54.68,Visa,1030 Merchant Clearing,00032457
+12556,03/10/2025,PMT-00032463,672.5,Visa,1030 Merchant Clearing,00032463
+Avy Willis,03/10/2025,PMT-00032465,179,Amex,1030 Merchant Clearing,00032465
+Nikki Birk,03/10/2025,PMT-00032468,199,Cash,1030 Merchant Clearing,00032468
+12558,03/11/2025,PMT-00032344,75,Visa,1030 Merchant Clearing,00032344
+Mandy Shields,03/11/2025,PMT-00032383,120,Alle Rewards,1210 Vendor Rec: Allergan,00032383
+Mandy Shields,03/11/2025,PMT-00032383,1076,MasterCard,1030 Merchant Clearing,00032383
+Cassie Zorn,03/11/2025,PMT-00032444,197.93,Visa,1030 Merchant Clearing,00032444
+Julie Albin,03/11/2025,PMT-00032472,262.44,Cash,1030 Merchant Clearing,00032472
+Carla Roche,03/11/2025,PMT-00032475,360,Alle Rewards,1210 Vendor Rec: Allergan,00032475
+Carla Roche,03/11/2025,PMT-00032475,498,Discover,1030 Merchant Clearing,00032475
+Staci Light,03/11/2025,PMT-00032476,120,Alle Rewards,1210 Vendor Rec: Allergan,00032476
+Staci Light,03/11/2025,PMT-00032476,725,Visa,1030 Merchant Clearing,00032476
+Cristen Frederick,03/11/2025,PMT-00032477,753.42,Discover,1030 Merchant Clearing,00032477
+Darcy Richardson,03/11/2025,PMT-00032478,68.34,Cash,1030 Merchant Clearing,00032478
+12565,03/11/2025,PMT-00032480,25,Alle Rewards,1210 Vendor Rec: Allergan,00032480
+12565,03/11/2025,PMT-00032480,50,Visa,1030 Merchant Clearing,00032480
+Erin Ostgulen,03/11/2025,PMT-00032481,400,Visa,1030 Merchant Clearing,00032481
+11531,03/13/2025,PMT-00032202,299,Amex,1030 Merchant Clearing,00032202
+Emily Conaty,03/13/2025,PMT-00032447,500,Visa,1030 Merchant Clearing,00032447
+Jamie Hunt,03/13/2025,PMT-00032473,1000,MasterCard,1030 Merchant Clearing,00032473
+Nicholas Hunt,03/13/2025,PMT-00032474,1000,MasterCard,1030 Merchant Clearing,00032474
+12552,03/13/2025,PMT-00032491,1231.14,Visa,1030 Merchant Clearing,00032491
+Shari Nickelson,03/13/2025,PMT-00032494,40,Alle Rewards,1210 Vendor Rec: Allergan,00032494
+Shari Nickelson,03/13/2025,PMT-00032494,532,MasterCard,1030 Merchant Clearing,00032494
+Darcie Giles,03/13/2025,PMT-00032495,300,Cash,1030 Merchant Clearing,00032495
+Darcie Giles,03/13/2025,PMT-00032495,750.14,MasterCard,1030 Merchant Clearing,00032495
+Anna Toner,03/13/2025,PMT-00032496,50,Alle Rewards,1210 Vendor Rec: Allergan,00032496
+Anna Toner,03/13/2025,PMT-00032496,444,Visa,1030 Merchant Clearing,00032496
+Darcy Richardson,03/13/2025,PMT-00032497,350,Cash,1030 Merchant Clearing,00032497
+Ann Arkebauer,03/18/2025,PMT-00032370,30,Visa,1030 Merchant Clearing,00032370
+Ann Arkebauer,03/18/2025,PMT-00032514,500,Visa,1030 Merchant Clearing,00032514
+12560,03/18/2025,PMT-00032516,20,Alle Rewards,1210 Vendor Rec: Allergan,00032516
+12560,03/18/2025,PMT-00032516,110,Visa,1030 Merchant Clearing,00032516
+12551,03/20/2025,PMT-00032521,20,Alle Rewards,1210 Vendor Rec: Allergan,00032521
+12551,03/20/2025,PMT-00032521,684,Visa,1030 Merchant Clearing,00032521
+12548,03/20/2025,PMT-00032522,1198.41,Discover,1030 Merchant Clearing,00032522
+Melissa Woods,03/20/2025,PMT-00032525,40,Alle Rewards,1210 Vendor Rec: Allergan,00032525
+Melissa Woods,03/20/2025,PMT-00032525,532,Visa,1030 Merchant Clearing,00032525
+Abigail McMullen,03/20/2025,PMT-00032526,20,Alle Rewards,1210 Vendor Rec: Allergan,00032526
+Abigail McMullen,03/20/2025,PMT-00032526,500,Visa,1030 Merchant Clearing,00032526
+12568,03/20/2025,PMT-00032527,20,Alle Rewards,1210 Vendor Rec: Allergan,00032527
+12568,03/20/2025,PMT-00032527,79,Visa,1030 Merchant Clearing,00032527
+Emily Griggs,03/20/2025,PMT-00032531,20,Alle Rewards,1210 Vendor Rec: Allergan,00032531
+Emily Griggs,03/20/2025,PMT-00032531,129,Visa,1030 Merchant Clearing,00032531
+11527,03/20/2025,PMT-00032532,68.89,Visa,1030 Merchant Clearing,00032532
+Kari Playter,03/20/2025,PMT-00032537,200,Cash,1030 Merchant Clearing,00032537
+Daniela Randall,03/24/2025,PMT-00032553,342.25,Cash,1030 Merchant Clearing,00032553
+Valerie Pedersen-Barr,03/24/2025,PMT-00032556,199,Visa,1030 Merchant Clearing,00032556
+Rebecca Wayland,03/25/2025,PMT-00032360,110.22,Discover,1030 Merchant Clearing,00032360
+Darcy Richardson,03/25/2025,PMT-00032497,50,Cash,1030 Merchant Clearing,00032497
+Rebecca Wayland,03/25/2025,PMT-00032535,419.91,Visa,1030 Merchant Clearing,00032535
+Lily Yohn,03/25/2025,PMT-00032564,183.7,Visa,1030 Merchant Clearing,00032564
+Elizabeth Hoover,03/25/2025,PMT-00032566,300,Cash,1030 Merchant Clearing,00032566
+Elizabeth Hoover,03/25/2025,PMT-00032566,400,Visa,1030 Merchant Clearing,00032566
+Tracy Jarvis-Hennessy,03/25/2025,PMT-00032569,300,Visa,1030 Merchant Clearing,00032569
+Ashley Sedler,03/25/2025,PMT-00032571,50,Alle Rewards,1210 Vendor Rec: Allergan,00032571
+Ashley Sedler,03/25/2025,PMT-00032571,25,Aspire Awards,1220 Vendor Rec: Galderma,00032571
+Ashley Sedler,03/25/2025,PMT-00032571,2108.21,Visa,1030 Merchant Clearing,00032571
+Vicki Young,03/25/2025,PMT-00032572,40,Alle Rewards,1210 Vendor Rec: Allergan,00032572
+Vicki Young,03/25/2025,PMT-00032572,64,Visa,1030 Merchant Clearing,00032572
+Ziyan Pessetto,03/25/2025,PMT-00032573,1000,MasterCard,1030 Merchant Clearing,00032573
+Ali Schuller,03/25/2025,PMT-00032575,191.36,Visa,1030 Merchant Clearing,00032575
+12570,03/25/2025,PMT-00032578,99,MasterCard,1030 Merchant Clearing,00032578
+Paiton Trujillo1,03/25/2025,PMT-00032579,37.18,Cash,1030 Merchant Clearing,00032579
+Jackie Foster,03/26/2025,PMT-00032581,135.59,MasterCard,1030 Merchant Clearing,00032581
+Morgan Rezaei,03/26/2025,PMT-00032583,153.09,Amex,1030 Merchant Clearing,00032583
+Julie Beck,03/26/2025,PMT-00032584,153.09,Visa,1030 Merchant Clearing,00032584
+Darcie Giles,03/26/2025,PMT-00032585,43.74,Visa,1030 Merchant Clearing,00032585
+Darcie Giles,03/26/2025,PMT-00032586,239.7,MasterCard,1030 Merchant Clearing,00032586
+Tamie Hitschmann,03/27/2025,PMT-00032587,85,Aspire Awards,1220 Vendor Rec: Galderma,00032587
+Tamie Hitschmann,03/27/2025,PMT-00032587,615,Visa,1030 Merchant Clearing,00032587
+Heidi Mueller,03/27/2025,PMT-00032590,500,MasterCard,1030 Merchant Clearing,00032590
+Tamara Kettler,03/27/2025,PMT-00032592,45,Aspire Awards,1220 Vendor Rec: Galderma,00032592
+Tamara Kettler,03/27/2025,PMT-00032592,90,Alle Rewards,1210 Vendor Rec: Allergan,00032592
+Tamara Kettler,03/27/2025,PMT-00032592,1229.39,Cherry ,1030 Merchant Clearing,00032592
+12569,03/27/2025,PMT-00032593,20,Alle Rewards,1210 Vendor Rec: Allergan,00032593
+12569,03/27/2025,PMT-00032593,227,Visa,1030 Merchant Clearing,00032593
+10524,03/27/2025,PMT-00032597,397.41,Visa,1030 Merchant Clearing,00032597
+11531,03/27/2025,PMT-00032600,142.16,Amex,1030 Merchant Clearing,00032600
+Gaby Wise,03/27/2025,PMT-00032601,150,Alle Rewards,1210 Vendor Rec: Allergan,00032601
+12578,03/27/2025,PMT-00032602,120,Alle Rewards,1210 Vendor Rec: Allergan,00032602
+12578,03/27/2025,PMT-00032602,335,Visa,1030 Merchant Clearing,00032602
+14676,03/30/2025,PMT-00032609,428.65,Discover,1030 Merchant Clearing,00032609
+Sally Determan,03/31/2025,PMT-00032539,578,Check,1030 Merchant Clearing,00032539
+12562,03/31/2025,PMT-00032542,75,Visa,1030 Merchant Clearing,00032542
+Megan Pederson,03/31/2025,PMT-00033611,504.39,Visa,1030 Merchant Clearing,00033611
+11531,03/31/2025,PMT-00033614,234,Amex,1030 Merchant Clearing,00033614
+Jennifer Stauffer,04/01/2025,PMT-00033619,60,Alle Rewards,1210 Vendor Rec: Allergan,00033619
+Jennifer Stauffer,04/01/2025,PMT-00033619,25,Aspire Awards,1220 Vendor Rec: Galderma,00033619
+Jennifer Stauffer,04/01/2025,PMT-00033619,694.52,Visa,1030 Merchant Clearing,00033619
+Kristen Lewis,04/01/2025,PMT-00033621,50,Alle Rewards,1210 Vendor Rec: Allergan,00033621
+Kristen Lewis,04/01/2025,PMT-00033621,65,Aspire Awards,1220 Vendor Rec: Galderma,00033621
+Kristen Lewis,04/01/2025,PMT-00033621,638.6,Cherry ,1030 Merchant Clearing,00033621
+Kristen Lewis,04/01/2025,PMT-00033622,59.49,Visa,1030 Merchant Clearing,00033622
+Julie Huebner,04/01/2025,PMT-00033623,479.43,Visa,1030 Merchant Clearing,00033623
+12560,04/01/2025,PMT-00033624,312,Visa,1030 Merchant Clearing,00033624
+Lauren Camenzind,04/01/2025,PMT-00033632,299,Visa,1030 Merchant Clearing,00033632
+12571,04/01/2025,PMT-00033634,20,Aspire Awards,1220 Vendor Rec: Galderma,00033634
+12571,04/01/2025,PMT-00033634,356.71,Visa,1030 Merchant Clearing,00033634
+12580,04/03/2025,PMT-00032610,99,MasterCard,1030 Merchant Clearing,00032610
+Sally Determan,04/03/2025,PMT-00033650,607.2,Amex,1030 Merchant Clearing,00033650
+13582,04/07/2025,PMT-00033672,76.55,MasterCard,1030 Merchant Clearing,00033672
+11548,04/08/2025,PMT-00031187,585.63,Visa,1030 Merchant Clearing,00031187
+Tara Moody,04/08/2025,PMT-00033633,633.36,Visa,1030 Merchant Clearing,00033633
+Megan Pederson,04/08/2025,PMT-00033674,45,Aspire Awards,1220 Vendor Rec: Galderma,00033674
+Megan Pederson,04/08/2025,PMT-00033674,539.55,Visa,1030 Merchant Clearing,00033674
+Ann Arkebauer,04/08/2025,PMT-00033675,30,Alle Rewards,1210 Vendor Rec: Allergan,00033675
+Ann Arkebauer,04/08/2025,PMT-00033675,1348,Visa,1030 Merchant Clearing,00033675
+Ann Arkebauer,04/08/2025,PMT-00033677,530,Visa,1030 Merchant Clearing,00033677
+Emily Griggs,04/08/2025,PMT-00033680,350,Visa,1030 Merchant Clearing,00033680
+Amanda Grimes,04/09/2025,PMT-00033691,199,Amex,1030 Merchant Clearing,00033691
+Courtney Blake,04/10/2025,PMT-00033683,437.4,Visa,1030 Merchant Clearing,00033683
+Ashley Knecht,04/15/2025,PMT-00033707,25,Aspire Awards,1220 Vendor Rec: Galderma,00033707
+Ashley Knecht,04/15/2025,PMT-00033707,416.66,Visa,1030 Merchant Clearing,00033707
+12579,04/15/2025,PMT-00033709,422,Visa,1030 Merchant Clearing,00033709
+12579,04/15/2025,PMT-00033709,20,Alle Rewards,1210 Vendor Rec: Allergan,00033709
+Kristy Blomquist,04/15/2025,PMT-00033713,60,Alle Rewards,1210 Vendor Rec: Allergan,00033713
+Kristy Blomquist,04/15/2025,PMT-00033713,681,Visa,1030 Merchant Clearing,00033713
+13589,04/15/2025,PMT-00033716,275.56,Visa,1030 Merchant Clearing,00033716
+Shannon Yeates,04/15/2025,PMT-00033717,671,MasterCard,1030 Merchant Clearing,00033717
+Jenna Adkins,04/15/2025,PMT-00033718,40,Alle Rewards,1210 Vendor Rec: Allergan,00033718
+Jenna Adkins,04/15/2025,PMT-00033718,257,Visa,1030 Merchant Clearing,00033718
+Kristin Playter,04/15/2025,PMT-00033719,40,Alle Rewards,1210 Vendor Rec: Allergan,00033719
+Kristin Playter,04/15/2025,PMT-00033719,510,Visa,1030 Merchant Clearing,00033719
+13585,04/15/2025,PMT-00033720,65,Alle Rewards,1210 Vendor Rec: Allergan,00033720
+13585,04/15/2025,PMT-00033720,331,Cash,1030 Merchant Clearing,00033720
+13586,04/15/2025,PMT-00033721,80,Alle Rewards,1210 Vendor Rec: Allergan,00033721
+13586,04/15/2025,PMT-00033721,349,Check,1030 Merchant Clearing,00033721
+13594,04/15/2025,PMT-00033722,65,Alle Rewards,1210 Vendor Rec: Allergan,00033722
+13594,04/15/2025,PMT-00033722,67,Cash,1030 Merchant Clearing,00033722
+Lena Relllihan,04/15/2025,PMT-00033723,40,Alle Rewards,1210 Vendor Rec: Allergan,00033723
+Lena Relllihan,04/15/2025,PMT-00033723,561.58,Cash,1030 Merchant Clearing,00033723
+Kari Playter,04/15/2025,PMT-00033724,30,Alle Rewards,1210 Vendor Rec: Allergan,00033724
+Kari Playter,04/15/2025,PMT-00033724,827.78,Amex,1030 Merchant Clearing,00033724
+Matt Sutton,04/16/2025,PMT-00033688,250,Amex,1030 Merchant Clearing,00033688
+Mary Walker,04/17/2025,PMT-00033730,60,Alle Rewards,1210 Vendor Rec: Allergan,00033730
+Mary Walker,04/17/2025,PMT-00033730,356,Visa,1030 Merchant Clearing,00033730
+Anne Dorian,04/17/2025,PMT-00033732,70,Alle Rewards,1210 Vendor Rec: Allergan,00033732
+Anne Dorian,04/17/2025,PMT-00033732,889,Amex,1030 Merchant Clearing,00033732
+Melissa Middlemas2,04/17/2025,PMT-00033734,749,Cash,1030 Merchant Clearing,00033734
+12548,04/17/2025,PMT-00033737,54.68,Discover,1030 Merchant Clearing,00033737
+10502,04/17/2025,PMT-00033739,50,Alle Rewards,1210 Vendor Rec: Allergan,00033739
+10502,04/17/2025,PMT-00033739,964,MasterCard,1030 Merchant Clearing,00033739
+Jessica Radovich,04/17/2025,PMT-00033741,20,Alle Rewards,1210 Vendor Rec: Allergan,00033741
+Jessica Radovich,04/17/2025,PMT-00033741,20,Aspire Awards,1220 Vendor Rec: Galderma,00033741
+Jessica Radovich,04/17/2025,PMT-00033741,834.33,Visa,1030 Merchant Clearing,00033741
+Emily Conaty,04/17/2025,PMT-00033742,900,Visa,1030 Merchant Clearing,00033742
+Wim Kenis,04/18/2025,PMT-00033668,250,Cash,1030 Merchant Clearing,00033668
+Angeline Sutton,04/18/2025,PMT-00033669,250,Check,1030 Merchant Clearing,00033669
+11532,04/22/2025,PMT-00033754,414.44,Visa,1030 Merchant Clearing,00033754
+13588,04/22/2025,PMT-00033755,468,Visa,1030 Merchant Clearing,00033755
+Nikki Birk,04/22/2025,PMT-00033756,20,Alle Rewards,1210 Vendor Rec: Allergan,00033756
+Nikki Birk,04/22/2025,PMT-00033756,600,Cash,1030 Merchant Clearing,00033756
+Nikki Birk,04/22/2025,PMT-00033756,994,Visa,1030 Merchant Clearing,00033756
+Nikki Birk,04/22/2025,PMT-00033756,50,Reward Points,1100 Client Bank / Prepaid Liab,00033756
+13596,04/22/2025,PMT-00033759,20,Alle Rewards,1210 Vendor Rec: Allergan,00033759
+13596,04/22/2025,PMT-00033759,1137,MasterCard,1030 Merchant Clearing,00033759
+12572,04/22/2025,PMT-00033760,20,Aspire Awards,1220 Vendor Rec: Galderma,00033760
+12572,04/22/2025,PMT-00033760,590.53,Visa,1030 Merchant Clearing,00033760
+Erin Ostgulen,04/22/2025,PMT-00033762,30,Alle Rewards,1210 Vendor Rec: Allergan,00033762
+Erin Ostgulen,04/22/2025,PMT-00033762,1050,Visa,1030 Merchant Clearing,00033762
+Darcie Giles,04/22/2025,PMT-00033763,1659.87,Visa,1030 Merchant Clearing,00033763
+Darcie Giles,04/22/2025,PMT-00033766,118.1,Visa,1030 Merchant Clearing,00033766
+13602,04/22/2025,PMT-00033770,65,Alle Rewards,1210 Vendor Rec: Allergan,00033770
+13602,04/22/2025,PMT-00033770,419,Visa,1030 Merchant Clearing,00033770
+Tracy Jarvis-Hennessy,04/22/2025,PMT-00033772,400,Visa,1030 Merchant Clearing,00033772
+11529,04/22/2025,PMT-00033774,153.09,Visa,1030 Merchant Clearing,00033774
+11529,04/22/2025,PMT-00033774,153.09,Visa,1030 Merchant Clearing,00033774
+Rebecca Wayland,04/23/2025,PMT-00033773,110.22,Visa,1030 Merchant Clearing,00033773
+Mary Horsch,04/23/2025,PMT-00033782,149,Visa,1030 Merchant Clearing,00033782
+Kristy Blomquist,04/23/2025,PMT-00033784,149,Visa,1030 Merchant Clearing,00033784
+13597,04/24/2025,PMT-00033725,308,MasterCard,1030 Merchant Clearing,00033725
+Clayton Pummill,04/24/2025,PMT-00033789,233.82,Visa,1030 Merchant Clearing,00033789
+Ann Arkebauer,04/24/2025,PMT-00033791,40,Alle Rewards,1210 Vendor Rec: Allergan,00033791
+Ann Arkebauer,04/24/2025,PMT-00033791,1260,Visa,1030 Merchant Clearing,00033791
+Kari Playter,04/24/2025,PMT-00033793,166.21,Amex,1030 Merchant Clearing,00033793
+Kari Playter,04/24/2025,PMT-00033794,270,Cash,1030 Merchant Clearing,00033794
+Shannon Yeates,04/24/2025,PMT-00033795,132,MasterCard,1030 Merchant Clearing,00033795
+Elizabeth Hoover,04/28/2025,PMT-00034807,178.8,Visa,1030 Merchant Clearing,00034807
+Cassidy Wheeler,04/29/2025,PMT-00034811,40,Alle Rewards,1210 Vendor Rec: Allergan,00034811
+Cassidy Wheeler,04/29/2025,PMT-00034811,662,Visa,1030 Merchant Clearing,00034811
+Deana Tatum,04/29/2025,PMT-00034814,20,Aspire Awards,1220 Vendor Rec: Galderma,00034814
+Deana Tatum,04/29/2025,PMT-00034814,590.53,Visa,1030 Merchant Clearing,00034814
+10524,04/29/2025,PMT-00034818,20,Alle Rewards,1210 Vendor Rec: Allergan,00034818
+10524,04/29/2025,PMT-00034818,123,Visa,1030 Merchant Clearing,00034818
+13587,04/29/2025,PMT-00034820,20,Alle Rewards,1210 Vendor Rec: Allergan,00034820
+13587,04/29/2025,PMT-00034820,20,Aspire Awards,1220 Vendor Rec: Galderma,00034820
+13587,04/29/2025,PMT-00034820,622.63,MasterCard,1030 Merchant Clearing,00034820
+Lauren Camenzind,04/29/2025,PMT-00034822,20,Alle Rewards,1210 Vendor Rec: Allergan,00034822
+Lauren Camenzind,04/29/2025,PMT-00034822,604,Visa,1030 Merchant Clearing,00034822
+Julie Colahan,04/29/2025,PMT-00034823,500,Visa,1030 Merchant Clearing,00034823
+Julie Colahan,04/29/2025,PMT-00034823,600,Visa,1030 Merchant Clearing,00034823
+Julie Colahan,04/29/2025,PMT-00034824,109.35,Visa,1030 Merchant Clearing,00034824
+Daniela Randall,04/29/2025,PMT-00034828,40,Alle Rewards,1210 Vendor Rec: Allergan,00034828
+Daniela Randall,04/29/2025,PMT-00034828,1370.71,Cash,1030 Merchant Clearing,00034828
+Breena Svetlic,04/29/2025,PMT-00034831,50,Alle Rewards,1210 Vendor Rec: Allergan,00034831
+Breena Svetlic,04/29/2025,PMT-00034831,1036.3,Visa,1030 Merchant Clearing,00034831
+13606,04/29/2025,PMT-00034832,311.76,Visa,1030 Merchant Clearing,00034832
+Wim Kenis,04/29/2025,PMT-00034835,250,Visa,1030 Merchant Clearing,00034835
+Joni Williams,04/30/2025,PMT-00034841,20,Alle Rewards,1210 Vendor Rec: Allergan,00034841
+Joni Williams,04/30/2025,PMT-00034841,724,Cherry ,1030 Merchant Clearing,00034841
+12572,05/06/2025,PMT-00034864,325.86,Visa,1030 Merchant Clearing,00034864
+Lily Yohn,05/06/2025,PMT-00034867,135.59,Visa,1030 Merchant Clearing,00034867
+Andrea Eby,05/06/2025,PMT-00034868,35.28,Client Bank,1100 Client Bank / Prepaid Liab,00034868
+Andrea Eby,05/06/2025,PMT-00034868,170,Alle Rewards,1210 Vendor Rec: Allergan,00034868
+Andrea Eby,05/06/2025,PMT-00034868,522.72,Check,1030 Merchant Clearing,00034868
+13595,05/06/2025,PMT-00034870,701.46,Visa,1030 Merchant Clearing,00034870
+12579,05/06/2025,PMT-00034873,170,Alle Rewards,1210 Vendor Rec: Allergan,00034873
+12579,05/06/2025,PMT-00034873,90,Visa,1030 Merchant Clearing,00034873
+Sarah Carney,05/06/2025,PMT-00034874,20,Aspire Awards,1220 Vendor Rec: Galderma,00034874
+Sarah Carney,05/06/2025,PMT-00034874,549.4,Visa,1030 Merchant Clearing,00034874
+13596,05/06/2025,PMT-00034875,150,Alle Rewards,1210 Vendor Rec: Allergan,00034875
+13596,05/06/2025,PMT-00034875,6,MasterCard,1030 Merchant Clearing,00034875
+Sara Stults,05/06/2025,PMT-00034878,150,Alle Rewards,1210 Vendor Rec: Allergan,00034878
+Sara Stults,05/06/2025,PMT-00034878,6,Visa,1030 Merchant Clearing,00034878
+10502,05/06/2025,PMT-00034880,170,Alle Rewards,1210 Vendor Rec: Allergan,00034880
+10502,05/06/2025,PMT-00034880,350,MasterCard,1030 Merchant Clearing,00034880
+Brandon Hill,05/06/2025,PMT-00034882,559.98,Cash,1030 Merchant Clearing,00034882
+Courtney Hill,05/06/2025,PMT-00034883,481.34,Cash,1030 Merchant Clearing,00034883
+Courtney Hill,05/06/2025,PMT-00034883,40,Alle Rewards,1210 Vendor Rec: Allergan,00034883
+Courtney Hill,05/06/2025,PMT-00034883,20,Aspire Awards,1220 Vendor Rec: Galderma,00034883
+Lauren Camenzind,05/07/2025,PMT-00034887,238.8,Visa,1030 Merchant Clearing,00034887
+13612,05/08/2025,PMT-00034892,374,Visa,1030 Merchant Clearing,00034892
+13617,05/08/2025,PMT-00034893,198,Visa,1030 Merchant Clearing,00034893
+13615,05/08/2025,PMT-00034894,198,Visa,1030 Merchant Clearing,00034894
+13609,05/08/2025,PMT-00034897,484,Visa,1030 Merchant Clearing,00034897
+13610,05/08/2025,PMT-00034898,242,Visa,1030 Merchant Clearing,00034898
+13611,05/08/2025,PMT-00034899,396,Cash,1030 Merchant Clearing,00034899
+13613,05/08/2025,PMT-00034900,198,Visa,1030 Merchant Clearing,00034900
+Carrie Hyer,05/08/2025,PMT-00034901,539,Cash,1030 Merchant Clearing,00034901
+13619,05/08/2025,PMT-00034902,261,Cash,1030 Merchant Clearing,00034902
+13619,05/08/2025,PMT-00034902,190,Visa,1030 Merchant Clearing,00034902
+13616,05/08/2025,PMT-00034903,638,Cash,1030 Merchant Clearing,00034903
+Keli Andersen,05/09/2025,PMT-00033798,726,Visa,1030 Merchant Clearing,00033798
+Dustin Andersen,05/09/2025,PMT-00034851,1023,Visa,1030 Merchant Clearing,00034851
+Tamie Hitschmann,05/13/2025,PMT-00034905,700,Visa,1030 Merchant Clearing,00034905
+Emily Freeman,05/13/2025,PMT-00034906,20,Aspire Awards,1220 Vendor Rec: Galderma,00034906
+Emily Freeman,05/13/2025,PMT-00034906,447.64,Visa,1030 Merchant Clearing,00034906
+Kathryn Lehman,05/13/2025,PMT-00034909,20,Alle Rewards,1210 Vendor Rec: Allergan,00034909
+Kathryn Lehman,05/13/2025,PMT-00034909,20,Aspire Awards,1220 Vendor Rec: Galderma,00034909
+Kathryn Lehman,05/13/2025,PMT-00034909,1649.18,Visa,1030 Merchant Clearing,00034909
+Angeline Sutton,05/13/2025,PMT-00034911,20,Alle Rewards,1210 Vendor Rec: Allergan,00034911
+Angeline Sutton,05/13/2025,PMT-00034911,1371,Visa,1030 Merchant Clearing,00034911
+Cassie Zorn,05/13/2025,PMT-00034912,99,Visa,1030 Merchant Clearing,00034912
+12553,05/13/2025,PMT-00034913,20,Alle Rewards,1210 Vendor Rec: Allergan,00034913
+12553,05/13/2025,PMT-00034913,630,Discover,1030 Merchant Clearing,00034913
+Julie Beck,05/13/2025,PMT-00034916,70,Alle Rewards,1210 Vendor Rec: Allergan,00034916
+Julie Beck,05/13/2025,PMT-00034916,476,Visa,1030 Merchant Clearing,00034916
+Amy Morris,05/15/2025,PMT-00034920,218.7,MasterCard,1030 Merchant Clearing,00034920
+Lauren Camenzind,05/15/2025,PMT-00034922,40,Alle Rewards,1210 Vendor Rec: Allergan,00034922
+Lauren Camenzind,05/15/2025,PMT-00034922,90,Visa,1030 Merchant Clearing,00034922
+Kara Montague,05/15/2025,PMT-00034923,179,Cash,1030 Merchant Clearing,00034923
+Ann Arkebauer,05/15/2025,PMT-00034924,20,Alle Rewards,1210 Vendor Rec: Allergan,00034924
+Ann Arkebauer,05/15/2025,PMT-00034924,20,Aspire Awards,1220 Vendor Rec: Galderma,00034924
+Ann Arkebauer,05/15/2025,PMT-00034924,50,Client Bank,1100 Client Bank / Prepaid Liab,00034924
+Ann Arkebauer,05/15/2025,PMT-00034924,1521.1,Visa,1030 Merchant Clearing,00034924
+12569,05/15/2025,PMT-00034926,400,Visa,1030 Merchant Clearing,00034926
+Renu Mehra,05/15/2025,PMT-00034928,20,Alle Rewards,1210 Vendor Rec: Allergan,00034928
+Renu Mehra,05/15/2025,PMT-00034928,344,Amex,1030 Merchant Clearing,00034928
+Briauna Jarvis,05/15/2025,PMT-00034929,40,Alle Rewards,1210 Vendor Rec: Allergan,00034929
+Briauna Jarvis,05/15/2025,PMT-00034929,675,MasterCard,1030 Merchant Clearing,00034929
+12548,05/15/2025,PMT-00034930,617.83,Discover,1030 Merchant Clearing,00034930
+10522,05/15/2025,PMT-00034932,40,Alle Rewards,1210 Vendor Rec: Allergan,00034932
+10522,05/15/2025,PMT-00034932,571,Visa,1030 Merchant Clearing,00034932
+Tracy Jarvis-Hennessy,05/15/2025,PMT-00034934,400,Visa,1030 Merchant Clearing,00034934
+Abby Nottberg,05/15/2025,PMT-00034936,400,Cash,1030 Merchant Clearing,00034936
+Carrie Babbitt,05/17/2025,PMT-00034939,600,Visa,1030 Merchant Clearing,00034939
+Carrie Babbitt,05/18/2025,PMT-00032338,500,Visa,1030 Merchant Clearing,00032338
+11531,05/19/2025,PMT-00034809,261.96,Amex,1030 Merchant Clearing,00034809
+12572,05/19/2025,PMT-00034946,147.62,Visa,1030 Merchant Clearing,00034946
+13618,05/19/2025,PMT-00034950,650,Cash,1030 Merchant Clearing,00034950
+13618,05/19/2025,PMT-00034950,20,Aspire Awards,1220 Vendor Rec: Galderma,00034950
+13618,05/19/2025,PMT-00034950,148.37,Visa,1030 Merchant Clearing,00034950
+Tyler Randall,05/19/2025,PMT-00034952,598,Cash,1030 Merchant Clearing,00034952
+Bronwyn Kemp,05/19/2025,PMT-00034954,150,Alle Rewards,1210 Vendor Rec: Allergan,00034954
+Bronwyn Kemp,05/19/2025,PMT-00034954,136,MasterCard,1030 Merchant Clearing,00034954
+Sara Stults,05/19/2025,PMT-00034955,50,Alle Rewards,1210 Vendor Rec: Allergan,00034955
+Sara Stults,05/19/2025,PMT-00034955,366,MasterCard,1030 Merchant Clearing,00034955
+Brandi Shoemaker,05/22/2025,PMT-00034964,500,MasterCard,1030 Merchant Clearing,00034964
+Brandi Shoemaker,05/22/2025,PMT-00034965,179,MasterCard,1030 Merchant Clearing,00034965
+Kari Playter,05/25/2025,PMT-00034953,345,Cash,1030 Merchant Clearing,00034953
+Kari Playter,05/25/2025,PMT-00034968,135.59,Amex,1030 Merchant Clearing,00034968
+Ziyan Pessetto,05/25/2025,PMT-00034969,500,MasterCard,1030 Merchant Clearing,00034969
+Ziyan Pessetto,05/25/2025,PMT-00034973,500,MasterCard,1030 Merchant Clearing,00034973
+Julie Albin,05/27/2025,PMT-00034908,867.36,Cash,1030 Merchant Clearing,00034908
+Jared Bahr,05/27/2025,PMT-00034921,500,Visa,1030 Merchant Clearing,00034921
+Darcy Richardson,05/27/2025,PMT-00034981,400,Cash,1030 Merchant Clearing,00034981
+Breanna Heuiser,05/27/2025,PMT-00034983,20,Aspire Awards,1220 Vendor Rec: Galderma,00034983
+Breanna Heuiser,05/27/2025,PMT-00034983,1147.86,Visa,1030 Merchant Clearing,00034983
+7408,05/27/2025,PMT-00034984,328.05,Cash,1030 Merchant Clearing,00034984
+13624,05/27/2025,PMT-00034985,65,Alle Rewards,1210 Vendor Rec: Allergan,00034985
+13624,05/27/2025,PMT-00034985,520,Visa,1030 Merchant Clearing,00034985
+13596,05/27/2025,PMT-00034988,40,Alle Rewards,1210 Vendor Rec: Allergan,00034988
+13596,05/27/2025,PMT-00034988,488,MasterCard,1030 Merchant Clearing,00034988
+Carrie Hyer,05/27/2025,PMT-00034992,179.98,Visa,1030 Merchant Clearing,00034992
+Emily Conaty,05/28/2025,PMT-00034994,172.8,Visa,1030 Merchant Clearing,00034994
+Danielle Spangler,05/28/2025,PMT-00034995,506,MasterCard,1030 Merchant Clearing,00034995
+Ann Arkebauer,05/29/2025,PMT-00034999,20,Aspire Awards,1220 Vendor Rec: Galderma,00034999
+Ann Arkebauer,05/29/2025,PMT-00034999,680,Visa,1030 Merchant Clearing,00034999
+Rebecca Wayland,05/29/2025,PMT-00035000,383.45,Visa,1030 Merchant Clearing,00035000
+Kelsey Bowman,05/29/2025,PMT-00035003,40,Alle Rewards,1210 Vendor Rec: Allergan,00035003
+Kelsey Bowman,05/29/2025,PMT-00035003,20,Aspire Awards,1220 Vendor Rec: Galderma,00035003
+Kelsey Bowman,05/29/2025,PMT-00035003,550.57,Visa,1030 Merchant Clearing,00035003
+13622,05/29/2025,PMT-00035004,85,Alle Rewards,1210 Vendor Rec: Allergan,00035004
+13622,05/29/2025,PMT-00035004,487,Visa,1030 Merchant Clearing,00035004
+11542,05/29/2025,PMT-00035006,75,Visa,1030 Merchant Clearing,00035006
+11543,05/29/2025,PMT-00035007,75,Visa,1030 Merchant Clearing,00035007
+Heidi Mueller,06/03/2025,PMT-00034837,500,MasterCard,1030 Merchant Clearing,00034837
+Darcy Richardson,06/03/2025,PMT-00034958,70,Alle Rewards,1210 Vendor Rec: Allergan,00034958
+Darcy Richardson,06/03/2025,PMT-00034958,367.91,Cash,1030 Merchant Clearing,00034958
+Brandi Shoemaker,06/03/2025,PMT-00036015,20,Aspire Awards,1220 Vendor Rec: Galderma,00036015
+Brandi Shoemaker,06/03/2025,PMT-00036015,549.4,MasterCard,1030 Merchant Clearing,00036015
+13626,06/03/2025,PMT-00036016,149,Visa,1030 Merchant Clearing,00036016
+Kendra Howze,06/03/2025,PMT-00036018,40,Aspire Awards,1220 Vendor Rec: Galderma,00036018
+Kendra Howze,06/03/2025,PMT-00036018,30,Alle Rewards,1210 Vendor Rec: Allergan,00036018
+Kendra Howze,06/03/2025,PMT-00036018,1085.03,Visa,1030 Merchant Clearing,00036018
+Heidi Mueller,06/03/2025,PMT-00036024,500,Visa,1030 Merchant Clearing,00036024
+Melissa Middlemas2,06/03/2025,PMT-00036025,712.99,Cash,1030 Merchant Clearing,00036025
+Morgan Rezaei,06/03/2025,PMT-00036029,20,Alle Rewards,1210 Vendor Rec: Allergan,00036029
+Morgan Rezaei,06/03/2025,PMT-00036029,903,Amex,1030 Merchant Clearing,00036029
+Stacey Hesting,06/04/2025,PMT-00036036,207.77,Visa,1030 Merchant Clearing,00036036
+Matt Sutton,06/05/2025,PMT-00034970,250,Visa,1030 Merchant Clearing,00034970
+Danielle Spangler,06/05/2025,PMT-00036042,20,Alle Rewards,1210 Vendor Rec: Allergan,00036042
+Danielle Spangler,06/05/2025,PMT-00036042,1454,MasterCard,1030 Merchant Clearing,00036042
+13618,06/05/2025,PMT-00036046,207.77,Visa,1030 Merchant Clearing,00036046
+Kelli Deuth,06/05/2025,PMT-00036047,40,Aspire Awards,1220 Vendor Rec: Galderma,00036047
+Kelli Deuth,06/05/2025,PMT-00036047,713.42,Visa,1030 Merchant Clearing,00036047
+Valerie Pedersen-Barr,06/05/2025,PMT-00036050,30,Alle Rewards,1210 Vendor Rec: Allergan,00036050
+Valerie Pedersen-Barr,06/05/2025,PMT-00036050,546,Visa,1030 Merchant Clearing,00036050
+Ashley Sedler,06/05/2025,PMT-00036052,462.55,Visa,1030 Merchant Clearing,00036052
+12580,06/08/2025,PMT-00036043,100,MasterCard,1030 Merchant Clearing,00036043
+Ann Arkebauer,06/10/2025,PMT-00035008,500,Visa,1030 Merchant Clearing,00035008
+Ashley Sedler,06/10/2025,PMT-00036065,20,Alle Rewards,1210 Vendor Rec: Allergan,00036065
+Ashley Sedler,06/10/2025,PMT-00036065,20,Aspire Awards,1220 Vendor Rec: Galderma,00036065
+Ashley Sedler,06/10/2025,PMT-00036065,1909.1,Visa,1030 Merchant Clearing,00036065
+Jacqueline Coleman,06/10/2025,PMT-00036069,20,Alle Rewards,1210 Vendor Rec: Allergan,00036069
+Jacqueline Coleman,06/10/2025,PMT-00036069,630,Visa,1030 Merchant Clearing,00036069
+Melanie Stewart,06/10/2025,PMT-00036070,20,Alle Rewards,1210 Vendor Rec: Allergan,00036070
+Melanie Stewart,06/10/2025,PMT-00036070,526,Cherry ,1030 Merchant Clearing,00036070
+Julie Colahan,06/10/2025,PMT-00036073,20,Aspire Awards,1220 Vendor Rec: Galderma,00036073
+Julie Colahan,06/10/2025,PMT-00036073,538.57,Visa,1030 Merchant Clearing,00036073
+12552,06/12/2025,PMT-00036082,279.93,Visa,1030 Merchant Clearing,00036082
+Callie Evans,06/12/2025,PMT-00036083,144.34,MasterCard,1030 Merchant Clearing,00036083
+Callie Evans,06/12/2025,PMT-00036084,20,Alle Rewards,1210 Vendor Rec: Allergan,00036084
+Callie Evans,06/12/2025,PMT-00036084,590.53,Visa,1030 Merchant Clearing,00036084
+13622,06/12/2025,PMT-00036087,174.96,Visa,1030 Merchant Clearing,00036087
+Darcie Giles,06/12/2025,PMT-00036089,59.49,Visa,1030 Merchant Clearing,00036089
+11525,06/12/2025,PMT-00036091,20,Alle Rewards,1210 Vendor Rec: Allergan,00036091
+11525,06/12/2025,PMT-00036091,110,Visa,1030 Merchant Clearing,00036091
+Carrie Babbitt,06/16/2025,PMT-00036104,600,Visa,1030 Merchant Clearing,00036104
+12569,06/17/2025,PMT-00036108,280,MasterCard,1030 Merchant Clearing,00036108
+12569,06/17/2025,PMT-00036108,370,Visa,1030 Merchant Clearing,00036108
+13631,06/17/2025,PMT-00036112,20,Alle Rewards,1210 Vendor Rec: Allergan,00036112
+13631,06/17/2025,PMT-00036112,809,Amex,1030 Merchant Clearing,00036112
+10502,06/17/2025,PMT-00036115,306.18,MasterCard,1030 Merchant Clearing,00036115
+12548,06/17/2025,PMT-00036118,104.98,Discover,1030 Merchant Clearing,00036118
+Megan Belgeri,06/19/2025,PMT-00036125,20,Aspire Awards,1220 Vendor Rec: Galderma,00036125
+Megan Belgeri,06/19/2025,PMT-00036125,408.67,Visa,1030 Merchant Clearing,00036125
+Megan Meadows,06/19/2025,PMT-00036126,70,Alle Rewards,1210 Vendor Rec: Allergan,00036126
+Megan Meadows,06/19/2025,PMT-00036126,346,Visa,1030 Merchant Clearing,00036126
+13627,06/19/2025,PMT-00036127,350,Amex,1030 Merchant Clearing,00036127
+Gaby Wise,06/19/2025,PMT-00036129,150,Alle Rewards,1210 Vendor Rec: Allergan,00036129
+Paiton Trujillo1,06/19/2025,PMT-00036132,64.52,Cash,1030 Merchant Clearing,00036132
+Natalie Holtgraves,06/20/2025,PMT-00036134,132,Cash,1030 Merchant Clearing,00036134
+11535,06/23/2025,PMT-00036078,374,Square Gift Card,1150 Gift Card Liability,00036078
+11537,06/23/2025,PMT-00036086,858,Square Gift Card,1150 Gift Card Liability,00036086
+Jolie Hammond,06/23/2025,PMT-00036117,341.17,MasterCard,1030 Merchant Clearing,00036117
+Angeline Sutton,06/23/2025,PMT-00036133,250,Cash,1030 Merchant Clearing,00036133
+12572,06/23/2025,PMT-00036141,194,Visa,1030 Merchant Clearing,00036141
+12572,06/23/2025,PMT-00036142,24.06,Visa,1030 Merchant Clearing,00036142
+Emily Conaty,06/24/2025,PMT-00036080,500,Visa,1030 Merchant Clearing,00036080
+13636,06/24/2025,PMT-00036151,87.48,Visa,1030 Merchant Clearing,00036151
+Jackie Foster,06/24/2025,PMT-00036152,20,Alle Rewards,1210 Vendor Rec: Allergan,00036152
+Jackie Foster,06/24/2025,PMT-00036152,84,Amex,1030 Merchant Clearing,00036152
+13633,06/24/2025,PMT-00036154,546,Visa,1030 Merchant Clearing,00036154
+13634,06/24/2025,PMT-00036156,20,Alle Rewards,1210 Vendor Rec: Allergan,00036156
+13634,06/24/2025,PMT-00036156,383,MasterCard,1030 Merchant Clearing,00036156
+13596,06/25/2025,PMT-00036159,184,Amex,1030 Merchant Clearing,00036159
+10509,06/26/2025,PMT-00036164,20,Aspire Awards,1220 Vendor Rec: Galderma,00036164
+10509,06/26/2025,PMT-00036164,499.6,Client Bank,1100 Client Bank / Prepaid Liab,00036164
+Brandi Shoemaker,06/26/2025,PMT-00036166,500,MasterCard,1030 Merchant Clearing,00036166
+Ziyan Pessetto,06/26/2025,PMT-00036168,500,MasterCard,1030 Merchant Clearing,00036168
+Julie Colahan,06/26/2025,PMT-00036170,282.12,Visa,1030 Merchant Clearing,00036170
+Lauren Camenzind,06/26/2025,PMT-00036171,20,Alle Rewards,1210 Vendor Rec: Allergan,00036171
+Lauren Camenzind,06/26/2025,PMT-00036171,110,Visa,1030 Merchant Clearing,00036171
+Vicki Young,06/26/2025,PMT-00036172,20,Alle Rewards,1210 Vendor Rec: Allergan,00036172
+Vicki Young,06/26/2025,PMT-00036172,84,Visa,1030 Merchant Clearing,00036172
+Ziyan Pessetto,06/26/2025,PMT-00036175,500,MasterCard,1030 Merchant Clearing,00036175
+Anna Toner,06/26/2025,PMT-00036178,20,Alle Rewards,1210 Vendor Rec: Allergan,00036178
+Anna Toner,06/26/2025,PMT-00036178,498.06,MasterCard,1030 Merchant Clearing,00036178
+Mandy Shields,06/29/2025,PMT-00036183,170,Alle Rewards,1210 Vendor Rec: Allergan,00036183
+Mandy Shields,06/29/2025,PMT-00036183,1026,Visa,1030 Merchant Clearing,00036183
+11546,06/29/2025,PMT-00037188,308,Square Gift Card,1150 Gift Card Liability,00037188
+Erin Kreisel,06/30/2025,PMT-00032540,280,Cash,1030 Merchant Clearing,00032540
+Darcie Giles,06/30/2025,PMT-00037189,262.8,Visa,1030 Merchant Clearing,00037189
+Darcie Giles,06/30/2025,PMT-00037190,202.3,Visa,1030 Merchant Clearing,00037190
+Courtney Blake,06/30/2025,PMT-00037195,179,Check,1030 Merchant Clearing,00037195
+Kari Playter,06/30/2025,PMT-00037197,349,Cash,1030 Merchant Clearing,00037197
+Erin Kreisel,06/30/2025,PMT-00037198,35,Cash,1030 Merchant Clearing,00037198
+Erin Kreisel,06/30/2025,PMT-00037200,35,Cash,1030 Merchant Clearing,00037200
+Matt Kreisel,06/30/2025,PMT-00037201,35,Cash,1030 Merchant Clearing,00037201
+13635,07/01/2025,PMT-00037194,149,Discover,1030 Merchant Clearing,00037194
+10524,07/01/2025,PMT-00037202,20,Alle Rewards,1210 Vendor Rec: Allergan,00037202
+10524,07/01/2025,PMT-00037202,123,Visa,1030 Merchant Clearing,00037202
+13637,07/01/2025,PMT-00037203,367.7,Visa,1030 Merchant Clearing,00037203
+Rebecca Wayland,07/01/2025,PMT-00037204,129.04,Visa,1030 Merchant Clearing,00037204
+12569,07/01/2025,PMT-00037205,38,Visa,1030 Merchant Clearing,00037205
+12569,07/01/2025,PMT-00037205,40,Visa,1030 Merchant Clearing,00037205
+11525,07/01/2025,PMT-00037207,175,Visa,1030 Merchant Clearing,00037207
+11525,07/01/2025,PMT-00037207,20,Alle Rewards,1210 Vendor Rec: Allergan,00037207
+Betsey Rohr,07/01/2025,PMT-00037209,30,Square Gift Card,1150 Gift Card Liability,00037209
+Kristy Blomquist,07/01/2025,PMT-00037210,180,Alle Rewards,1210 Vendor Rec: Allergan,00037210
+Kristy Blomquist,07/01/2025,PMT-00037210,670,Visa,1030 Merchant Clearing,00037210
+13640,07/01/2025,PMT-00037211,10,Alle Rewards,1210 Vendor Rec: Allergan,00037211
+13640,07/01/2025,PMT-00037211,10,Alle Rewards,1210 Vendor Rec: Allergan,00037211
+13640,07/01/2025,PMT-00037211,617,Visa,1030 Merchant Clearing,00037211
+13638,07/01/2025,PMT-00037213,494,Amex,1030 Merchant Clearing,00037213
+13639,07/01/2025,PMT-00037215,689,Visa,1030 Merchant Clearing,00037215
+Natalie Holtgraves,07/04/2025,PMT-00037219,20,Alle Rewards,1210 Vendor Rec: Allergan,00037219
+Natalie Holtgraves,07/04/2025,PMT-00037219,123,Cash,1030 Merchant Clearing,00037219
+Kristin Playter,07/05/2025,PMT-00037230,530,Cash,1030 Merchant Clearing,00037230
+13644,07/08/2025,PMT-00038234,360,Cash,1030 Merchant Clearing,00038234
+13644,07/08/2025,PMT-00038234,164.93,Visa,1030 Merchant Clearing,00038234
+12579,07/08/2025,PMT-00038237,20,Alle Rewards,1210 Vendor Rec: Allergan,00038237
+12579,07/08/2025,PMT-00038237,357,Visa,1030 Merchant Clearing,00038237
+Nikki Birk,07/08/2025,PMT-00038238,20,Alle Rewards,1210 Vendor Rec: Allergan,00038238
+Nikki Birk,07/08/2025,PMT-00038238,1400,Cash,1030 Merchant Clearing,00038238
+Nikki Birk,07/08/2025,PMT-00038238,62,Visa,1030 Merchant Clearing,00038238
+Staci Light,07/08/2025,PMT-00038239,20,Alle Rewards,1210 Vendor Rec: Allergan,00038239
+Staci Light,07/08/2025,PMT-00038239,617,Visa,1030 Merchant Clearing,00038239
+Ayla McCalley,07/08/2025,PMT-00038240,20,Alle Rewards,1210 Vendor Rec: Allergan,00038240
+Ayla McCalley,07/08/2025,PMT-00038240,565,Visa,1030 Merchant Clearing,00038240
+12571,07/08/2025,PMT-00038241,532.59,Amex,1030 Merchant Clearing,00038241
+13622,07/08/2025,PMT-00038243,199.56,Visa,1030 Merchant Clearing,00038243
+12560,07/08/2025,PMT-00038245,312,Visa,1030 Merchant Clearing,00038245
+Kristin Playter,07/08/2025,PMT-00038246,20,Alle Rewards,1210 Vendor Rec: Allergan,00038246
+Kristin Playter,07/08/2025,PMT-00038246,530,Client Bank,1100 Client Bank / Prepaid Liab,00038246
+Tracy Jarvis-Hennessy,07/08/2025,PMT-00038249,400,Visa,1030 Merchant Clearing,00038249
+Melissa Woods,07/08/2025,PMT-00038250,170,Alle Rewards,1210 Vendor Rec: Allergan,00038250
+Melissa Woods,07/08/2025,PMT-00038250,324,Visa,1030 Merchant Clearing,00038250
+13602,07/08/2025,PMT-00038252,66,Cash,1030 Merchant Clearing,00038252
+Jackie Foster,07/09/2025,PMT-00038254,175.82,Visa,1030 Merchant Clearing,00038254
+13641,07/10/2025,PMT-00038262,494,Discover,1030 Merchant Clearing,00038262
+Rebecca Wayland,07/10/2025,PMT-00038264,168.95,Visa,1030 Merchant Clearing,00038264
+Megan Pederson,07/10/2025,PMT-00038265,20,Aspire Awards,1220 Vendor Rec: Galderma,00038265
+Megan Pederson,07/10/2025,PMT-00038265,564.55,Visa,1030 Merchant Clearing,00038265
+Cristen Frederick,07/10/2025,PMT-00038267,753.42,Discover,1030 Merchant Clearing,00038267
+13630,07/10/2025,PMT-00038268,20,Alle Rewards,1210 Vendor Rec: Allergan,00038268
+13630,07/10/2025,PMT-00038268,655.48,Visa,1030 Merchant Clearing,00038268
+13594,07/10/2025,PMT-00038273,20,Alle Rewards,1210 Vendor Rec: Allergan,00038273
+13594,07/10/2025,PMT-00038273,158,Cash,1030 Merchant Clearing,00038273
+13594,07/10/2025,PMT-00038273,119,MasterCard,1030 Merchant Clearing,00038273
+Shannon Yeates,07/10/2025,PMT-00038274,737,Visa,1030 Merchant Clearing,00038274
+13585,07/10/2025,PMT-00038275,40,Alle Rewards,1210 Vendor Rec: Allergan,00038275
+13585,07/10/2025,PMT-00038275,466,Visa,1030 Merchant Clearing,00038275
+13589,07/10/2025,PMT-00038276,279.94,Visa,1030 Merchant Clearing,00038276
+13586,07/10/2025,PMT-00038277,20,Alle Rewards,1210 Vendor Rec: Allergan,00038277
+13586,07/10/2025,PMT-00038277,387,Cash,1030 Merchant Clearing,00038277
+Angela Cooper,07/10/2025,PMT-00038278,459.9,Cash,1030 Merchant Clearing,00038278
+Lena Relllihan,07/10/2025,PMT-00038279,30,Alle Rewards,1210 Vendor Rec: Allergan,00038279
+Lena Relllihan,07/10/2025,PMT-00038279,502.69,Cash,1030 Merchant Clearing,00038279
+Kari Playter,07/10/2025,PMT-00038281,40,Alle Rewards,1210 Vendor Rec: Allergan,00038281
+Kari Playter,07/10/2025,PMT-00038281,81,Cash,1030 Merchant Clearing,00038281
+Stacy Parker,07/11/2025,PMT-00038282,602,Square Gift Card,1150 Gift Card Liability,00038282
+Julie Huebner,07/13/2025,PMT-00038258,209.95,Visa,1030 Merchant Clearing,00038258
+Jenna Adkins,07/13/2025,PMT-00038284,297,Cash,1030 Merchant Clearing,00038284
+Heidi Mueller,07/14/2025,PMT-00038287,500,Visa,1030 Merchant Clearing,00038287
+Darcie Giles,07/14/2025,PMT-00038294,127.94,Visa,1030 Merchant Clearing,00038294
+11525,07/14/2025,PMT-00038296,20,Alle Rewards,1210 Vendor Rec: Allergan,00038296
+11525,07/14/2025,PMT-00038296,240,Visa,1030 Merchant Clearing,00038296
+Jenna Adkins,07/15/2025,PMT-00038303,297,Client Bank,1100 Client Bank / Prepaid Liab,00038303
+Ashley Knecht,07/15/2025,PMT-00038304,20,Aspire Awards,1220 Vendor Rec: Galderma,00038304
+Ashley Knecht,07/15/2025,PMT-00038304,447.64,Visa,1030 Merchant Clearing,00038304
+Tracy Jarvis-Hennessy,07/15/2025,PMT-00038306,50,Alle Rewards,1210 Vendor Rec: Allergan,00038306
+Tracy Jarvis-Hennessy,07/15/2025,PMT-00038306,1198,Visa,1030 Merchant Clearing,00038306
+Rebecca Wayland,07/15/2025,PMT-00038308,20,Alle Rewards,1210 Vendor Rec: Allergan,00038308
+Rebecca Wayland,07/15/2025,PMT-00038308,179,Visa,1030 Merchant Clearing,00038308
+Rebecca Wayland,07/15/2025,PMT-00038310,56.86,Visa,1030 Merchant Clearing,00038310
+Abby Chitwood,07/15/2025,PMT-00038320,20,Alle Rewards,1210 Vendor Rec: Allergan,00038320
+Abby Chitwood,07/15/2025,PMT-00038320,578,Visa,1030 Merchant Clearing,00038320
+14646,07/15/2025,PMT-00038322,20,Alle Rewards,1210 Vendor Rec: Allergan,00038322
+14646,07/15/2025,PMT-00038322,79,Cash,1030 Merchant Clearing,00038322
+13638,07/16/2025,PMT-00038326,171.35,Amex,1030 Merchant Clearing,00038326
+Wim Kenis,07/23/2025,PMT-00036149,250,Visa,1030 Merchant Clearing,00036149
+Darcy Richardson,07/23/2025,PMT-00038341,50,Cash,1030 Merchant Clearing,00038341
+Paiton Trujillo1,07/23/2025,PMT-00038342,50,Cash,1030 Merchant Clearing,00038342
+Carrie Babbitt,07/23/2025,PMT-00038343,600,Visa,1030 Merchant Clearing,00038343
+Emily Conaty,07/23/2025,PMT-00038346,500,Visa,1030 Merchant Clearing,00038346
+Ann Arkebauer,07/23/2025,PMT-00038347,500,Visa,1030 Merchant Clearing,00038347
+Kari Playter,07/25/2025,PMT-00038356,441.77,Cash,1030 Merchant Clearing,00038356
+Jo Ann Sedlak,07/25/2025,PMT-00038358,201.2,Discover,1030 Merchant Clearing,00038358
+11535,07/26/2025,PMT-00038354,54.68,MasterCard,1030 Merchant Clearing,00038354
+Tara Moody,07/28/2025,PMT-00038337,611,Visa,1030 Merchant Clearing,00038337
+Stacey Sperry,07/28/2025,PMT-00038340,200,Cash,1030 Merchant Clearing,00038340
+Cassie Zorn,07/28/2025,PMT-00038362,801.54,Visa,1030 Merchant Clearing,00038362
+Anna Toner,07/28/2025,PMT-00038371,480.9,MasterCard,1030 Merchant Clearing,00038371
+Vicki Young,07/29/2025,PMT-00038289,250,Visa,1030 Merchant Clearing,00038289
+Jared Bahr,07/29/2025,PMT-00038349,500,Visa,1030 Merchant Clearing,00038349
+Cassidy Wheeler,07/29/2025,PMT-00038372,20,Alle Rewards,1210 Vendor Rec: Allergan,00038372
+Cassidy Wheeler,07/29/2025,PMT-00038372,682,Visa,1030 Merchant Clearing,00038372
+14645,07/29/2025,PMT-00038377,1100,Visa,1030 Merchant Clearing,00038377
+14650,07/29/2025,PMT-00038381,20,Alle Rewards,1210 Vendor Rec: Allergan,00038381
+14650,07/29/2025,PMT-00038381,20,Aspire Awards,1220 Vendor Rec: Galderma,00038381
+14650,07/29/2025,PMT-00038381,869.54,Discover,1030 Merchant Clearing,00038381
+Staci Light,07/29/2025,PMT-00038383,30,Alle Rewards,1210 Vendor Rec: Allergan,00038383
+Staci Light,07/29/2025,PMT-00038383,256,Visa,1030 Merchant Clearing,00038383
+Emily Bellassai,07/29/2025,PMT-00038384,170,Alle Rewards,1210 Vendor Rec: Allergan,00038384
+Emily Bellassai,07/29/2025,PMT-00038384,181,Visa,1030 Merchant Clearing,00038384
+Jennifer Stauffer,07/29/2025,PMT-00038386,170,Alle Rewards,1210 Vendor Rec: Allergan,00038386
+Jennifer Stauffer,07/29/2025,PMT-00038386,635.52,Visa,1030 Merchant Clearing,00038386
+Kelsey Cooper,07/29/2025,PMT-00038390,120,Alle Rewards,1210 Vendor Rec: Allergan,00038390
+Kelsey Cooper,07/29/2025,PMT-00038390,1024,Visa,1030 Merchant Clearing,00038390
+14655,07/29/2025,PMT-00038392,100,Alle Rewards,1210 Vendor Rec: Allergan,00038392
+14655,07/29/2025,PMT-00038392,550,Discover,1030 Merchant Clearing,00038392
+14654,07/31/2025,PMT-00038374,480,Visa,1030 Merchant Clearing,00038374
+14654,07/31/2025,PMT-00038374,40,Alle Rewards,1210 Vendor Rec: Allergan,00038374
+Tara Spilker,07/31/2025,PMT-00038400,30,Alle Rewards,1210 Vendor Rec: Allergan,00038400
+Tara Spilker,07/31/2025,PMT-00038400,542,MasterCard,1030 Merchant Clearing,00038400
+Erin Ostgulen,07/31/2025,PMT-00038402,170,Alle Rewards,1210 Vendor Rec: Allergan,00038402
+Erin Ostgulen,07/31/2025,PMT-00038402,514,Visa,1030 Merchant Clearing,00038402
+13624,07/31/2025,PMT-00038409,20,Square Gift Card,1150 Gift Card Liability,00038409
+13624,07/31/2025,PMT-00038409,630,Visa,1030 Merchant Clearing,00038409
+13642,07/31/2025,PMT-00038410,224.17,Visa,1030 Merchant Clearing,00038410
+13642,07/31/2025,PMT-00038411,20,Alle Rewards,1210 Vendor Rec: Allergan,00038411
+13642,07/31/2025,PMT-00038411,300,Cash,1030 Merchant Clearing,00038411
+13642,07/31/2025,PMT-00038411,200,Visa,1030 Merchant Clearing,00038411
+13597,08/03/2025,PMT-00038335,650,MasterCard,1030 Merchant Clearing,00038335
+Ziyan Pessetto,08/03/2025,PMT-00038425,500,MasterCard,1030 Merchant Clearing,00038425
+Ziyan Pessetto,08/03/2025,PMT-00038427,500,MasterCard,1030 Merchant Clearing,00038427
+13629,08/05/2025,PMT-00038438,20,Alle Rewards,1210 Vendor Rec: Allergan,00038438
+13629,08/05/2025,PMT-00038438,79,MasterCard,1030 Merchant Clearing,00038438
+Avy Willis,08/05/2025,PMT-00038439,10,Alle Rewards,1210 Vendor Rec: Allergan,00038439
+Avy Willis,08/05/2025,PMT-00038439,614,Amex,1030 Merchant Clearing,00038439
+Stacey Hesting,08/05/2025,PMT-00038441,20,Aspire Awards,1220 Vendor Rec: Galderma,00038441
+Stacey Hesting,08/05/2025,PMT-00038441,1000.01,Visa,1030 Merchant Clearing,00038441
+Heidi Mueller,08/05/2025,PMT-00038443,130,Alle Rewards,1210 Vendor Rec: Allergan,00038443
+Heidi Mueller,08/05/2025,PMT-00038443,1430,Visa,1030 Merchant Clearing,00038443
+13631,08/05/2025,PMT-00038444,40,Alle Rewards,1210 Vendor Rec: Allergan,00038444
+13631,08/05/2025,PMT-00038444,545,Amex,1030 Merchant Clearing,00038444
+Kendra Howze,08/06/2025,PMT-00038447,304.42,Visa,1030 Merchant Clearing,00038447
+Jackie Foster,08/06/2025,PMT-00038449,415.94,MasterCard,1030 Merchant Clearing,00038449
+Emily Freeman,08/07/2025,PMT-00038452,20,Aspire Awards,1220 Vendor Rec: Galderma,00038452
+Emily Freeman,08/07/2025,PMT-00038452,577.54,Visa,1030 Merchant Clearing,00038452
+Hannah Ida,08/07/2025,PMT-00038455,50,Alle Rewards,1210 Vendor Rec: Allergan,00038455
+Hannah Ida,08/07/2025,PMT-00038455,50,Aspire Awards,1220 Vendor Rec: Galderma,00038455
+Kristen Lewis,08/07/2025,PMT-00038456,20,Alle Rewards,1210 Vendor Rec: Allergan,00038456
+Kristen Lewis,08/07/2025,PMT-00038456,20,Aspire Awards,1220 Vendor Rec: Galderma,00038456
+Kristen Lewis,08/07/2025,PMT-00038456,680,Cherry ,1030 Merchant Clearing,00038456
+Haley Harrison-Lee,08/07/2025,PMT-00038458,120,Alle Rewards,1210 Vendor Rec: Allergan,00038458
+Haley Harrison-Lee,08/07/2025,PMT-00038458,608,Visa,1030 Merchant Clearing,00038458
+Deana Tatum,08/07/2025,PMT-00038459,20,Aspire Awards,1220 Vendor Rec: Galderma,00038459
+Deana Tatum,08/07/2025,PMT-00038459,577.54,Visa,1030 Merchant Clearing,00038459
+14651,08/07/2025,PMT-00038461,20,Alle Rewards,1210 Vendor Rec: Allergan,00038461
+14651,08/07/2025,PMT-00038461,370,MasterCard,1030 Merchant Clearing,00038461
+Sally Determan,08/11/2025,PMT-00038433,647.82,Amex,1030 Merchant Clearing,00038433
+14657,08/11/2025,PMT-00038451,20,Alle Rewards,1210 Vendor Rec: Allergan,00038451
+14657,08/11/2025,PMT-00038451,650,Square Gift Card,1150 Gift Card Liability,00038451
+14657,08/11/2025,PMT-00038451,162,Discover,1030 Merchant Clearing,00038451
+Tracy Jarvis-Hennessy,08/11/2025,PMT-00038465,400,Visa,1030 Merchant Clearing,00038465
+Ashley Sedler,08/11/2025,PMT-00038466,2358.69,Visa,1030 Merchant Clearing,00038466
+Angeline Sutton,08/12/2025,PMT-00038470,350,Visa,1030 Merchant Clearing,00038470
+Angeline Sutton,08/12/2025,PMT-00038471,250,Visa,1030 Merchant Clearing,00038471
+Darcy Richardson,08/13/2025,PMT-00038290,50,Client Bank,1100 Client Bank / Prepaid Liab,00038290
+Darcy Richardson,08/13/2025,PMT-00038290,350,Cash,1030 Merchant Clearing,00038290
+Abigail McMullen,08/14/2025,PMT-00038350,20,Alle Rewards,1210 Vendor Rec: Allergan,00038350
+Abigail McMullen,08/14/2025,PMT-00038350,20,Aspire Awards,1220 Vendor Rec: Galderma,00038350
+Abigail McMullen,08/14/2025,PMT-00038350,896,Visa,1030 Merchant Clearing,00038350
+Daniela Randall,08/14/2025,PMT-00038484,50,Alle Rewards,1210 Vendor Rec: Allergan,00038484
+Daniela Randall,08/14/2025,PMT-00038484,939.83,Cash,1030 Merchant Clearing,00038484
+Gaby Wise,08/14/2025,PMT-00038491,10,Cash,1030 Merchant Clearing,00038491
+Gaby Wise,08/14/2025,PMT-00038491,140,Alle Rewards,1210 Vendor Rec: Allergan,00038491
+12569,08/14/2025,PMT-00038493,20,Alle Rewards,1210 Vendor Rec: Allergan,00038493
+12569,08/14/2025,PMT-00038493,552,Visa,1030 Merchant Clearing,00038493
+10461,08/17/2025,PMT-00038506,770,Visa,1030 Merchant Clearing,00038506
+14660,08/17/2025,PMT-00038507,100,Square Gift Card,1150 Gift Card Liability,00038507
+14660,08/17/2025,PMT-00038507,1031,Visa,1030 Merchant Clearing,00038507
+12580,08/18/2025,PMT-00036120,650,MasterCard,1030 Merchant Clearing,00036120
+13622,08/19/2025,PMT-00038244,249,Visa,1030 Merchant Clearing,00038244
+Darcy Richardson,08/19/2025,PMT-00038483,400,Cash,1030 Merchant Clearing,00038483
+Courtney Hill,08/19/2025,PMT-00038522,20,Alle Rewards,1210 Vendor Rec: Allergan,00038522
+Courtney Hill,08/19/2025,PMT-00038522,616.84,Cash,1030 Merchant Clearing,00038522
+Cassie Schmidt,08/19/2025,PMT-00038528,137.34,Square Gift Card,1150 Gift Card Liability,00038528
+Mackenzie Stauffer,08/19/2025,PMT-00038530,20,Alle Rewards,1210 Vendor Rec: Allergan,00038530
+Mackenzie Stauffer,08/19/2025,PMT-00038530,409,MasterCard,1030 Merchant Clearing,00038530
+Courtney Hayde,08/19/2025,PMT-00038532,598,Visa,1030 Merchant Clearing,00038532
+Renu Mehra,08/21/2025,PMT-00038548,20,Alle Rewards,1210 Vendor Rec: Allergan,00038548
+Renu Mehra,08/21/2025,PMT-00038548,344,Amex,1030 Merchant Clearing,00038548
+Jill Minton,08/21/2025,PMT-00038551,20,Aspire Awards,1220 Vendor Rec: Galderma,00038551
+Jill Minton,08/21/2025,PMT-00038551,863.32,Visa,1030 Merchant Clearing,00038551
+Sam Larsen,08/21/2025,PMT-00038553,249,MasterCard,1030 Merchant Clearing,00038553
+Sara Stults,08/21/2025,PMT-00038554,20,Alle Rewards,1210 Vendor Rec: Allergan,00038554
+Sara Stults,08/21/2025,PMT-00038554,1163,MasterCard,1030 Merchant Clearing,00038554
+Emily Griggs,08/21/2025,PMT-00038557,20,Alle Rewards,1210 Vendor Rec: Allergan,00038557
+Emily Griggs,08/21/2025,PMT-00038557,79,Visa,1030 Merchant Clearing,00038557
+12548,08/21/2025,PMT-00038558,20,Aspire Awards,1220 Vendor Rec: Galderma,00038558
+12548,08/21/2025,PMT-00038558,1201.06,Discover,1030 Merchant Clearing,00038558
+Rebecca Wayland,08/21/2025,PMT-00038559,554.9,Visa,1030 Merchant Clearing,00038559
+Rebecca Wayland,08/21/2025,PMT-00038559,50,Reward Points,1100 Client Bank / Prepaid Liab,00038559
+Kari Playter,08/23/2025,PMT-00038540,349,Cash,1030 Merchant Clearing,00038540
+Kristin Playter,08/23/2025,PMT-00038564,149,Cash,1030 Merchant Clearing,00038564
+Emily Griggs,08/25/2025,PMT-00038572,228,Visa,1030 Merchant Clearing,00038572
+13642,08/25/2025,PMT-00038574,374.58,Visa,1030 Merchant Clearing,00038574
+14645,08/26/2025,PMT-00038377,325.68,Visa,1030 Merchant Clearing,00038377
+Sally Determan,08/26/2025,PMT-00038568,299,Amex,1030 Merchant Clearing,00038568
+Kristin Warren,08/26/2025,PMT-00038578,418,MasterCard,1030 Merchant Clearing,00038578
+Darcie Giles,08/26/2025,PMT-00038580,282.12,Visa,1030 Merchant Clearing,00038580
+Angeline Sutton,08/26/2025,PMT-00038582,30,Alle Rewards,1210 Vendor Rec: Allergan,00038582
+Angeline Sutton,08/26/2025,PMT-00038582,1218,Visa,1030 Merchant Clearing,00038582
+Chassidy Hansen,08/26/2025,PMT-00038583,20,Alle Rewards,1210 Vendor Rec: Allergan,00038583
+Chassidy Hansen,08/26/2025,PMT-00038583,513.98,Visa,1030 Merchant Clearing,00038583
+14662,08/26/2025,PMT-00038585,20,Aspire Awards,1220 Vendor Rec: Galderma,00038585
+14662,08/26/2025,PMT-00038585,499.6,Visa,1030 Merchant Clearing,00038585
+14663,08/26/2025,PMT-00038587,99,Visa,1030 Merchant Clearing,00038587
+Ashley Sedler,08/26/2025,PMT-00038589,158.55,Visa,1030 Merchant Clearing,00038589
+11536,08/27/2025,PMT-00038541,517,Visa,1030 Merchant Clearing,00038541
+13644,08/27/2025,PMT-00038592,175.82,Visa,1030 Merchant Clearing,00038592
+Ann Arkebauer,08/28/2025,PMT-00038595,500,Visa,1030 Merchant Clearing,00038595
+Breena Svetlic,08/28/2025,PMT-00038598,284.31,Visa,1030 Merchant Clearing,00038598
+14665,08/28/2025,PMT-00038600,320,Alle Rewards,1210 Vendor Rec: Allergan,00038600
+14665,08/28/2025,PMT-00038600,112.12,Visa,1030 Merchant Clearing,00038600
+13595,08/28/2025,PMT-00038601,20,Aspire Awards,1220 Vendor Rec: Galderma,00038601
+13595,08/28/2025,PMT-00038601,746.41,Visa,1030 Merchant Clearing,00038601
+Joanna Snook-Snow,08/28/2025,PMT-00038604,300,Alle Rewards,1210 Vendor Rec: Allergan,00038604
+Joanna Snook-Snow,08/28/2025,PMT-00038604,800,MasterCard,1030 Merchant Clearing,00038604
+Joanna Snook-Snow,08/28/2025,PMT-00038604,96,Visa,1030 Merchant Clearing,00038604
+13597,08/31/2025,PMT-00038576,260,MasterCard,1030 Merchant Clearing,00038576
+12580,08/31/2025,PMT-00038611,50,Cash,1030 Merchant Clearing,00038611
+Carrie Babbitt,08/31/2025,PMT-00038614,600,Visa,1030 Merchant Clearing,00038614
+10461,09/01/2025,PMT-00038511,224.17,MasterCard,1030 Merchant Clearing,00038511
+12572,09/01/2025,PMT-00038621,224.17,Visa,1030 Merchant Clearing,00038621
+Emily Conaty,09/02/2025,PMT-00038628,500,Visa,1030 Merchant Clearing,00038628
+14663,09/02/2025,PMT-00038629,500,Visa,1030 Merchant Clearing,00038629
+13628,09/02/2025,PMT-00038630,99,Visa,1030 Merchant Clearing,00038630
+Andrea Willson,09/02/2025,PMT-00038631,416,Visa,1030 Merchant Clearing,00038631
+Brandi Shoemaker,09/02/2025,PMT-00038635,500,MasterCard,1030 Merchant Clearing,00038635
+13619,09/04/2025,PMT-00038637,559,Visa,1030 Merchant Clearing,00038637
+13619,09/04/2025,PMT-00038637,390,Visa,1030 Merchant Clearing,00038637
+Carrie Hyer,09/04/2025,PMT-00038639,20,Alle Rewards,1210 Vendor Rec: Allergan,00038639
+Carrie Hyer,09/04/2025,PMT-00038639,981,Visa,1030 Merchant Clearing,00038639
+13587,09/04/2025,PMT-00038640,20,Aspire Awards,1220 Vendor Rec: Galderma,00038640
+13587,09/04/2025,PMT-00038640,395.68,Cash,1030 Merchant Clearing,00038640
+Lauren Camenzind,09/04/2025,PMT-00038643,20,Alle Rewards,1210 Vendor Rec: Allergan,00038643
+Lauren Camenzind,09/04/2025,PMT-00038643,669,Visa,1030 Merchant Clearing,00038643
+Paiton Trujillo1,09/04/2025,PMT-00038646,37.18,Check,1030 Merchant Clearing,00038646
+Courtney Blake,09/07/2025,PMT-00038645,600,Visa,1030 Merchant Clearing,00038645
+Kari Playter,09/07/2025,PMT-00039649,87.48,Cash,1030 Merchant Clearing,00039649
+Cristen Frederick,09/08/2025,PMT-00039650,508.48,Discover,1030 Merchant Clearing,00039650
+14654,09/08/2025,PMT-00039653,149,MasterCard,1030 Merchant Clearing,00039653
+Jared Bahr,09/09/2025,PMT-00038644,500,Cash,1030 Merchant Clearing,00038644
+Jacqueline Coleman,09/09/2025,PMT-00039661,20,Alle Rewards,1210 Vendor Rec: Allergan,00039661
+Jacqueline Coleman,09/09/2025,PMT-00039661,629.56,Visa,1030 Merchant Clearing,00039661
+Melissa Middlemas2,09/09/2025,PMT-00039663,54.68,Visa,1030 Merchant Clearing,00039663
+Ashley Sedler,09/09/2025,PMT-00039664,2465.18,Visa,1030 Merchant Clearing,00039664
+Heidi Mueller,09/09/2025,PMT-00039668,500,Visa,1030 Merchant Clearing,00039668
+Karie Sedlak1,09/09/2025,PMT-00039670,650,Cash,1030 Merchant Clearing,00039670
+14670,09/09/2025,PMT-00039672,20,Aspire Awards,1220 Vendor Rec: Galderma,00039672
+14670,09/09/2025,PMT-00039672,798.47,Visa,1030 Merchant Clearing,00039672
+Shari Nickelson,09/09/2025,PMT-00039674,170,Alle Rewards,1210 Vendor Rec: Allergan,00039674
+Shari Nickelson,09/09/2025,PMT-00039674,402,MasterCard,1030 Merchant Clearing,00039674
+Tracy Jarvis-Hennessy,09/10/2025,PMT-00039682,400,Visa,1030 Merchant Clearing,00039682
+7408,09/11/2025,PMT-00039683,300,Cash,1030 Merchant Clearing,00039683
+14665,09/11/2025,PMT-00039685,150,Visa,1030 Merchant Clearing,00039685
+Valerie Pedersen-Barr,09/11/2025,PMT-00039686,300,Visa,1030 Merchant Clearing,00039686
+Emily Conaty,09/11/2025,PMT-00039687,598,Visa,1030 Merchant Clearing,00039687
+Julie Colahan,09/11/2025,PMT-00039690,20,Aspire Awards,1220 Vendor Rec: Galderma,00039690
+Julie Colahan,09/11/2025,PMT-00039690,525.58,Visa,1030 Merchant Clearing,00039690
+Julie Colahan,09/11/2025,PMT-00039691,8,Visa,1030 Merchant Clearing,00039691
+Julie Colahan,09/11/2025,PMT-00039691,70,Alle Rewards,1210 Vendor Rec: Allergan,00039691
+Jo Ann Sedlak,09/13/2025,PMT-00039694,286.93,Discover,1030 Merchant Clearing,00039694
+Anna Toner,09/15/2025,PMT-00039704,228.85,MasterCard,1030 Merchant Clearing,00039704
+14668,09/16/2025,PMT-00038648,100,Visa,1030 Merchant Clearing,00038648
+Darcy Richardson,09/16/2025,PMT-00039708,20,Aspire Awards,1220 Vendor Rec: Galderma,00039708
+Darcy Richardson,09/16/2025,PMT-00039708,444.15,Check,1030 Merchant Clearing,00039708
+3155,09/16/2025,PMT-00039709,20,Alle Rewards,1210 Vendor Rec: Allergan,00039709
+3155,09/16/2025,PMT-00039709,2105,Visa,1030 Merchant Clearing,00039709
+12569,09/16/2025,PMT-00039710,95,Alle Rewards,1210 Vendor Rec: Allergan,00039710
+12569,09/16/2025,PMT-00039710,500,Cash,1030 Merchant Clearing,00039710
+12569,09/16/2025,PMT-00039710,55,Visa,1030 Merchant Clearing,00039710
+Emily Hart,09/16/2025,PMT-00039717,1100.62,Visa,1030 Merchant Clearing,00039717
+13642,09/18/2025,PMT-00039732,352.11,Visa,1030 Merchant Clearing,00039732
+Renu Mehra,09/18/2025,PMT-00039734,249,Amex,1030 Merchant Clearing,00039734
+Molly Turner,09/18/2025,PMT-00039735,416,Cash,1030 Merchant Clearing,00039735
+Kathryn Lehman,09/18/2025,PMT-00039736,20,Aspire Awards,1220 Vendor Rec: Galderma,00039736
+Kathryn Lehman,09/18/2025,PMT-00039736,20,Aspire Awards,1220 Vendor Rec: Galderma,00039736
+Kathryn Lehman,09/18/2025,PMT-00039736,1701.18,Visa,1030 Merchant Clearing,00039736
+Vicki Young,09/18/2025,PMT-00039737,30,Alle Rewards,1210 Vendor Rec: Allergan,00039737
+Vicki Young,09/18/2025,PMT-00039737,424,Visa,1030 Merchant Clearing,00039737
+Zoe Shepherd,09/19/2025,PMT-00039742,20,Alle Rewards,1210 Vendor Rec: Allergan,00039742
+Zoe Shepherd,09/19/2025,PMT-00039742,629,Visa,1030 Merchant Clearing,00039742
+Erin Kreisel,09/20/2025,PMT-00039728,347,Cash,1030 Merchant Clearing,00039728
+Emily Griggs,09/23/2025,PMT-00039756,20,Alle Rewards,1210 Vendor Rec: Allergan,00039756
+Emily Griggs,09/23/2025,PMT-00039756,79,Visa,1030 Merchant Clearing,00039756
+12548,09/23/2025,PMT-00039757,273.38,Discover,1030 Merchant Clearing,00039757
+10522,09/23/2025,PMT-00039758,20,Alle Rewards,1210 Vendor Rec: Allergan,00039758
+10522,09/23/2025,PMT-00039758,591,Visa,1030 Merchant Clearing,00039758
+Ann Arkebauer,09/23/2025,PMT-00039761,30,Alle Rewards,1210 Vendor Rec: Allergan,00039761
+Ann Arkebauer,09/23/2025,PMT-00039761,40,Aspire Awards,1220 Vendor Rec: Galderma,00039761
+Ann Arkebauer,09/23/2025,PMT-00039761,1541.16,Visa,1030 Merchant Clearing,00039761
+12553,09/23/2025,PMT-00039764,20,Alle Rewards,1210 Vendor Rec: Allergan,00039764
+12553,09/23/2025,PMT-00039764,630,Visa,1030 Merchant Clearing,00039764
+13596,09/23/2025,PMT-00039766,50,Cash,1030 Merchant Clearing,00039766
+13596,09/23/2025,PMT-00039766,20,Aspire Awards,1220 Vendor Rec: Galderma,00039766
+13596,09/23/2025,PMT-00039766,540.53,MasterCard,1030 Merchant Clearing,00039766
+11535,09/24/2025,PMT-00039751,300,Cash,1030 Merchant Clearing,00039751
+11535,09/24/2025,PMT-00039751,74,MasterCard,1030 Merchant Clearing,00039751
+Julie Colahan,09/24/2025,PMT-00039770,274.8,Visa,1030 Merchant Clearing,00039770
+12562,09/24/2025,PMT-00039772,220,Discover,1030 Merchant Clearing,00039772
+Amy Morris,09/25/2025,PMT-00039776,702.46,MasterCard,1030 Merchant Clearing,00039776
+Julie Albin,09/25/2025,PMT-00039777,676,Check,1030 Merchant Clearing,00039777
+Julie Albin,09/25/2025,PMT-00039778,212.57,Visa,1030 Merchant Clearing,00039778
+14672,09/25/2025,PMT-00039779,520,Square Gift Card,1150 Gift Card Liability,00039779
+14672,09/25/2025,PMT-00039779,20,Alle Rewards,1210 Vendor Rec: Allergan,00039779
+14672,09/25/2025,PMT-00039779,240,Visa,1030 Merchant Clearing,00039779
+14670,09/25/2025,PMT-00039781,129.9,Visa,1030 Merchant Clearing,00039781
+Karie Sedlak1,09/25/2025,PMT-00039783,22.96,Visa,1030 Merchant Clearing,00039783
+Kendra Howze,09/25/2025,PMT-00039784,20,Alle Rewards,1210 Vendor Rec: Allergan,00039784
+Kendra Howze,09/25/2025,PMT-00039784,715.01,Visa,1030 Merchant Clearing,00039784
+Kelsey Bowman,09/25/2025,PMT-00039785,20,Aspire Awards,1220 Vendor Rec: Galderma,00039785
+Kelsey Bowman,09/25/2025,PMT-00039785,20,Alle Rewards,1210 Vendor Rec: Allergan,00039785
+Kelsey Bowman,09/25/2025,PMT-00039785,570.57,Visa,1030 Merchant Clearing,00039785
+12562,09/28/2025,PMT-00039715,650,Discover,1030 Merchant Clearing,00039715
+Emily Hart,09/28/2025,PMT-00039795,50,Aspire Awards,1220 Vendor Rec: Galderma,00039795
+Emily Hart,09/28/2025,PMT-00039795,23.39,Visa,1030 Merchant Clearing,00039795
+Emily Hart,09/28/2025,PMT-00039795,576.61,Visa,1030 Merchant Clearing,00039795
+14675,09/29/2025,PMT-00039786,299,Visa,1030 Merchant Clearing,00039786
+Emily Griggs,09/29/2025,PMT-00039806,22,Visa,1030 Merchant Clearing,00039806
+Morgan Rezaei,09/30/2025,PMT-00039808,20,Alle Rewards,1210 Vendor Rec: Allergan,00039808
+Morgan Rezaei,09/30/2025,PMT-00039808,903,Amex,1030 Merchant Clearing,00039808
+Morgan Rezaei,09/30/2025,PMT-00039809,390,Visa,1030 Merchant Clearing,00039809
+Rebecca Wayland,09/30/2025,PMT-00039810,412.03,Visa,1030 Merchant Clearing,00039810
+Kelli Deuth,09/30/2025,PMT-00039811,20,Aspire Awards,1220 Vendor Rec: Galderma,00039811
+Kelli Deuth,09/30/2025,PMT-00039811,733.42,Visa,1030 Merchant Clearing,00039811
+Sarah Carney,09/30/2025,PMT-00039814,20,Aspire Awards,1220 Vendor Rec: Galderma,00039814
+Sarah Carney,09/30/2025,PMT-00039814,250.84,MasterCard,1030 Merchant Clearing,00039814
+12560,09/30/2025,PMT-00039816,338,Visa,1030 Merchant Clearing,00039816
+12572,09/30/2025,PMT-00039818,30,Aspire Awards,1220 Vendor Rec: Galderma,00039818
+12572,09/30/2025,PMT-00039818,898.67,Visa,1030 Merchant Clearing,00039818
+12572,09/30/2025,PMT-00039818,20,Alle Rewards,1210 Vendor Rec: Allergan,00039818
+14666,09/30/2025,PMT-00039819,160,Alle Rewards,1210 Vendor Rec: Allergan,00039819
+14666,09/30/2025,PMT-00039819,633,Visa,1030 Merchant Clearing,00039819
+14676,10/01/2025,PMT-00039826,531.11,Discover,1030 Merchant Clearing,00039826
+12569,10/01/2025,PMT-00039828,175.82,Visa,1030 Merchant Clearing,00039828
+Stacey Sperry,10/01/2025,PMT-00039829,200,Cash,1030 Merchant Clearing,00039829
+Ziyan Pessetto,10/01/2025,PMT-00039831,1000,MasterCard,1030 Merchant Clearing,00039831
+Darcy Richardson,10/01/2025,PMT-00039832,400,Cash,1030 Merchant Clearing,00039832
+Emily Conaty,10/04/2025,PMT-00039835,500,Visa,1030 Merchant Clearing,00039835
+Matt Sutton,10/06/2025,PMT-00039821,414.44,Cash,1030 Merchant Clearing,00039821
+3155,10/06/2025,PMT-00039859,70,Alle Rewards,1210 Vendor Rec: Allergan,00039859
+3155,10/06/2025,PMT-00039859,541,Visa,1030 Merchant Clearing,00039859
+14683,10/06/2025,PMT-00039862,331.5,Visa,1030 Merchant Clearing,00039862
+Daniela Randall,10/07/2025,PMT-00039870,817.93,Cash,1030 Merchant Clearing,00039870
+13640,10/07/2025,PMT-00039872,20,Alle Rewards,1210 Vendor Rec: Allergan,00039872
+13640,10/07/2025,PMT-00039872,578,Visa,1030 Merchant Clearing,00039872
+14677,10/07/2025,PMT-00039874,520,MasterCard,1030 Merchant Clearing,00039874
+Kari Playter,10/07/2025,PMT-00039875,349,Cash,1030 Merchant Clearing,00039875
+13602,10/07/2025,PMT-00039877,40,Alle Rewards,1210 Vendor Rec: Allergan,00039877
+13602,10/07/2025,PMT-00039877,510,MasterCard,1030 Merchant Clearing,00039877
+Angeline Sutton,10/07/2025,PMT-00039878,150,Visa,1030 Merchant Clearing,00039878
+Shannon Yeates,10/07/2025,PMT-00039882,825,Visa,1030 Merchant Clearing,00039882
+13586,10/07/2025,PMT-00039883,50,Aspire Awards,1220 Vendor Rec: Galderma,00039883
+13586,10/07/2025,PMT-00039883,444.1,Cash,1030 Merchant Clearing,00039883
+Kristin Playter,10/07/2025,PMT-00039884,20,Alle Rewards,1210 Vendor Rec: Allergan,00039884
+Kristin Playter,10/07/2025,PMT-00039884,508,Visa,1030 Merchant Clearing,00039884
+Jenna Adkins,10/07/2025,PMT-00039885,40,Alle Rewards,1210 Vendor Rec: Allergan,00039885
+Jenna Adkins,10/07/2025,PMT-00039885,257,Visa,1030 Merchant Clearing,00039885
+14680,10/07/2025,PMT-00039886,682.72,Visa,1030 Merchant Clearing,00039886
+14680,10/07/2025,PMT-00039886,20,Aspire Awards,1220 Vendor Rec: Galderma,00039886
+14651,10/07/2025,PMT-00039887,20,Alle Rewards,1210 Vendor Rec: Allergan,00039887
+14651,10/07/2025,PMT-00039887,340,MasterCard,1030 Merchant Clearing,00039887
+13594,10/07/2025,PMT-00039888,182,MasterCard,1030 Merchant Clearing,00039888
+13594,10/07/2025,PMT-00039888,20,Alle Rewards,1210 Vendor Rec: Allergan,00039888
+13594,10/07/2025,PMT-00039888,95,Check,1030 Merchant Clearing,00039888
+14681,10/07/2025,PMT-00039889,20,Alle Rewards,1210 Vendor Rec: Allergan,00039889
+14681,10/07/2025,PMT-00039889,332,Visa,1030 Merchant Clearing,00039889
+Kari Playter,10/07/2025,PMT-00039890,387.05,Visa,1030 Merchant Clearing,00039890
+Carrie Babbitt,10/08/2025,PMT-00039876,500,Visa,1030 Merchant Clearing,00039876
