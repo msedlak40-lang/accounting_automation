@@ -116,7 +116,31 @@ function createTables(database: Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_stg_emr_patients_customer ON stg_emr_patients(customer_id);
 
-    -- 5. QB customers staging table
+    -- 5. EMR payments staging table
+    CREATE TABLE IF NOT EXISTS stg_emr_payments (
+      id                 TEXT PRIMARY KEY,
+      upload_id          TEXT REFERENCES file_uploads(id),
+      customer_cid       TEXT,
+      customer_id        TEXT REFERENCES customers(customer_id),
+      customer_name      TEXT NOT NULL,
+      invoice_number     TEXT NOT NULL,
+      transaction_date   TEXT NOT NULL,
+      payment_type       TEXT,
+      payment_amount     REAL NOT NULL,
+      match_status       TEXT DEFAULT 'unmatched',
+      matched_payment_id TEXT,
+      created_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_upload_id ON stg_emr_payments(upload_id);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_customer_cid ON stg_emr_payments(customer_cid);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_customer_id ON stg_emr_payments(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_invoice ON stg_emr_payments(invoice_number);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_date ON stg_emr_payments(transaction_date);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_amount ON stg_emr_payments(payment_amount);
+    CREATE INDEX IF NOT EXISTS idx_stg_emr_payments_match_status ON stg_emr_payments(match_status);
+
+    -- 6. QB customers staging table
     CREATE TABLE IF NOT EXISTS stg_qb_customers (
       qb_listid          TEXT PRIMARY KEY,
       qb_display_name    TEXT NOT NULL,
@@ -129,7 +153,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_stg_qb_customers_customer ON stg_qb_customers(customer_id);
     CREATE INDEX IF NOT EXISTS idx_stg_qb_customers_display_name ON stg_qb_customers(qb_display_name);
 
-    -- 6. Service mappings table
+    -- 7. Service mappings table
     CREATE TABLE IF NOT EXISTS service_mappings (
       id                 TEXT PRIMARY KEY,
       emr_service_name   TEXT NOT NULL UNIQUE,
@@ -146,7 +170,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_service_mappings_emr_service ON service_mappings(emr_service_name);
     CREATE INDEX IF NOT EXISTS idx_service_mappings_active ON service_mappings(is_active);
 
-    -- 7. Payment type mappings table
+    -- 8. Payment type mappings table
     CREATE TABLE IF NOT EXISTS payment_type_mappings (
       id                 TEXT PRIMARY KEY,
       payment_type       TEXT UNIQUE NOT NULL,
@@ -158,7 +182,7 @@ function createTables(database: Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_payment_type ON payment_type_mappings(payment_type);
 
-    -- 8. File uploads table
+    -- 9. File uploads table
     CREATE TABLE IF NOT EXISTS file_uploads (
       id                 TEXT PRIMARY KEY,
       filename           TEXT NOT NULL,
@@ -173,7 +197,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_file_uploads_type ON file_uploads(file_type);
     CREATE INDEX IF NOT EXISTS idx_file_uploads_uploaded_at ON file_uploads(uploaded_at);
 
-    -- 9. Transactions staging table
+    -- 10. Transactions staging table
     CREATE TABLE IF NOT EXISTS transactions_staging (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -196,7 +220,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_customer_id ON transactions_staging(customer_id);
     CREATE INDEX IF NOT EXISTS idx_transactions_staging_date ON transactions_staging(transaction_date);
 
-    -- 10. Expense categories table
+    -- 11. Expense categories table
     CREATE TABLE IF NOT EXISTS expense_categories (
       id                 TEXT PRIMARY KEY,
       merchant_pattern   TEXT NOT NULL,
@@ -210,7 +234,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_expense_categories_pattern ON expense_categories(merchant_pattern);
     CREATE INDEX IF NOT EXISTS idx_expense_categories_active ON expense_categories(is_active);
 
-    -- 11. Expense transactions table
+    -- 12. Expense transactions table
     CREATE TABLE IF NOT EXISTS expense_transactions (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -233,7 +257,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_merchant ON expense_transactions(merchant);
     CREATE INDEX IF NOT EXISTS idx_expense_transactions_status ON expense_transactions(status);
 
-    -- 12. Audit log table
+    -- 13. Audit log table
     CREATE TABLE IF NOT EXISTS audit_log (
       id                 INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp          TEXT DEFAULT (datetime('now')),
@@ -248,7 +272,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action);
     CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
 
-    -- 13. Gravity payments staging table
+    -- 14. Gravity payments staging table
     CREATE TABLE IF NOT EXISTS stg_gravity_payments (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -272,12 +296,14 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_match_status ON stg_gravity_payments(match_status);
     CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_approval ON stg_gravity_payments(approval_code);
 
-    -- 14. Gravity payment matches table
+    -- 15. Gravity payment matches table
     CREATE TABLE IF NOT EXISTS gravity_payment_matches (
       id                 TEXT PRIMARY KEY,
       payment_id         TEXT NOT NULL REFERENCES stg_gravity_payments(id),
+      emr_payment_id     TEXT REFERENCES stg_emr_payments(id),
       invoice_number     TEXT NOT NULL,
       customer_id        TEXT REFERENCES customers(customer_id),
+      customer_name      TEXT,
       match_confidence   TEXT NOT NULL,
       match_score        REAL,
       match_status       TEXT DEFAULT 'pending',
@@ -296,7 +322,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_gravity_matches_customer ON gravity_payment_matches(customer_id);
     CREATE INDEX IF NOT EXISTS idx_gravity_matches_deposit_status ON gravity_payment_matches(deposit_status);
 
-    -- 15. Bank statements table
+    -- 16. Bank statements table
     CREATE TABLE IF NOT EXISTS bank_statements (
       id                 TEXT PRIMARY KEY,
       upload_id          TEXT REFERENCES file_uploads(id),
@@ -317,7 +343,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_bank_stmt_processor ON bank_statements(processor);
     CREATE INDEX IF NOT EXISTS idx_bank_stmt_upload_id ON bank_statements(upload_id);
 
-    -- 16. Bank deposit matches table
+    -- 17. Bank deposit matches table
     CREATE TABLE IF NOT EXISTS bank_deposit_matches (
       id                 TEXT PRIMARY KEY,
       bank_statement_id  TEXT NOT NULL REFERENCES bank_statements(id),
@@ -344,7 +370,7 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_deposit_match_bank_stmt ON bank_deposit_matches(bank_statement_id);
     CREATE INDEX IF NOT EXISTS idx_deposit_match_processor ON bank_deposit_matches(processor);
 
-    -- 17. Bank reconciliation fees table
+    -- 18. Bank reconciliation fees table
     CREATE TABLE IF NOT EXISTS bank_reconciliation_fees (
       id                 TEXT PRIMARY KEY,
       bank_statement_id  TEXT NOT NULL REFERENCES bank_statements(id),

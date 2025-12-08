@@ -174,9 +174,38 @@ export function processEMRFile(
       const isServiceLine = serviceName !== null && serviceName !== '';
       const isPaymentLine = paymentType !== null && paymentType !== '';
 
-      // SKIP PAYMENT LINES - Gravity handles all payments now
+      // STORE NON-CASH PAYMENT LINES - to match with Gravity payments
       if (isPaymentLine && !isServiceLine) {
         stats.paymentLines++;
+
+        // Only store non-cash payments (Gravity handles non-cash payments)
+        const isCashPayment = paymentType && paymentType.toLowerCase().includes('cash');
+
+        if (!isCashPayment && customerName && invoiceNumber) {
+          const paymentAmount = row.Price || row.Amount || 0;
+
+          if (paymentAmount > 0) {
+            const paymentId = uuidv4();
+
+            db.run(`
+              INSERT INTO stg_emr_payments (
+                id, upload_id, customer_cid, customer_id, customer_name,
+                invoice_number, transaction_date, payment_type, payment_amount
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+              paymentId,
+              uploadId,
+              cid,
+              customerId,
+              customerName,
+              invoiceNumber,
+              txnDate,
+              paymentType,
+              paymentAmount
+            ]);
+          }
+        }
+
         continue;
       }
 

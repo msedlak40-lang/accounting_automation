@@ -69,6 +69,16 @@ interface Invoice {
   total_amount: number;
 }
 
+interface EMRPayment {
+  id: string;
+  invoice_number: string;
+  customer_id: string;
+  customer_name: string;
+  transaction_date: string;
+  payment_amount: number;
+  payment_type: string;
+}
+
 /**
  * Process a Gravity payments CSV file
  */
@@ -225,7 +235,45 @@ function getInvoices(db: Database): Invoice[] {
 }
 
 /**
- * Match Gravity payments to invoices using intelligent matching
+ * Get EMR payments to match against Gravity payments
+ */
+function getEMRPayments(db: Database): EMRPayment[] {
+  const result = db.exec(`
+    SELECT
+      id,
+      invoice_number,
+      customer_id,
+      customer_name,
+      transaction_date,
+      payment_amount,
+      payment_type
+    FROM stg_emr_payments
+    WHERE match_status = 'unmatched'
+      AND payment_amount IS NOT NULL
+      AND payment_amount > 0
+    ORDER BY transaction_date DESC
+  `);
+
+  if (result.length === 0) return [];
+
+  const payments: EMRPayment[] = [];
+  for (const row of result[0].values) {
+    payments.push({
+      id: row[0] as string,
+      invoice_number: row[1] as string,
+      customer_id: row[2] as string,
+      customer_name: row[3] as string,
+      transaction_date: row[4] as string,
+      payment_amount: row[5] as number,
+      payment_type: row[6] as string
+    });
+  }
+
+  return payments;
+}
+
+/**
+ * Match Gravity payments to EMR payments using intelligent matching
  */
 export function matchGravityPayments(
   db: Database,
@@ -243,14 +291,14 @@ export function matchGravityPayments(
     `);
 
     if (paymentsResult.length === 0 || paymentsResult[0].values.length === 0) {
-      console.log('No unmatched payments found');
+      console.log('No unmatched Gravity payments found');
       return { success: true, matchCount: 0 };
     }
 
     const payments = paymentsResult[0].values;
-    const invoices = getInvoices(db);
+    const emrPayments = getEMRPayments(db);
 
-    console.log(`Matching ${payments.length} payments against ${invoices.length} invoices`);
+    console.log(`Matching ${payments.length} Gravity payments against ${emrPayments.length} EMR payments`);
 
     let matchCount = 0;
 
@@ -262,11 +310,11 @@ export function matchGravityPayments(
       // Extract date from datetime for date-based matching
       const paymentDate = paymentDatetime.split('T')[0];
 
-      // Find potential matches
-      const matches = findMatchingInvoices(
+      // Find potential matches against EMR payments
+      const matches = findMatchingEMRPayments(
         paymentDate,
         paymentAmount,
-        invoices
+        emrPayments
       );
 
       // Create match records for top candidates
@@ -275,14 +323,16 @@ export function matchGravityPayments(
 
         db.run(`
           INSERT INTO gravity_payment_matches (
-            id, payment_id, invoice_number, customer_id,
+            id, payment_id, emr_payment_id, invoice_number, customer_id, customer_name,
             match_confidence, match_score, match_status, match_reason
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           matchId,
           paymentId,
+          match.emr_payment_id,
           match.invoice_number,
           match.customer_id,
+          match.customer_name,
           match.confidence,
           match.score,
           match.confidence === 'high' ? 'auto_approved' : 'pending',
@@ -298,6 +348,12 @@ export function matchGravityPayments(
             SET match_status = 'matched'
             WHERE id = ?
           `, [paymentId]);
+
+          db.run(`
+            UPDATE stg_emr_payments
+            SET match_status = 'matched', matched_payment_id = ?
+            WHERE id = ?
+          `, [paymentId, match.emr_payment_id]);
         }
       }
     }
@@ -387,6 +443,105 @@ function findMatchingInvoices(
     matches.push({
       invoice_number: invoice.invoice_number,
       customer_id: invoice.customer_id,
+      confidence,
+      score,
+      reason: reasons.join(', ')
+    });
+  }
+
+  // Sort by score descending and return top 3 matches
+  matches.sort((a, b) => b.score - a.score);
+  return matches.slice(0, 3);
+}
+
+/**
+ * Find matching EMR payments for a Gravity payment
+ */
+function findMatchingEMRPayments(
+  paymentDate: string,
+  paymentAmount: number,
+  emrPayments: EMRPayment[]
+): Array<{
+  emr_payment_id: string;
+  invoice_number: string;
+  customer_id: string;
+  customer_name: string;
+  confidence: string;
+  score: number;
+  reason: string
+}> {
+  const matches: Array<{
+    emr_payment_id: string;
+    invoice_number: string;
+    customer_id: string;
+    customer_name: string;
+    confidence: string;
+    score: number;
+    reason: string
+  }> = [];
+
+  for (const emrPayment of emrPayments) {
+    const emrDate = emrPayment.transaction_date.split('T')[0];
+    const emrAmount = emrPayment.payment_amount;
+
+    let score = 0;
+    const reasons: string[] = [];
+
+    // Exact amount match (highest weight)
+    if (Math.abs(emrAmount - paymentAmount) < 0.01) {
+      score += 50;
+      reasons.push('exact amount match');
+    } else if (Math.abs(emrAmount - paymentAmount) < 1.00) {
+      // Within $1 tolerance
+      score += 30;
+      reasons.push('amount within $1');
+    } else if (Math.abs(emrAmount - paymentAmount) / emrAmount < 0.02) {
+      // Within 2% tolerance
+      score += 20;
+      reasons.push('amount within 2%');
+    } else {
+      // Amount too different, skip this payment
+      continue;
+    }
+
+    // Date proximity (same day = best)
+    const daysDiff = Math.abs(
+      (new Date(paymentDate).getTime() - new Date(emrDate).getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysDiff === 0) {
+      score += 30;
+      reasons.push('same day');
+    } else if (daysDiff <= 1) {
+      score += 20;
+      reasons.push('within 1 day');
+    } else if (daysDiff <= 3) {
+      score += 10;
+      reasons.push('within 3 days');
+    } else if (daysDiff <= 7) {
+      score += 5;
+      reasons.push('within 1 week');
+    } else {
+      // More than a week apart, less likely
+      score -= 10;
+      reasons.push(`${Math.round(daysDiff)} days apart`);
+    }
+
+    // Determine confidence level
+    let confidence: string;
+    if (score >= 70) {
+      confidence = 'high';
+    } else if (score >= 40) {
+      confidence = 'medium';
+    } else {
+      confidence = 'low';
+    }
+
+    matches.push({
+      emr_payment_id: emrPayment.id,
+      invoice_number: emrPayment.invoice_number,
+      customer_id: emrPayment.customer_id,
+      customer_name: emrPayment.customer_name,
       confidence,
       score,
       reason: reasons.join(', ')

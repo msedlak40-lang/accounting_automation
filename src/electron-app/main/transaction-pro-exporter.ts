@@ -503,11 +503,12 @@ export function exportGravityPayments(
     // Get customer mappings
     const customerMappings = getCustomerMappings(db);
 
-    // Get approved matches
+    // Get approved matches with customer name from EMR
     const matchesResult = db.exec(`
       SELECT
         m.invoice_number,
         m.customer_id,
+        m.customer_name,
         p.total_amount,
         p.transaction_datetime,
         p.card_type
@@ -533,15 +534,20 @@ export function exportGravityPayments(
     for (const match of matches) {
       const invoiceNumber = match[0] as string;
       const customerId = match[1] as string;
-      const amount = match[2] as number;
-      const datetime = match[3] as string;
-      const cardType = match[4] as string;
+      const customerName = match[2] as string;
+      const amount = match[3] as number;
+      const datetime = match[4] as string;
+      const cardType = match[5] as string;
 
-      // Get customer QB display name
+      // Determine customer name to use:
+      // 1. Try QB mapped name (preferred for QB import)
+      // 2. Fall back to EMR customer name from the match
+      let qbName: string | undefined;
       const customerMapping = customerMappings.get(customerId);
-      const qbName = customerMapping?.qb_name;
+      qbName = customerMapping?.qb_name || customerName;
+
       if (!qbName) {
-        console.warn(`No QB name found for customer ${customerId}, skipping payment`);
+        console.warn(`No customer name found for customer ${customerId}, skipping payment`);
         continue;
       }
 
