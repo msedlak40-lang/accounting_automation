@@ -223,22 +223,31 @@ function evaluateMatch(
   let reasons: string[] = [];
 
   // Date proximity score (0-40 points)
+  // Note: Typical processing time is 2 days from service to deposit
   const depositDate = new Date(deposit.transaction_date);
   const paymentDate = new Date(batch.payment_date);
   const daysDiff = Math.abs((depositDate.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (daysDiff === 0) {
+  if (daysDiff === 2) {
+    // 2 days is the typical/expected delay
     confidence += 40;
-    reasons.push('Same day deposit');
-  } else if (daysDiff <= 1) {
-    confidence += 35;
-    reasons.push('Next day deposit');
-  } else if (daysDiff <= 2) {
+    reasons.push('2-day deposit (typical processing time)');
+  } else if (daysDiff >= 1 && daysDiff <= 3) {
+    // 1-3 days is normal range
+    confidence += 38;
+    reasons.push(`${Math.round(daysDiff)}-day deposit (normal range)`);
+  } else if (daysDiff === 0) {
+    // Same day is unusual but possible
+    confidence += 30;
+    reasons.push('Same day deposit (unusual but valid)');
+  } else if (daysDiff === 4) {
+    // 4 days is slightly delayed
     confidence += 25;
-    reasons.push(`${daysDiff} days between payment and deposit`);
+    reasons.push('4-day delay (slightly longer than typical)');
   } else if (daysDiff <= criteria.dateToleranceDays) {
+    // 5+ days within tolerance but concerning
     confidence += 15;
-    reasons.push(`${daysDiff} days between payment and deposit`);
+    reasons.push(`${Math.round(daysDiff)}-day delay (longer than typical)`);
   } else {
     return null; // Outside date tolerance
   }
