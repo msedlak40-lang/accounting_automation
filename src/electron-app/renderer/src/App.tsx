@@ -2269,7 +2269,7 @@ function App() {
                     <tbody className="divide-y">
                       {gravityTransactions.filter(t => !gravityMatches.find(m => m.gravity_payment_id === t.id)).map((payment, index) => (
                         <tr key={payment.id || index} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-500 text-xs font-mono">{payment.transaction_date}</td>
+                          <td className="px-4 py-3 text-gray-500 text-xs font-mono">{payment.transaction_datetime ? new Date(payment.transaction_datetime).toLocaleString() : '-'}</td>
                           <td className="px-4 py-3 font-mono text-xs">{payment.approval_code || '-'}</td>
                           <td className="px-4 py-3 text-right font-medium">${(payment.total_amount || 0).toFixed(2)}</td>
                           <td className="px-4 py-3">{payment.card_type || '-'}</td>
@@ -2566,7 +2566,7 @@ function App() {
                         const isMatched = gravityMatches.find(m => m.gravity_payment_id === payment.id);
                         return (
                           <tr key={payment.id || index} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-gray-500 text-xs font-mono">{payment.transaction_date}</td>
+                            <td className="px-4 py-3 text-gray-500 text-xs font-mono">{payment.transaction_datetime ? new Date(payment.transaction_datetime).toLocaleString() : '-'}</td>
                             <td className="px-4 py-3 font-mono text-xs">{payment.approval_code || '-'}</td>
                             <td className="px-4 py-3 text-xs">{payment.card_type || '-'}</td>
                             <td className="px-4 py-3 text-right font-medium">${(payment.total_amount || 0).toFixed(2)}</td>
@@ -2899,7 +2899,7 @@ function App() {
                                     {match.payment_details.map((payment: any, idx: number) => (
                                       <tr key={payment.match_id || idx} className="hover:bg-gray-50">
                                         <td className="px-3 py-2 text-xs text-gray-600 font-mono">
-                                          {new Date(payment.transaction_datetime).toLocaleString('en-US', {
+                                          {new Date(payment.transaction_datetimetime).toLocaleString('en-US', {
                                             month: '2-digit',
                                             day: '2-digit',
                                             year: 'numeric',
