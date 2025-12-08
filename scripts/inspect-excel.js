@@ -1,4 +1,4 @@
-const XLSX = require('../src/electron-app/node_modules/xlsx');
+const XLSX = require('xlsx');
 const path = require('path');
 
 const excelPath = path.join(__dirname, '../data/raw/COA_Quickbooks_matched.xlsx');
