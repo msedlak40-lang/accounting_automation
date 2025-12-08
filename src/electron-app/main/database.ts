@@ -284,6 +284,9 @@ function createTables(database: Database): void {
       match_reason       TEXT,
       approved_by        TEXT,
       approved_at        TEXT,
+      deposit_status     TEXT DEFAULT 'pending',
+      deposit_match_id   TEXT,
+      deposited_at       TEXT,
       created_at         TEXT DEFAULT (datetime('now'))
     );
 
@@ -291,6 +294,74 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_gravity_matches_invoice ON gravity_payment_matches(invoice_number);
     CREATE INDEX IF NOT EXISTS idx_gravity_matches_status ON gravity_payment_matches(match_status);
     CREATE INDEX IF NOT EXISTS idx_gravity_matches_customer ON gravity_payment_matches(customer_id);
+    CREATE INDEX IF NOT EXISTS idx_gravity_matches_deposit_status ON gravity_payment_matches(deposit_status);
+
+    -- 15. Bank statements table
+    CREATE TABLE IF NOT EXISTS bank_statements (
+      id                 TEXT PRIMARY KEY,
+      upload_id          TEXT REFERENCES file_uploads(id),
+      transaction_date   TEXT NOT NULL,
+      reference_number   TEXT,
+      description        TEXT,
+      debit_amount       REAL DEFAULT 0,
+      credit_amount      REAL DEFAULT 0,
+      transaction_type   TEXT,
+      processor          TEXT,
+      reconciliation_status TEXT DEFAULT 'pending',
+      notes              TEXT,
+      created_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_bank_stmt_date ON bank_statements(transaction_date);
+    CREATE INDEX IF NOT EXISTS idx_bank_stmt_status ON bank_statements(reconciliation_status);
+    CREATE INDEX IF NOT EXISTS idx_bank_stmt_processor ON bank_statements(processor);
+    CREATE INDEX IF NOT EXISTS idx_bank_stmt_upload_id ON bank_statements(upload_id);
+
+    -- 16. Bank deposit matches table
+    CREATE TABLE IF NOT EXISTS bank_deposit_matches (
+      id                 TEXT PRIMARY KEY,
+      bank_statement_id  TEXT NOT NULL REFERENCES bank_statements(id),
+      deposit_date       TEXT NOT NULL,
+      processor          TEXT NOT NULL,
+      bank_deposit_amount REAL NOT NULL,
+      payment_batch_total REAL NOT NULL,
+      payment_ids        TEXT NOT NULL,
+      merchant_discount_fee REAL NOT NULL,
+      fee_percentage     REAL,
+      match_confidence   REAL,
+      match_method       TEXT,
+      status             TEXT DEFAULT 'pending',
+      approved_by        TEXT,
+      approved_at        TEXT,
+      exported_at        TEXT,
+      notes              TEXT,
+      created_at         TEXT DEFAULT (datetime('now')),
+      updated_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_deposit_match_status ON bank_deposit_matches(status);
+    CREATE INDEX IF NOT EXISTS idx_deposit_match_date ON bank_deposit_matches(deposit_date);
+    CREATE INDEX IF NOT EXISTS idx_deposit_match_bank_stmt ON bank_deposit_matches(bank_statement_id);
+    CREATE INDEX IF NOT EXISTS idx_deposit_match_processor ON bank_deposit_matches(processor);
+
+    -- 17. Bank reconciliation fees table
+    CREATE TABLE IF NOT EXISTS bank_reconciliation_fees (
+      id                 TEXT PRIMARY KEY,
+      bank_statement_id  TEXT NOT NULL REFERENCES bank_statements(id),
+      fee_date           TEXT NOT NULL,
+      fee_type           TEXT NOT NULL,
+      fee_amount         REAL NOT NULL,
+      expense_account    TEXT,
+      description        TEXT,
+      status             TEXT DEFAULT 'pending',
+      exported_at        TEXT,
+      created_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_bank_fees_bank_stmt ON bank_reconciliation_fees(bank_statement_id);
+    CREATE INDEX IF NOT EXISTS idx_bank_fees_date ON bank_reconciliation_fees(fee_date);
+    CREATE INDEX IF NOT EXISTS idx_bank_fees_status ON bank_reconciliation_fees(status);
+    CREATE INDEX IF NOT EXISTS idx_bank_fees_type ON bank_reconciliation_fees(fee_type);
   `;
 
   // Execute all CREATE TABLE statements

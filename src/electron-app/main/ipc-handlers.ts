@@ -1064,5 +1064,72 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
+  // ===== Bank Statement Handlers =====
+
+  ipcMain.handle('bank:selectFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+          { name: 'CSV Files', extensions: ['csv'] },
+          { name: 'All Files', extensions: ['*'] }
+        ]
+      });
+
+      if (result.canceled) {
+        return { success: true, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePaths[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:processFile', async (event, filePath: string) => {
+    try {
+      const { processBankStatement } = require('./bank-statement-processor');
+      const result = await processBankStatement(db, filePath);
+      saveDatabase(db, dbPath);
+      return {
+        success: true,
+        uploadId: result.uploadId,
+        stats: result.stats
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:getStatements', async (event, options?: { uploadId?: string; limit?: number }) => {
+    try {
+      const { getBankStatements } = require('./bank-statement-processor');
+      const data = getBankStatements(db, options);
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:getSummary', async (event, uploadId?: string) => {
+    try {
+      const { getBankStatementSummary } = require('./bank-statement-processor');
+      const data = getBankStatementSummary(db, uploadId);
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('bank:getDepositsByProcessor', async (event, uploadId?: string) => {
+    try {
+      const { getDepositsByProcessor } = require('./bank-statement-processor');
+      const data = getDepositsByProcessor(db, uploadId);
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
   console.log('IPC handlers registered successfully');
 }

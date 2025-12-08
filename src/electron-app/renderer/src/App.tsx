@@ -119,6 +119,18 @@ declare global {
         rejectMatch: (matchId: string) => Promise<{ success: boolean; error?: string }>;
         export: (outputDir: string) => Promise<{ success: boolean; paymentsExported: number; filePath?: string; error?: string }>;
       };
+      bank: {
+        selectFile: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
+        processFile: (filePath: string) => Promise<{
+          success: boolean;
+          uploadId: string;
+          stats: { totalRows: number; deposits: number; withdrawals: number; fees: number; unclassified: number };
+          error?: string;
+        }>;
+        getStatements: (options?: { uploadId?: string; limit?: number }) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        getSummary: (uploadId?: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+        getDepositsByProcessor: (uploadId?: string) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+      };
     };
   }
 }
@@ -209,6 +221,13 @@ function App() {
   const [exportResult, setExportResult] = useState<any>(null);
   const [exporting, setExporting] = useState(false);
 
+  // Bank statement state
+  const [bankProcessing, setBankProcessing] = useState(false);
+  const [bankResult, setBankResult] = useState<any>(null);
+  const [bankSummary, setBankSummary] = useState<any>(null);
+  const [bankStatements, setBankStatements] = useState<any[]>([]);
+  const [depositsByProcessor, setDepositsByProcessor] = useState<any[]>([]);
+
   useEffect(() => {
     checkDatabase();
   }, []);
@@ -283,6 +302,9 @@ function App() {
     }
     if (activeTab === 'upload' && uploadSubTab === 'gravity') {
       loadGravityData();
+    }
+    if (activeTab === 'upload' && uploadSubTab === 'bank') {
+      loadBankData();
     }
     if (activeTab === 'review' && reviewSubTab === 'payment-matching') {
       loadGravityData();
@@ -460,6 +482,53 @@ function App() {
       setExportResult({ success: false, error: error.message });
     } finally {
       setExporting(false);
+    }
+  };
+
+  // Bank statement handlers
+  const handleBankUpload = async () => {
+    try {
+      const fileResult = await window.electronAPI.bank.selectFile();
+      if (!fileResult.success || fileResult.canceled || !fileResult.filePath) {
+        return;
+      }
+
+      setBankProcessing(true);
+      setBankResult(null);
+
+      const result = await window.electronAPI.bank.processFile(fileResult.filePath);
+      setBankResult(result);
+
+      if (result.success) {
+        await loadBankData();
+      }
+    } catch (error: any) {
+      console.error('Bank upload error:', error);
+      setBankResult({ success: false, error: error.message });
+    } finally {
+      setBankProcessing(false);
+    }
+  };
+
+  const loadBankData = async () => {
+    try {
+      const [summaryResult, statementsResult, depositsResult] = await Promise.all([
+        window.electronAPI.bank.getSummary(),
+        window.electronAPI.bank.getStatements({ limit: 100 }),
+        window.electronAPI.bank.getDepositsByProcessor()
+      ]);
+
+      if (summaryResult.success) {
+        setBankSummary(summaryResult.data);
+      }
+      if (statementsResult.success) {
+        setBankStatements(statementsResult.data || []);
+      }
+      if (depositsResult.success) {
+        setDepositsByProcessor(depositsResult.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading bank data:', error);
     }
   };
 
@@ -2360,31 +2429,147 @@ function App() {
 
         {/* Upload Tab - Bank Statement Sub-Tab */}
         {activeTab === 'upload' && uploadSubTab === 'bank' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">🏦</div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Bank Statement Upload</h2>
-              <p className="text-gray-600 mb-6">
-                Upload bank statement CSV files to begin reconciliation.
-              </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto mb-6">
-                <div className="flex items-start gap-2">
-                  <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-yellow-800">Feature Coming Soon</p>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      Bank reconciliation functionality is currently in development. This feature will automatically match
-                      bank deposits to payment batches and calculate merchant discount fees.
-                    </p>
+          <div className="space-y-6">
+            {/* Summary Card */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Bank Statement Processing</h2>
+                <button
+                  onClick={handleBankUpload}
+                  disabled={bankProcessing}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                >
+                  {bankProcessing ? 'Processing...' : 'Upload Bank Statement'}
+                </button>
+              </div>
+
+              {/* Upload Result */}
+              {bankResult && (
+                <div className={`mb-4 p-4 rounded-lg ${bankResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                  {bankResult.success ? (
+                    <div>
+                      <p className="font-medium">✓ Bank statement processed successfully!</p>
+                      <p className="text-sm mt-1">
+                        {bankResult.stats.totalRows} transactions imported: {bankResult.stats.deposits} deposits, {bankResult.stats.withdrawals} withdrawals, {bankResult.stats.fees} fees
+                      </p>
+                    </div>
+                  ) : (
+                    <p>✗ Error: {bankResult.error}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Summary Statistics */}
+              {bankSummary && (
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-blue-700">{bankSummary.totalDeposits}</div>
+                    <div className="text-sm text-blue-600">Total Deposits</div>
+                    <div className="text-xs text-blue-500 mt-1">${(bankSummary.depositAmount || 0).toFixed(2)}</div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-green-700">{bankSummary.totalWithdrawals}</div>
+                    <div className="text-sm text-green-600">Withdrawals</div>
+                    <div className="text-xs text-green-500 mt-1">${(bankSummary.withdrawalAmount || 0).toFixed(2)}</div>
+                  </div>
+                  <div className="bg-yellow-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-yellow-700">{bankSummary.totalFees}</div>
+                    <div className="text-sm text-yellow-600">Fees</div>
+                    <div className="text-xs text-yellow-500 mt-1">${(bankSummary.feeAmount || 0).toFixed(2)}</div>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-4">
+                    <div className="text-2xl font-bold text-purple-700">{bankSummary.totalTransactions}</div>
+                    <div className="text-sm text-purple-600">Total Transactions</div>
                   </div>
                 </div>
-              </div>
-              <p className="text-sm text-gray-500">
-                Expected features: CSV upload, transaction classification, processor detection, merchant fee calculation
-              </p>
+              )}
             </div>
+
+            {/* Deposits by Processor */}
+            {depositsByProcessor.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold mb-4">Deposits by Processor</h3>
+                <div className="grid grid-cols-4 gap-4">
+                  {depositsByProcessor.map((proc, idx) => (
+                    <div key={idx} className="border rounded-lg p-4">
+                      <div className="text-xl font-bold text-gray-900">{proc.processor}</div>
+                      <div className="text-sm text-gray-600">{proc.count} deposits</div>
+                      <div className="text-lg font-medium text-green-600 mt-2">${(proc.total_amount || 0).toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bank Statements Table */}
+            {bankStatements.length > 0 && (
+              <div className="bg-white rounded-lg shadow">
+                <div className="p-4 border-b">
+                  <h3 className="text-lg font-semibold">Bank Transactions</h3>
+                  <p className="text-sm text-gray-500">Recent transactions from uploaded bank statement</p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 py-3 text-left font-medium text-gray-600">Date</th>
+                        <th className="px-3 py-3 text-left font-medium text-gray-600">Description</th>
+                        <th className="px-3 py-3 text-center font-medium text-gray-600">Type</th>
+                        <th className="px-3 py-3 text-center font-medium text-gray-600">Processor</th>
+                        <th className="px-3 py-3 text-right font-medium text-gray-600">Debit</th>
+                        <th className="px-3 py-3 text-right font-medium text-gray-600">Credit</th>
+                        <th className="px-3 py-3 text-center font-medium text-gray-600">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {bankStatements.slice(0, 50).map((stmt: any, index: number) => (
+                        <tr key={stmt.id || index} className="hover:bg-gray-50">
+                          <td className="px-3 py-2 text-gray-500 text-xs font-mono">{stmt.transaction_date}</td>
+                          <td className="px-3 py-2 text-xs">{(stmt.description || '').substring(0, 60)}</td>
+                          <td className="px-3 py-2 text-center">
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              stmt.transaction_type === 'deposit' ? 'bg-green-100 text-green-700' :
+                              stmt.transaction_type === 'withdrawal' ? 'bg-blue-100 text-blue-700' :
+                              stmt.transaction_type === 'fee' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {stmt.transaction_type || 'other'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-center text-xs">
+                            {stmt.processor ? (
+                              <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                                {stmt.processor}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-red-600">
+                            {stmt.debit_amount > 0 ? `$${Number(stmt.debit_amount).toFixed(2)}` : '-'}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-green-600">
+                            {stmt.credit_amount > 0 ? `$${Number(stmt.credit_amount).toFixed(2)}` : '-'}
+                          </td>
+                          <td className="px-3 py-2 text-center">
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                              stmt.reconciliation_status === 'reconciled' ? 'bg-green-100 text-green-700' :
+                              stmt.reconciliation_status === 'matched' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {stmt.reconciliation_status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-3 border-t text-sm text-gray-500">
+                  Showing {Math.min(50, bankStatements.length)} of {bankStatements.length} transactions
+                </div>
+              </div>
+            )}
           </div>
         )}
 
