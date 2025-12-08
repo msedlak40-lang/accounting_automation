@@ -9,15 +9,37 @@ const initSqlJs = require('sql.js');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const os = require('os');
 
 // Simple XLSX parser using Python since Node xlsx isn't installed
 const { execSync } = require('child_process');
 
-const DB_PATH = path.join(__dirname, '../src/electron-app/accounting.db');
+// Determine the correct database path based on platform
+// This matches the Electron app's userData path
+function getUserDataPath() {
+  const appName = 'medspa-accounting-automation';
+  const homedir = os.homedir();
+
+  switch (process.platform) {
+    case 'win32':
+      return path.join(process.env.APPDATA || path.join(homedir, 'AppData', 'Roaming'), appName);
+    case 'darwin':
+      return path.join(homedir, 'Library', 'Application Support', appName);
+    case 'linux':
+      return path.join(process.env.XDG_CONFIG_HOME || path.join(homedir, '.config'), appName);
+    default:
+      return path.join(homedir, '.config', appName);
+  }
+}
+
+const DB_PATH = path.join(getUserDataPath(), 'accounting.db');
 const EXCEL_PATH = path.join(__dirname, '../data/raw/COA_Quickbooks_matched.xlsx');
 
 async function seedDatabase() {
   console.log('🌱 Starting database seeding...\n');
+  console.log('📁 Database path:', DB_PATH);
+  console.log('📊 Excel path:', EXCEL_PATH);
+  console.log();
 
   // Read Excel data using Python
   console.log('📊 Reading Excel file...');
