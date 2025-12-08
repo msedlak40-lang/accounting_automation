@@ -2482,18 +2482,113 @@ function App() {
 
         {/* Upload Tab - Gravity Payments Sub-Tab */}
         {activeTab === 'upload' && uploadSubTab === 'gravity' && (
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">💳</div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Gravity Payment Upload</h2>
-              <p className="text-gray-600 mb-6">
-                Upload Gravity payment CSV files and view staged payments before matching.
-              </p>
-              <p className="text-sm text-gray-500 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
-                <strong>Note:</strong> For now, use the <strong>Review → Payment Matching</strong> tab to upload Gravity files and match payments.
-                This section will be enhanced to separate upload from matching workflow.
-              </p>
+          <div className="space-y-6">
+            {/* Summary Card */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Gravity Payment Processing</h2>
+                <button
+                  onClick={handleGravityUpload}
+                  disabled={gravityProcessing}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                >
+                  {gravityProcessing ? 'Processing...' : 'Upload Gravity File'}
+                </button>
+              </div>
+
+              {/* Upload Result */}
+              {gravityResult && (
+                <div className={`mb-4 p-4 rounded-lg ${gravityResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                  {gravityResult.success ? (
+                    <div>
+                      <p className="font-medium">✓ Gravity file processed successfully!</p>
+                      <p className="text-sm mt-1">
+                        {gravityResult.stats?.paymentCount} payments imported totaling ${(gravityResult.stats?.totalAmount || 0).toFixed(2)}
+                      </p>
+                    </div>
+                  ) : (
+                    <p>✗ Error: {gravityResult.error}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Summary Stats */}
+              {gravitySummary && (
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="bg-blue-50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-600 mb-1">Total Payments</div>
+                    <div className="text-2xl font-bold text-blue-700">{gravitySummary.totalPayments}</div>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-600 mb-1">Total Amount</div>
+                    <div className="text-2xl font-bold text-green-700">${(gravitySummary.totalAmount || 0).toFixed(2)}</div>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-600 mb-1">Matched</div>
+                    <div className="text-2xl font-bold text-purple-700">{gravitySummary.matchedCount}</div>
+                  </div>
+                  <div className="bg-orange-50 rounded-lg p-4 text-center">
+                    <div className="text-sm text-gray-600 mb-1">Unmatched</div>
+                    <div className="text-2xl font-bold text-orange-700">{gravitySummary.unmatchedCount}</div>
+                  </div>
+                </div>
+              )}
+
+              {!gravitySummary && !gravityResult && (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-3">💳</div>
+                  <p className="text-lg font-medium">No Gravity payments loaded</p>
+                  <p className="text-sm mt-1">Upload a Gravity CSV file to get started</p>
+                </div>
+              )}
             </div>
+
+            {/* Payments Table */}
+            {gravityTransactions && gravityTransactions.length > 0 && (
+              <div className="bg-white rounded-lg shadow">
+                <div className="p-4 border-b">
+                  <h3 className="text-lg font-semibold">Payment Transactions</h3>
+                  <p className="text-sm text-gray-500">All imported Gravity payments ({gravityTransactions.length} total)</p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Approval Code</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Card Type</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {gravityTransactions.map((payment, index) => {
+                        const isMatched = gravityMatches.find(m => m.gravity_payment_id === payment.id);
+                        return (
+                          <tr key={payment.id || index} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-gray-500 text-xs font-mono">{payment.transaction_date}</td>
+                            <td className="px-4 py-3 font-mono text-xs">{payment.approval_code || '-'}</td>
+                            <td className="px-4 py-3 text-xs">{payment.card_type || '-'}</td>
+                            <td className="px-4 py-3 text-right font-medium">${(payment.total_amount || 0).toFixed(2)}</td>
+                            <td className="px-4 py-3 text-center">
+                              {isMatched ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Matched
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  Unmatched
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
