@@ -112,7 +112,6 @@ export function exportToTransactionPro(
       const invoiceNumber = txn.invoice_number || '';
       const txnDate = txn.transaction_date || '';
       const serviceName = txn.service_name || '';
-      const paymentType = txn.payment_type || '';
 
       // Get customer name for QB
       // Priority: 1) UUID lookup qb_name, 2) CID lookup qb_name, 3) EMR name, 4) CID
@@ -193,7 +192,7 @@ export function exportToTransactionPro(
     // Payments CSV generation removed - use Gravity payment matching instead
 
     // Log the export
-    logAudit(db, 'transaction_pro_export', 'export', null, {
+    logAudit(db, 'transaction_pro_export', 'export', undefined, {
       invoicesExported: invoiceLines.length,
       paymentsExported: 0, // Payments handled by Gravity
       invoiceFilePath,
@@ -539,7 +538,8 @@ export function exportGravityPayments(
       const cardType = match[4] as string;
 
       // Get customer QB display name
-      const qbName = customerMappings.get(customerId);
+      const customerMapping = customerMappings.get(customerId);
+      const qbName = customerMapping?.qb_name;
       if (!qbName) {
         console.warn(`No QB name found for customer ${customerId}, skipping payment`);
         continue;
@@ -586,7 +586,7 @@ export function exportGravityPayments(
     fs.writeFileSync(filePath, csvLines.join('\n'), 'utf-8');
 
     // Log the export
-    logAudit(db, 'gravity_payments_exported', 'export', null, {
+    logAudit(db, 'gravity_payments_exported', 'export', undefined, {
       filename,
       paymentsExported: paymentLines.length
     });

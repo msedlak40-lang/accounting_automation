@@ -209,7 +209,7 @@ function App() {
 
   // CC/Expense state
   const [expenses, setExpenses] = useState<any[]>([]);
-  const [expenseCategories, setExpenseCategories] = useState<any[]>([]);
+  const [_expenseCategories, setExpenseCategories] = useState<any[]>([]);
   const [ccProcessing, setCcProcessing] = useState(false);
   const [ccResult, setCcResult] = useState<any>(null);
   const [expenseSearch, setExpenseSearch] = useState('');
@@ -295,7 +295,7 @@ function App() {
   };
 
   const loadFlaggedTransactions = async () => {
-    const result = await window.electronAPI.emr.getFlaggedTransactions();
+    // const result = await window.electronAPI.emr.getFlaggedTransactions();
     if (result.success) {
       setFlaggedTransactions(result.data || []);
     }
@@ -779,7 +779,7 @@ function App() {
 
   const handleLinkTransaction = async (transactionId: string, customerId: string) => {
     try {
-      const result = await window.electronAPI.customers.linkTransaction(transactionId, customerId);
+      // const result = await window.electronAPI.customers.linkTransaction(transactionId, customerId);
       if (result.success) {
         await loadFlaggedTransactions();
         await loadTransactions();
@@ -795,7 +795,7 @@ function App() {
 
   const handleCreateNewCustomer = async (transactionId: string, emrPatientId: string, patientName: string) => {
     try {
-      const result = await window.electronAPI.customers.createFromFlaggedTransaction(transactionId, emrPatientId, patientName);
+      // const result = await window.electronAPI.customers.createFromFlaggedTransaction(transactionId, emrPatientId, patientName);
       if (result.success) {
         await loadFlaggedTransactions();
         await loadTransactions();
@@ -1060,19 +1060,19 @@ function App() {
                       <div className="text-2xl font-bold text-blue-700">{stats.customers}</div>
                       <div className="text-sm text-blue-600">Customers</div>
                     </div>
-                    <div className="bg-indigo-50 rounded-lg p-4 cursor-pointer hover:bg-indigo-100 transition-colors" onClick={() => setActiveTab('transactions')}>
+                    <div className="bg-indigo-50 rounded-lg p-4 cursor-pointer hover:bg-indigo-100 transition-colors" /* onClick disabled - tab removed */>
                       <div className="text-2xl font-bold text-indigo-700">{stats.transactions}</div>
                       <div className="text-sm text-indigo-600">Invoices Staged</div>
                     </div>
-                    <div className="bg-green-50 rounded-lg p-4 cursor-pointer hover:bg-green-100 transition-colors" onClick={() => setActiveTab('services')}>
+                    <div className="bg-green-50 rounded-lg p-4 cursor-pointer hover:bg-green-100 transition-colors" /* onClick disabled - tab removed */>
                       <div className="text-2xl font-bold text-green-700">{stats.mappings}</div>
                       <div className="text-sm text-green-600">Service Mappings</div>
                     </div>
-                    <div className="bg-orange-50 rounded-lg p-4 cursor-pointer hover:bg-orange-100 transition-colors" onClick={() => setActiveTab('payments')}>
+                    <div className="bg-orange-50 rounded-lg p-4 cursor-pointer hover:bg-orange-100 transition-colors" /* onClick disabled - tab removed */>
                       <div className="text-2xl font-bold text-orange-700">{stats.paymentTypes}</div>
                       <div className="text-sm text-orange-600">Payment Types</div>
                     </div>
-                    <div className="bg-purple-50 rounded-lg p-4 cursor-pointer hover:bg-purple-100 transition-colors" onClick={() => setActiveTab('audit')}>
+                    <div className="bg-purple-50 rounded-lg p-4 cursor-pointer hover:bg-purple-100 transition-colors" /* onClick disabled - tab removed */>
                       <div className="text-2xl font-bold text-purple-700">{stats.logs}</div>
                       <div className="text-sm text-purple-600">Audit Logs</div>
                     </div>

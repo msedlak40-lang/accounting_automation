@@ -1,6 +1,5 @@
 import { Database } from 'sql.js';
 import * as XLSX from 'xlsx';
-import * as path from 'path';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase } from './database';
@@ -70,10 +69,10 @@ export function seedServiceMappings(
         const mapping: ServiceMapping = {
           emr_service_name: row['Service/Product'],
           qb_item_name: row['Matched_Item'],
-          qb_item_hierarchy: null, // Not in this Excel file
-          asset_account: row['Asset Account'] || null,
+          qb_item_hierarchy: undefined, // Not in this Excel file
+          asset_account: row['Asset Account'] || undefined,
           income_account: row['Account'], // This is the income account column
-          tax_code: row['Tax Code'] || null,
+          tax_code: row['Tax Code'] || undefined,
         };
 
         // Validate required fields

@@ -28,7 +28,7 @@ import * as fs from 'fs';
  */
 export function setupIpcHandlers(db: Database, dbPath: string): void {
   // Generic database query handler (for debugging)
-  ipcMain.handle('db:query', async (event, sql: string) => {
+  ipcMain.handle('db:query', async (_event, sql: string) => {
     try {
       const result = db.exec(sql);
       if (result.length === 0) return { success: true, data: [] };
@@ -68,7 +68,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Create customer (new UUID-based schema)
-  ipcMain.handle('customers:create', async (event, customerData: any) => {
+  ipcMain.handle('customers:create', async (_event, customerData: any) => {
     try {
       const { v4: uuidv4 } = require('uuid');
       const customerId = customerData.customer_id || uuidv4();
@@ -125,7 +125,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Create service mapping
-  ipcMain.handle('service-mappings:create', async (event, mappingData: any) => {
+  ipcMain.handle('service-mappings:create', async (_event, mappingData: any) => {
     try {
       const { v4: uuidv4 } = require('uuid');
       const id = uuidv4();
@@ -172,7 +172,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Create payment type mapping
-  ipcMain.handle('payment-types:create', async (event, mappingData: any) => {
+  ipcMain.handle('payment-types:create', async (_event, mappingData: any) => {
     try {
       const { v4: uuidv4 } = require('uuid');
       const id = uuidv4();
@@ -199,7 +199,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Get audit log
-  ipcMain.handle('audit:getLogs', async (event, options?: { limit?: number; action?: string }) => {
+  ipcMain.handle('audit:getLogs', async (_event, options?: { limit?: number; action?: string }) => {
     try {
       let sql = 'SELECT * FROM audit_log';
 
@@ -228,7 +228,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // File upload handler (to be expanded)
-  ipcMain.handle('file:upload', async (event, fileData: { path: string; type: string }) => {
+  ipcMain.handle('file:upload', async (_event, fileData: { path: string; type: string }) => {
     try {
       const { v4: uuidv4 } = require('uuid');
       const id = uuidv4();
@@ -250,7 +250,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Seed service mappings from Excel
-  ipcMain.handle('seed:serviceMappings', async (event, excelPath?: string) => {
+  ipcMain.handle('seed:serviceMappings', async (_event, excelPath?: string) => {
     try {
       // Use provided path or default to data/raw/COA_Quickbooks_matched.xlsx
       const defaultPath = path.join(__dirname, '../../../../data/raw/COA_Quickbooks_matched.xlsx');
@@ -269,7 +269,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Seed payment type mappings from Excel
-  ipcMain.handle('seed:paymentTypeMappings', async (event, excelPath?: string) => {
+  ipcMain.handle('seed:paymentTypeMappings', async (_event, excelPath?: string) => {
     try {
       // Use provided path or default to data/raw/COA_Quickbooks_matched.xlsx
       const defaultPath = path.join(__dirname, '../../../../data/raw/COA_Quickbooks_matched.xlsx');
@@ -309,7 +309,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Process EMR file
-  ipcMain.handle('emr:processFile', async (event, filePath: string) => {
+  ipcMain.handle('emr:processFile', async (_event, filePath: string) => {
     try {
       console.log('Processing EMR file:', filePath);
       const result = processEMRFile(db, dbPath, filePath);
@@ -321,7 +321,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Get staged transactions
-  ipcMain.handle('emr:getStagedTransactions', async (event, options?: { uploadId?: string; limit?: number; offset?: number }) => {
+  ipcMain.handle('emr:getStagedTransactions', async (_event, options?: { uploadId?: string; limit?: number; offset?: number }) => {
     try {
       let sql = `
         SELECT
@@ -362,7 +362,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Get staged transactions summary
-  ipcMain.handle('emr:getSummary', async (event, uploadId?: string) => {
+  ipcMain.handle('emr:getSummary', async (_event, uploadId?: string) => {
     try {
       const summary = getStagedTransactionsSummary(db, uploadId);
       return { success: true, data: summary };
@@ -390,7 +390,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   // Customer crosswalk handlers
   // Import customer crosswalk from Excel
-  ipcMain.handle('customers:importCrosswalk', async (event, excelPath?: string) => {
+  ipcMain.handle('customers:importCrosswalk', async (_event, excelPath?: string) => {
     try {
       const defaultPath = path.join(__dirname, '../../../../data/raw/Customer_ID_Crosswalk_Template.xlsx');
       const filePath = excelPath || defaultPath;
@@ -435,7 +435,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Update customer names (QB display name and/or EMR name)
-  ipcMain.handle('customers:updateNames', async (event, data: {
+  ipcMain.handle('customers:updateNames', async (_event, data: {
     customer_id: string;
     qb_display_name?: string;
     emr_name?: string;
@@ -540,7 +540,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Get export preview
-  ipcMain.handle('export:preview', async (event, uploadId?: string) => {
+  ipcMain.handle('export:preview', async (_event, uploadId?: string) => {
     try {
       const preview = getExportPreview(db, uploadId);
       return { success: true, data: preview };
@@ -550,7 +550,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Export to Transaction Pro
-  ipcMain.handle('export:transactionPro', async (event, data: { outputDir: string; uploadId?: string }) => {
+  ipcMain.handle('export:transactionPro', async (_event, data: { outputDir: string; uploadId?: string }) => {
     try {
       console.log('Exporting to Transaction Pro:', data);
       const result = exportToTransactionPro(db, dbPath, data.outputDir, data.uploadId);
@@ -586,7 +586,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Process CC statement file
-  ipcMain.handle('cc:processFile', async (event, filePath: string) => {
+  ipcMain.handle('cc:processFile', async (_event, filePath: string) => {
     try {
       console.log('Processing CC file:', filePath);
       const result = processCCFile(db, dbPath, filePath);
@@ -603,7 +603,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Get expense transactions
-  ipcMain.handle('cc:getTransactions', async (event, options?: { uploadId?: string; limit?: number }) => {
+  ipcMain.handle('cc:getTransactions', async (_event, options?: { uploadId?: string; limit?: number }) => {
     try {
       let sql = `
         SELECT
@@ -640,7 +640,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Get expense summary
-  ipcMain.handle('cc:getSummary', async (event, uploadId?: string) => {
+  ipcMain.handle('cc:getSummary', async (_event, uploadId?: string) => {
     try {
       const summary = getExpenseSummary(db, uploadId);
       return { success: true, data: summary };
@@ -670,7 +670,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Add expense category
-  ipcMain.handle('cc:addCategory', async (event, data: {
+  ipcMain.handle('cc:addCategory', async (_event, data: {
     merchant_pattern: string;
     category_name: string;
     expense_account: string;
@@ -693,7 +693,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   });
 
   // Update expense transaction category
-  ipcMain.handle('cc:updateTransactionCategory', async (event, data: { transactionId: string; categoryId: string | null }) => {
+  ipcMain.handle('cc:updateTransactionCategory', async (_event, data: { transactionId: string; categoryId: string | null }) => {
     try {
       let expenseAccount = null;
       if (data.categoryId) {
@@ -789,7 +789,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
   // ==================== REPORTING HANDLERS ====================
 
   // Get transaction report by date range
-  ipcMain.handle('reports:transactionsByDateRange', async (event, data: { startDate: string; endDate: string }) => {
+  ipcMain.handle('reports:transactionsByDateRange', async (_event, data: { startDate: string; endDate: string }) => {
     try {
       const result = db.exec(`
         SELECT
@@ -992,7 +992,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('gravity:processFile', async (event, filePath: string) => {
+  ipcMain.handle('gravity:processFile', async (_event, filePath: string) => {
     try {
       const result = processGravityFile(db, dbPath, filePath);
       return result;
@@ -1010,7 +1010,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('gravity:getMatches', async (event, options?: { status?: string }) => {
+  ipcMain.handle('gravity:getMatches', async (_event, options?: { status?: string }) => {
     try {
       const data = getPaymentMatches(db, options);
       return { success: true, data };
@@ -1019,7 +1019,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('gravity:getTransactions', async (event, options?: { limit?: number }) => {
+  ipcMain.handle('gravity:getTransactions', async (_event, options?: { limit?: number }) => {
     try {
       const data = getGravityTransactions(db, options);
       return { success: true, data };
@@ -1037,7 +1037,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('gravity:approveMatch', async (event, matchId: string) => {
+  ipcMain.handle('gravity:approveMatch', async (_event, matchId: string) => {
     try {
       const result = approveMatch(db, dbPath, matchId);
       return result;
@@ -1046,7 +1046,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('gravity:rejectMatch', async (event, matchId: string) => {
+  ipcMain.handle('gravity:rejectMatch', async (_event, matchId: string) => {
     try {
       const result = rejectMatch(db, dbPath, matchId);
       return result;
@@ -1055,7 +1055,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('gravity:export', async (event, outputDir: string) => {
+  ipcMain.handle('gravity:export', async (_event, outputDir: string) => {
     try {
       const result = exportGravityPayments(db, dbPath, outputDir);
       return result;
@@ -1086,7 +1086,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:processFile', async (event, filePath: string) => {
+  ipcMain.handle('bank:processFile', async (_event, filePath: string) => {
     try {
       const { processBankStatement } = require('./bank-statement-processor');
       const result = await processBankStatement(db, filePath);
@@ -1101,7 +1101,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:getStatements', async (event, options?: { uploadId?: string; limit?: number }) => {
+  ipcMain.handle('bank:getStatements', async (_event, options?: { uploadId?: string; limit?: number }) => {
     try {
       const { getBankStatements } = require('./bank-statement-processor');
       const data = getBankStatements(db, options);
@@ -1111,7 +1111,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:getSummary', async (event, uploadId?: string) => {
+  ipcMain.handle('bank:getSummary', async (_event, uploadId?: string) => {
     try {
       const { getBankStatementSummary } = require('./bank-statement-processor');
       const data = getBankStatementSummary(db, uploadId);
@@ -1121,7 +1121,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:getDepositsByProcessor', async (event, uploadId?: string) => {
+  ipcMain.handle('bank:getDepositsByProcessor', async (_event, uploadId?: string) => {
     try {
       const { getDepositsByProcessor } = require('./bank-statement-processor');
       const data = getDepositsByProcessor(db, uploadId);
@@ -1133,7 +1133,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   // ===== Bank Reconciliation Matching Handlers =====
 
-  ipcMain.handle('bank:matchDeposits', async (event, criteria?: any) => {
+  ipcMain.handle('bank:matchDeposits', async (_event, criteria?: any) => {
     try {
       const { matchBankDeposits } = require('./bank-reconciliation-matcher');
       const result = await matchBankDeposits(db, dbPath, criteria);
@@ -1144,7 +1144,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:getMatches', async (event, status?: string) => {
+  ipcMain.handle('bank:getMatches', async (_event, status?: string) => {
     try {
       const { getDepositMatches } = require('./bank-reconciliation-matcher');
       const data = getDepositMatches(db, status);
@@ -1164,7 +1164,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:approveMatch', async (event, matchId: string) => {
+  ipcMain.handle('bank:approveMatch', async (_event, matchId: string) => {
     try {
       const { approveDepositMatch } = require('./bank-reconciliation-matcher');
       const result = approveDepositMatch(db, dbPath, matchId);
@@ -1174,7 +1174,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  ipcMain.handle('bank:rejectMatch', async (event, matchId: string) => {
+  ipcMain.handle('bank:rejectMatch', async (_event, matchId: string) => {
     try {
       const { rejectDepositMatch } = require('./bank-reconciliation-matcher');
       const result = rejectDepositMatch(db, dbPath, matchId);
