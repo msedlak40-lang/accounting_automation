@@ -227,8 +227,8 @@ function App() {
   const [gravityTransactions, setGravityTransactions] = useState<any[]>([]);
   const [matching, setMatching] = useState(false);
   const [matchResult, setMatchResult] = useState<any>(null);
-  const [exportResult, setExportResult] = useState<any>(null);
-  const [exporting, setExporting] = useState(false);
+  const [gravityExportResult, setGravityExportResult] = useState<any>(null);
+  const [gravityExporting, setGravityExporting] = useState(false);
 
   // Bank statement state
   const [bankProcessing, setBankProcessing] = useState(false);
@@ -479,28 +479,28 @@ function App() {
 
   const handleGravityExport = async () => {
     try {
-      setExporting(true);
-      setExportResult(null);
+      setGravityExporting(true);
+      setGravityExportResult(null);
 
       // Select output directory
       const dirResult = await window.electronAPI.export.selectDirectory();
       if (dirResult.canceled || !dirResult.dirPath) {
-        setExporting(false);
+        setGravityExporting(false);
         return;
       }
 
       // Export Gravity payments
       const result = await window.electronAPI.gravity.export(dirResult.dirPath);
-      setExportResult(result);
+      setGravityExportResult(result);
 
       if (result.success) {
         await loadGravityData();
       }
     } catch (error: any) {
       console.error('Gravity export error:', error);
-      setExportResult({ success: false, error: error.message });
+      setGravityExportResult({ success: false, error: error.message });
     } finally {
-      setExporting(false);
+      setGravityExporting(false);
     }
   };
 
@@ -2078,10 +2078,10 @@ function App() {
                   </button>
                   <button
                     onClick={handleGravityExport}
-                    disabled={exporting || !gravitySummary || gravitySummary.matchedCount === 0}
+                    disabled={gravityExporting || !gravitySummary || gravitySummary.matchedCount === 0}
                     className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50"
                   >
-                    {exporting ? 'Exporting...' : 'Export Payments'}
+                    {gravityExporting ? 'Exporting...' : 'Export Payments'}
                   </button>
                 </div>
               </div>
@@ -2153,19 +2153,19 @@ function App() {
               )}
 
               {/* Export Result */}
-              {exportResult && (
-                <div className={`mt-4 p-4 rounded-lg ${exportResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                  {exportResult.success ? (
+              {gravityExportResult && (
+                <div className={`mt-4 p-4 rounded-lg ${gravityExportResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  {gravityExportResult.success ? (
                     <div className="text-green-800">
                       <div className="font-medium mb-1">Export complete!</div>
                       <div className="text-sm">
-                        Exported {exportResult.paymentsExported} payments to: {exportResult.filePath}
+                        Exported {gravityExportResult.paymentsExported} payments to: {gravityExportResult.filePath}
                       </div>
                     </div>
                   ) : (
                     <div className="text-red-800">
                       <div className="font-medium">Error:</div>
-                      <div className="text-sm">{exportResult.error}</div>
+                      <div className="text-sm">{gravityExportResult.error}</div>
                     </div>
                   )}
                 </div>
