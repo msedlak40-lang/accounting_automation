@@ -53,13 +53,25 @@ interface GravityPayment {
 interface PaymentMatch {
   id: string;
   payment_id: string;
+  gravity_payment_id: string;
   invoice_number: string;
   customer_id: string | null;
   match_confidence: string;
   match_score: number;
   match_status: string;
+  status: string;
   match_reason: string;
   payment?: GravityPayment;
+  emr_customer_name?: string | null;
+  emr_customer_cid?: string | null;
+  emr_payment_amount?: number | null;
+  emr_transaction_date?: string | null;
+  // UI-friendly aliases
+  customer_name?: string | null;
+  customer_cid?: string | null;
+  amount?: number | null;
+  card_type?: string | null;
+  gravity_date?: string | null;
 }
 
 interface Invoice {
@@ -658,9 +670,11 @@ export function getPaymentMatches(db: Database, options?: { status?: string }): 
       m.id, m.payment_id, m.invoice_number, m.customer_id,
       m.match_confidence, m.match_score, m.match_status, m.match_reason,
       p.transaction_datetime, p.approval_code, p.card_last_four,
-      p.total_amount, p.card_type, p.source
+      p.total_amount, p.card_type, p.source,
+      e.customer_name, e.customer_cid, e.payment_amount, e.transaction_date
     FROM gravity_payment_matches m
     JOIN stg_gravity_payments p ON m.payment_id = p.id
+    LEFT JOIN stg_emr_payments e ON m.emr_payment_id = e.id
   `;
 
   const params: any[] = [];
@@ -677,29 +691,49 @@ export function getPaymentMatches(db: Database, options?: { status?: string }): 
 
   const matches: PaymentMatch[] = [];
   for (const row of result[0].values) {
+    const emrCustomerName = row[14] as string | null;
+    const emrCustomerCid = row[15] as string | null;
+    const emrPaymentAmount = row[16] as number | null;
+    const emrTransactionDate = row[17] as string | null;
+    const gravityDateTime = row[8] as string;
+    const cardType = row[12] as string;
+    const matchStatus = row[6] as string;
+
     matches.push({
       id: row[0] as string,
       payment_id: row[1] as string,
+      gravity_payment_id: row[1] as string,
       invoice_number: row[2] as string,
       customer_id: row[3] as string | null,
       match_confidence: row[4] as string,
       match_score: row[5] as number,
-      match_status: row[6] as string,
+      match_status: matchStatus,
+      status: matchStatus,
       match_reason: row[7] as string,
       payment: {
         id: row[1] as string,
-        transaction_datetime: row[8] as string,
+        transaction_datetime: gravityDateTime,
         approval_code: row[9] as string,
         card_last_four: row[10] as string,
         total_amount: row[11] as number,
-        card_type: row[12] as string,
+        card_type: cardType,
         source: row[13] as string,
         transaction_type: '',
         sale_amount: 0,
         tip_amount: 0,
         cashier: null,
         match_status: ''
-      }
+      },
+      emr_customer_name: emrCustomerName,
+      emr_customer_cid: emrCustomerCid,
+      emr_payment_amount: emrPaymentAmount,
+      emr_transaction_date: emrTransactionDate,
+      // UI-friendly aliases
+      customer_name: emrCustomerName,
+      customer_cid: emrCustomerCid,
+      amount: emrPaymentAmount,
+      card_type: cardType,
+      gravity_date: gravityDateTime
     });
   }
 
