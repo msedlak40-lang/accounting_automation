@@ -294,12 +294,12 @@ function App() {
     }
   };
 
-  const loadFlaggedTransactions = async () => {
-    // const result = await window.electronAPI.emr.getFlaggedTransactions();
-    if (result.success) {
-      setFlaggedTransactions(result.data || []);
-    }
-  };
+//   const loadFlaggedTransactions = async () => {
+//     // const result = await window.electronAPI.emr.getFlaggedTransactions();
+//     if (result.success) {
+//       setFlaggedTransactions(result.data || []);
+//     }
+//   };
 
   // Load data when tab becomes active
   useEffect(() => {
@@ -777,38 +777,38 @@ function App() {
     }
   };
 
-  const handleLinkTransaction = async (transactionId: string, customerId: string) => {
-    try {
-      // const result = await window.electronAPI.customers.linkTransaction(transactionId, customerId);
-      if (result.success) {
-        await loadFlaggedTransactions();
-        await loadTransactions();
-        alert('Transaction linked to customer successfully');
-      } else {
-        alert(`Error linking transaction: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Error linking transaction:', error);
-      alert('Error linking transaction');
-    }
-  };
+//   const handleLinkTransaction = async (_transactionId: string, _customerId: string) => {
+//     try {
+//       // const result = await window.electronAPI.customers.linkTransaction(transactionId, customerId);
+//       if (result.success) {
+//         await loadFlaggedTransactions();
+//         await loadTransactions();
+//         alert('Transaction linked to customer successfully');
+//       } else {
+//         alert(`Error linking transaction: ${result.error}`);
+//       }
+//     } catch (error) {
+//       console.error('Error linking transaction:', error);
+//       alert('Error linking transaction');
+//     }
+//   };
 
-  const handleCreateNewCustomer = async (transactionId: string, emrPatientId: string, patientName: string) => {
-    try {
-      // const result = await window.electronAPI.customers.createFromFlaggedTransaction(transactionId, emrPatientId, patientName);
-      if (result.success) {
-        await loadFlaggedTransactions();
-        await loadTransactions();
-        await loadCustomers();
-        alert('New customer created successfully');
-      } else {
-        alert(`Error creating customer: ${result.error}`);
-      }
-    } catch (error) {
-      console.error('Error creating customer:', error);
-      alert('Error creating customer');
-    }
-  };
+//   const handleCreateNewCustomer = async (_transactionId: string, _emrPatientId: string, _patientName: string) => {
+//     try {
+//       // const result = await window.electronAPI.customers.createFromFlaggedTransaction(transactionId, emrPatientId, patientName);
+//       if (result.success) {
+//         await loadFlaggedTransactions();
+//         await loadTransactions();
+//         await loadCustomers();
+//         alert('New customer created successfully');
+//       } else {
+//         alert(`Error creating customer: ${result.error}`);
+//       }
+//     } catch (error) {
+//       console.error('Error creating customer:', error);
+//       alert('Error creating customer');
+//     }
+//   };
 
   // Filter service mappings
   const filteredServices = serviceMappings.filter(s =>

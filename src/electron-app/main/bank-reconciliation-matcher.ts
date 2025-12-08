@@ -1,7 +1,7 @@
 import { Database } from 'sql.js';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  BankDepositMatch,
+  // BankDepositMatch,
   DepositMatchProposal,
   DepositMatchCriteria,
   DEFAULT_BANK_RECONCILIATION_CONFIG,
@@ -20,7 +20,7 @@ interface MatchingStats {
  */
 export async function matchBankDeposits(
   db: Database,
-  dbPath: string,
+  _dbPath: string,
   criteria?: Partial<DepositMatchCriteria>
 ): Promise<{ success: boolean; stats: MatchingStats; error?: string }> {
   try {
@@ -153,7 +153,7 @@ async function findBestMatch(
  */
 function getUnmatchedPaymentBatches(
   db: Database,
-  processor: string,
+  _processor: string,
   depositDate: string,
   criteria: DepositMatchCriteria
 ): any[] {
@@ -430,7 +430,7 @@ export function getDepositMatches(db: Database, status?: string): any[] {
  */
 export function approveDepositMatch(
   db: Database,
-  dbPath: string,
+  _dbPath: string,
   matchId: string,
   approvedBy: string = 'user'
 ): { success: boolean; error?: string } {
@@ -496,7 +496,7 @@ export function approveDepositMatch(
  */
 export function rejectDepositMatch(
   db: Database,
-  dbPath: string,
+  _dbPath: string,
   matchId: string
 ): { success: boolean; error?: string } {
   try {

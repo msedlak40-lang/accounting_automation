@@ -116,14 +116,14 @@ function parseBankStatementRow(row: BankStatementRow, uploadId: string): BankSta
     id: uuidv4(),
     upload_id: uploadId,
     transaction_date: parseDate(row.Date),
-    reference_number: row['No.'] || null,
+    reference_number: row['No.'] || undefined,
     description,
     debit_amount: debitAmount,
     credit_amount: creditAmount,
     transaction_type: transactionType,
     processor,
     reconciliation_status: 'pending',
-    notes: null,
+    notes: undefined,
     created_at: new Date().toISOString(),
   };
 }

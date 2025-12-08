@@ -741,7 +741,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       const buffer = Buffer.from(data);
       fs.writeFileSync(result.filePath, buffer);
 
-      logAudit(db, 'database_backup_exported', 'system', null, { filePath: result.filePath });
+      logAudit(db, 'database_backup_exported', 'system', undefined, { filePath: result.filePath });
       saveDatabase(db, dbPath);
 
       return { success: true, filePath: result.filePath };
@@ -774,7 +774,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       // Save to current database path (overwrite)
       fs.writeFileSync(dbPath, backupData);
 
-      logAudit(db, 'database_backup_imported', 'system', null, { filePath: backupPath });
+      logAudit(db, 'database_backup_imported', 'system', undefined, { filePath: backupPath });
 
       return {
         success: true,

@@ -186,7 +186,7 @@ export function importCustomerCrosswalk(
       }
 
       // Log and save for CSV
-      logAudit(db, 'customer_crosswalk_imported', 'crosswalk', null, {
+      logAudit(db, 'customer_crosswalk_imported', 'crosswalk', undefined, {
         fileType: 'csv',
         tableType,
         customersImported,
@@ -362,7 +362,7 @@ export function importCustomerCrosswalk(
     }
 
     // Log the import
-    logAudit(db, 'customer_crosswalk_imported', 'crosswalk', null, {
+    logAudit(db, 'customer_crosswalk_imported', 'crosswalk', undefined, {
       customersImported,
       customerIdsImported,
       uuidsImported,
