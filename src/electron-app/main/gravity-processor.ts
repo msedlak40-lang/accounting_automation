@@ -235,9 +235,30 @@ function getInvoices(db: Database): Invoice[] {
 }
 
 /**
- * Get EMR payments to match against Gravity payments
+ * Get EMR payments to match against Gravity payments - OPTIMIZED VERSION
+ * Uses SQL to efficiently find potential matches instead of loading everything
  */
-function getEMRPayments(db: Database): EMRPayment[] {
+function findEMRPaymentCandidates(
+  db: Database,
+  paymentDate: string,
+  paymentAmount: number,
+  dateToleranceDays: number = 7,
+  amountTolerancePercent: number = 2
+): EMRPayment[] {
+  // Calculate date range
+  const dateParts = paymentDate.split('T')[0];
+  const dateObj = new Date(dateParts);
+  const startDate = new Date(dateObj);
+  startDate.setDate(startDate.getDate() - dateToleranceDays);
+  const endDate = new Date(dateObj);
+  endDate.setDate(endDate.getDate() + dateToleranceDays);
+
+  // Calculate amount range (within tolerance)
+  const amountTolerance = paymentAmount * (amountTolerancePercent / 100);
+  const minAmount = paymentAmount - Math.max(amountTolerance, 1.00);
+  const maxAmount = paymentAmount + Math.max(amountTolerance, 1.00);
+
+  // Use SQL with indexes to efficiently filter candidates
   const result = db.exec(`
     SELECT
       id,
@@ -249,10 +270,19 @@ function getEMRPayments(db: Database): EMRPayment[] {
       payment_type
     FROM stg_emr_payments
     WHERE match_status = 'unmatched'
-      AND payment_amount IS NOT NULL
-      AND payment_amount > 0
-    ORDER BY transaction_date DESC
-  `);
+      AND payment_amount BETWEEN ? AND ?
+      AND DATE(transaction_date) BETWEEN DATE(?) AND DATE(?)
+    ORDER BY ABS(payment_amount - ?) ASC,
+             ABS(JULIANDAY(transaction_date) - JULIANDAY(?)) ASC
+    LIMIT 10
+  `, [
+    minAmount,
+    maxAmount,
+    startDate.toISOString().split('T')[0],
+    endDate.toISOString().split('T')[0],
+    paymentAmount,
+    paymentDate
+  ]);
 
   if (result.length === 0) return [];
 
@@ -273,14 +303,14 @@ function getEMRPayments(db: Database): EMRPayment[] {
 }
 
 /**
- * Match Gravity payments to EMR payments using intelligent matching
+ * Match Gravity payments to EMR payments using intelligent matching - OPTIMIZED
  */
 export function matchGravityPayments(
   db: Database,
   dbPath: string
 ): MatchResult {
   try {
-    console.log('Starting Gravity payment matching...');
+    console.log('Starting Gravity payment matching (OPTIMIZED)...');
 
     // Get all unmatched payments
     const paymentsResult = db.exec(`
@@ -296,25 +326,50 @@ export function matchGravityPayments(
     }
 
     const payments = paymentsResult[0].values;
-    const emrPayments = getEMRPayments(db);
+    const totalPayments = payments.length;
 
-    console.log(`Matching ${payments.length} Gravity payments against ${emrPayments.length} EMR payments`);
+    // Get EMR payment count for logging
+    const emrCountResult = db.exec(`
+      SELECT COUNT(*) FROM stg_emr_payments WHERE match_status = 'unmatched'
+    `);
+    const emrCount = emrCountResult[0]?.values[0]?.[0] || 0;
+
+    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR payments using SQL-based matching`);
 
     let matchCount = 0;
+    let processedCount = 0;
+    const batchSize = 50; // Save database every 50 payments
+
+    // Begin transaction for better performance
+    db.run('BEGIN TRANSACTION');
 
     for (const payment of payments) {
       const paymentId = payment[0] as string;
       const paymentDatetime = payment[1] as string;
       const paymentAmount = payment[2] as number;
 
+      processedCount++;
+
+      // Progress reporting every 10 payments
+      if (processedCount % 10 === 0 || processedCount === totalPayments) {
+        console.log(`Progress: ${processedCount}/${totalPayments} (${Math.round(processedCount/totalPayments*100)}%)`);
+      }
+
       // Extract date from datetime for date-based matching
       const paymentDate = paymentDatetime.split('T')[0];
 
-      // Find potential matches against EMR payments
+      // Find potential matches using SQL (much faster!)
+      const emrCandidates = findEMRPaymentCandidates(
+        db,
+        paymentDate,
+        paymentAmount
+      );
+
+      // Evaluate candidates using the existing scoring logic
       const matches = findMatchingEMRPayments(
         paymentDate,
         paymentAmount,
-        emrPayments
+        emrCandidates
       );
 
       // Create match records for top candidates
@@ -356,7 +411,18 @@ export function matchGravityPayments(
           `, [paymentId, match.emr_payment_id]);
         }
       }
+
+      // Commit and save periodically to avoid long-running transactions
+      if (processedCount % batchSize === 0 && processedCount < totalPayments) {
+        db.run('COMMIT');
+        saveDatabase(db, dbPath);
+        db.run('BEGIN TRANSACTION');
+        console.log(`Saved progress at ${processedCount} payments`);
+      }
     }
+
+    // Final commit
+    db.run('COMMIT');
 
     logAudit(db, 'gravity_payments_matched', 'gravity_matches', undefined, {
       matchCount,
@@ -365,10 +431,16 @@ export function matchGravityPayments(
 
     saveDatabase(db, dbPath);
 
-    console.log(`Created ${matchCount} matches`);
+    console.log(`✓ Matching complete! Created ${matchCount} matches from ${totalPayments} payments`);
     return { success: true, matchCount };
   } catch (error: any) {
     console.error('Error matching Gravity payments:', error);
+    // Rollback on error
+    try {
+      db.run('ROLLBACK');
+    } catch (e) {
+      // Ignore rollback errors
+    }
     return { success: false, matchCount: 0, error: error.message };
   }
 }
