@@ -10,9 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const os = require('os');
-
-// Simple XLSX parser using Python since Node xlsx isn't installed
-const { execSync } = require('child_process');
+const XLSX = require('xlsx');
 
 // Determine the correct database path based on platform
 // This matches the Electron app's userData path
@@ -41,34 +39,28 @@ async function seedDatabase() {
   console.log('📊 Excel path:', EXCEL_PATH);
   console.log();
 
-  // Read Excel data using Python
+  // Read Excel data using xlsx
   console.log('📊 Reading Excel file...');
-  const pythonScript = `
-import openpyxl
-import json
 
-wb = openpyxl.load_workbook('${EXCEL_PATH}', data_only=True)
+  const workbook = XLSX.readFile(EXCEL_PATH);
 
-# Read service mappings
-services = []
-if 'emr_service_items' in wb.sheetnames:
-    ws = wb['emr_service_items']
-    headers = [cell.value for cell in ws[1]]
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        services.append(dict(zip(headers, row)))
+  // Read service mappings from emr_service_items sheet
+  const services = [];
+  if (workbook.SheetNames.includes('emr_service_items')) {
+    const worksheet = workbook.Sheets['emr_service_items'];
+    const data = XLSX.utils.sheet_to_json(worksheet);
+    services.push(...data);
+  }
 
-# Read payment mappings
-payments = []
-if 'emr_payment_types' in wb.sheetnames:
-    ws = wb['emr_payment_types']
-    headers = [cell.value for cell in ws[1]]
-    for row in ws.iter_rows(min_row=2, values_only=True):
-        payments.append(dict(zip(headers, row)))
+  // Read payment mappings from emr_payment_types sheet
+  const payments = [];
+  if (workbook.SheetNames.includes('emr_payment_types')) {
+    const worksheet = workbook.Sheets['emr_payment_types'];
+    const data = XLSX.utils.sheet_to_json(worksheet);
+    payments.push(...data);
+  }
 
-print(json.dumps({'services': services, 'payments': payments}))
-`;
-
-  const excelData = JSON.parse(execSync(`python3 -c "${pythonScript}"`).toString());
+  const excelData = { services, payments };
 
   console.log(`  ✓ Found ${excelData.services.length} service mappings`);
   console.log(`  ✓ Found ${excelData.payments.length} payment types\n`);

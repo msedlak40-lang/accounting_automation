@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "sql.js": "^1.10.3",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
   }
 }
