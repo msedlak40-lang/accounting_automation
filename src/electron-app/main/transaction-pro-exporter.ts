@@ -65,8 +65,6 @@ export function exportToTransactionPro(
 
     // Get service mappings
     const serviceMappings = getServiceMappings(db);
-    // Get payment type mappings
-    const paymentMappings = getPaymentTypeMappings(db);
     // Get customer mappings by UUID (primary) and by CID (fallback)
     const customerMappings = getCustomerMappings(db);
     const customerMappingsByCID = getCustomerMappingsByCID(db);
@@ -103,9 +101,8 @@ export function exportToTransactionPro(
 
     console.log(`Found ${transactions.length} transactions to process`);
 
-    // Build invoice lines (service items)
+    // Build invoice lines (service items only - payments handled by Gravity)
     const invoiceLines: InvoiceLine[] = [];
-    const paymentLines: PaymentLine[] = [];
 
     const processedInvoices = new Set<string>();
 
@@ -175,32 +172,14 @@ export function exportToTransactionPro(
         processedInvoices.add(invoiceNumber);
       }
 
-      // Process payment lines (using normalized key for case-insensitive matching)
-      if (paymentType && txn.amount > 0) {
-        const paymentMapping = paymentMappings.get(normalizeKey(paymentType));
-
-        if (!paymentMapping) {
-          warnings.push(`Payment type "${paymentType}" not mapped - using default clearing account`);
-        }
-
-        const clearingAccount = paymentMapping?.clearing_account || '1030 Merchant Clearing';
-
-        paymentLines.push({
-          Customer: customerName,
-          TxnDate: formatDateForQB(txnDate),
-          RefNumber: `PMT-${invoiceNumber}`,
-          Amount: txn.amount,
-          PaymentMethod: paymentType,
-          DepositToAccount: clearingAccount,
-          ApplyToRefNumber: invoiceNumber
-        });
-      }
+      // PAYMENT LINES REMOVED - Gravity payment matching handles all payments now
+      // EMR transactions only generate service invoices
     }
 
     // Generate timestamp for filenames
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 
-    // Write Invoice CSV
+    // Write Invoice CSV (invoices only - payments handled by Gravity)
     const invoiceFilePath = path.join(outputDir, `invoices_${timestamp}.csv`);
     if (invoiceLines.length > 0) {
       const invoiceCsv = generateCSV(invoiceLines, [
@@ -211,23 +190,14 @@ export function exportToTransactionPro(
       console.log(`Wrote ${invoiceLines.length} invoice lines to ${invoiceFilePath}`);
     }
 
-    // Write Payments CSV
-    const paymentsFilePath = path.join(outputDir, `payments_${timestamp}.csv`);
-    if (paymentLines.length > 0) {
-      const paymentsCsv = generateCSV(paymentLines, [
-        'Customer', 'TxnDate', 'RefNumber', 'Amount', 'PaymentMethod',
-        'DepositToAccount', 'ApplyToRefNumber'
-      ]);
-      fs.writeFileSync(paymentsFilePath, paymentsCsv);
-      console.log(`Wrote ${paymentLines.length} payment lines to ${paymentsFilePath}`);
-    }
+    // Payments CSV generation removed - use Gravity payment matching instead
 
     // Log the export
     logAudit(db, 'transaction_pro_export', 'export', null, {
       invoicesExported: invoiceLines.length,
-      paymentsExported: paymentLines.length,
+      paymentsExported: 0, // Payments handled by Gravity
       invoiceFilePath,
-      paymentsFilePath,
+      paymentsFilePath: null,
       warningsCount: warnings.length
     });
 
@@ -236,9 +206,9 @@ export function exportToTransactionPro(
     return {
       success: true,
       invoicesExported: invoiceLines.length,
-      paymentsExported: paymentLines.length,
+      paymentsExported: 0, // Payments handled by Gravity
       invoiceFilePath: invoiceLines.length > 0 ? invoiceFilePath : undefined,
-      paymentsFilePath: paymentLines.length > 0 ? paymentsFilePath : undefined,
+      paymentsFilePath: undefined, // No payment file - use Gravity export instead
       warnings
     };
   } catch (error: any) {

@@ -173,6 +173,13 @@ export function processEMRFile(
       const isServiceLine = serviceName !== null && serviceName !== '';
       const isPaymentLine = paymentType !== null && paymentType !== '';
 
+      // SKIP PAYMENT LINES - Gravity handles all payments now
+      if (isPaymentLine && !isServiceLine) {
+        stats.paymentLines++;
+        continue;
+      }
+
+      // Only process service lines
       if (isServiceLine) {
         stats.serviceLines++;
 
@@ -181,16 +188,9 @@ export function processEMRFile(
         if (!serviceMapping) {
           stats.unmappedServices.add(serviceName);
         }
-      }
-
-      if (isPaymentLine) {
-        stats.paymentLines++;
-
-        // Check payment type mapping (using normalized key for case-insensitive matching)
-        const paymentMapping = paymentTypeMappings.get(normalizeKey(paymentType));
-        if (!paymentMapping) {
-          stats.unmappedPaymentTypes.add(paymentType);
-        }
+      } else {
+        // Skip rows with no service
+        continue;
       }
 
       // Build mapped data JSON (using normalized keys for case-insensitive matching)
@@ -201,13 +201,8 @@ export function processEMRFile(
         mappedData.income_account = sm.income_account;
         mappedData.tax_code = sm.tax_code;
       }
-      if (paymentType && paymentTypeMappings.has(normalizeKey(paymentType))) {
-        const pm = paymentTypeMappings.get(normalizeKey(paymentType))!;
-        mappedData.clearing_account = pm.clearing_account;
-        mappedData.category = pm.category;
-      }
 
-      // Insert into staging table (with customer_id UUID)
+      // Insert into staging table (with customer_id UUID) - SERVICES ONLY
       db.run(`
         INSERT INTO transactions_staging (
           id, upload_id, customer_cid, customer_id, invoice_number, transaction_date,
@@ -225,7 +220,7 @@ export function processEMRFile(
         row.QTY || null,
         row.Price || null,
         row.Amount || null,
-        paymentType,
+        null, // No payment type for service lines
         JSON.stringify({
           sku: row.SKU,
           staff: row.Staff,
