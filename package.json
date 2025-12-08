@@ -1,0 +1,14 @@
+{
+  "name": "accounting-automation",
+  "version": "1.0.0",
+  "description": "Med Spa Accounting Automation - Root workspace",
+  "private": true,
+  "scripts": {
+    "seed:mappings": "node scripts/seed-mappings.js",
+    "inspect:excel": "node scripts/inspect-excel.js"
+  },
+  "devDependencies": {
+    "sql.js": "^1.10.3",
+    "uuid": "^9.0.1"
+  }
+}
