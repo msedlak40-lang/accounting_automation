@@ -111,11 +111,12 @@ const api = {
     selectFile: () => ipcRenderer.invoke('gravity:selectFile'),
     processFile: (filePath: string) => ipcRenderer.invoke('gravity:processFile', filePath),
     getSummary: () => ipcRenderer.invoke('gravity:getSummary'),
-    getMatches: () => ipcRenderer.invoke('gravity:getMatches'),
+    getMatches: (options?: { status?: string }) => ipcRenderer.invoke('gravity:getMatches', options),
     getTransactions: (options?: { limit?: number }) => ipcRenderer.invoke('gravity:getTransactions', options),
     matchPayments: () => ipcRenderer.invoke('gravity:matchPayments'),
     approveMatch: (matchId: string) => ipcRenderer.invoke('gravity:approveMatch', matchId),
     rejectMatch: (matchId: string) => ipcRenderer.invoke('gravity:rejectMatch', matchId),
+    export: (outputDir: string) => ipcRenderer.invoke('gravity:export', outputDir),
   },
 };
 

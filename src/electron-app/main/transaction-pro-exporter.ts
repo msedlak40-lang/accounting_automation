@@ -514,3 +514,127 @@ export function getExportPreview(
 
   return { invoiceLines, paymentLines, unmappedServices, unmappedPayments };
 }
+
+/**
+ * Export approved Gravity payment matches to Transaction Pro Receive Payments format
+ */
+export function exportGravityPayments(
+  db: Database,
+  dbPath: string,
+  outputDir: string
+): { success: boolean; paymentsExported: number; filePath?: string; error?: string } {
+  try {
+    console.log('Starting Gravity payments export...');
+
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    // Get customer mappings
+    const customerMappings = getCustomerMappings(db);
+
+    // Get approved matches
+    const matchesResult = db.exec(`
+      SELECT
+        m.invoice_number,
+        m.customer_id,
+        p.total_amount,
+        p.transaction_datetime,
+        p.card_type
+      FROM gravity_payment_matches m
+      JOIN stg_gravity_payments p ON m.payment_id = p.id
+      WHERE m.match_status IN ('approved', 'auto_approved')
+      ORDER BY p.transaction_datetime, m.invoice_number
+    `);
+
+    if (matchesResult.length === 0 || matchesResult[0].values.length === 0) {
+      return {
+        success: false,
+        paymentsExported: 0,
+        error: 'No approved payment matches found to export'
+      };
+    }
+
+    const matches = matchesResult[0].values;
+
+    // Build Receive Payments lines
+    const paymentLines: PaymentLine[] = [];
+
+    for (const match of matches) {
+      const invoiceNumber = match[0] as string;
+      const customerId = match[1] as string;
+      const amount = match[2] as number;
+      const datetime = match[3] as string;
+      const cardType = match[4] as string;
+
+      // Get customer QB display name
+      const qbName = customerMappings.get(customerId);
+      if (!qbName) {
+        console.warn(`No QB name found for customer ${customerId}, skipping payment`);
+        continue;
+      }
+
+      // Format date
+      const date = datetime.split('T')[0]; // Extract YYYY-MM-DD
+
+      // Determine payment method from card type
+      let paymentMethod = 'Credit Card';
+      if (cardType === 'DC' || cardType === 'Debit') {
+        paymentMethod = 'Debit Card';
+      } else if (cardType === 'AX' || cardType === 'Amex') {
+        paymentMethod = 'American Express';
+      }
+
+      paymentLines.push({
+        Customer: qbName,
+        TxnDate: date,
+        RefNumber: '', // Leave blank for receive payments
+        Amount: amount,
+        PaymentMethod: paymentMethod,
+        DepositToAccount: '1030 · Merchant Clearing', // Configurable clearing account
+        ApplyToRefNumber: invoiceNumber
+      });
+    }
+
+    // Generate CSV file
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+    const filename = `Receive_Payments_From_Gravity_${timestamp}.csv`;
+    const filePath = path.join(outputDir, filename);
+
+    // Write CSV header and data
+    const csvLines = [
+      'Customer,TxnDate,RefNumber,Amount,PaymentMethod,DepositToAccount,ApplyToRefNumber'
+    ];
+
+    for (const line of paymentLines) {
+      csvLines.push(
+        `"${line.Customer}","${line.TxnDate}","${line.RefNumber}",${line.Amount},"${line.PaymentMethod}","${line.DepositToAccount}","${line.ApplyToRefNumber}"`
+      );
+    }
+
+    fs.writeFileSync(filePath, csvLines.join('\n'), 'utf-8');
+
+    // Log the export
+    logAudit(db, 'gravity_payments_exported', 'export', null, {
+      filename,
+      paymentsExported: paymentLines.length
+    });
+    saveDatabase(db, dbPath);
+
+    console.log(`Exported ${paymentLines.length} Gravity payments to ${filePath}`);
+
+    return {
+      success: true,
+      paymentsExported: paymentLines.length,
+      filePath
+    };
+  } catch (error: any) {
+    console.error('Error exporting Gravity payments:', error);
+    return {
+      success: false,
+      paymentsExported: 0,
+      error: error.message
+    };
+  }
+}

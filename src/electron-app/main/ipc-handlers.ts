@@ -8,8 +8,17 @@ import {
   getUnmappedEMRPatients,
   getCrosswalkStats
 } from './customer-crosswalk';
-import { exportToTransactionPro, getExportPreview } from './transaction-pro-exporter';
+import { exportToTransactionPro, getExportPreview, exportGravityPayments } from './transaction-pro-exporter';
 import { processCCFile, getExpenseSummary } from './cc-processor';
+import {
+  processGravityFile,
+  matchGravityPayments,
+  getGravitySummary,
+  getPaymentMatches,
+  getGravityTransactions,
+  approveMatch,
+  rejectMatch
+} from './gravity-processor';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -961,8 +970,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
-  // ==================== Gravity Payment Matching (Stub handlers) ====================
-  // TODO: Implement actual gravity payment matching logic
+  // ==================== Gravity Payment Matching ====================
 
   ipcMain.handle('gravity:selectFile', async () => {
     try {
@@ -975,7 +983,7 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
       });
 
       if (result.canceled) {
-        return { success: true, canceled: true };
+        return { success: false, canceled: true };
       }
 
       return { success: true, filePath: result.filePaths[0] };
@@ -986,14 +994,8 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   ipcMain.handle('gravity:processFile', async (event, filePath: string) => {
     try {
-      // TODO: Implement gravity file processing
-      return {
-        success: true,
-        stats: {
-          paymentCount: 0,
-          totalAmount: 0
-        }
-      };
+      const result = processGravityFile(db, dbPath, filePath);
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -1001,25 +1003,17 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   ipcMain.handle('gravity:getSummary', async () => {
     try {
-      // TODO: Implement gravity summary
-      return {
-        success: true,
-        data: {
-          totalPayments: 0,
-          totalAmount: 0,
-          matchedCount: 0,
-          unmatchedCount: 0
-        }
-      };
+      const data = getGravitySummary(db);
+      return { success: true, data };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   });
 
-  ipcMain.handle('gravity:getMatches', async () => {
+  ipcMain.handle('gravity:getMatches', async (event, options?: { status?: string }) => {
     try {
-      // TODO: Implement get matches
-      return { success: true, data: [] };
+      const data = getPaymentMatches(db, options);
+      return { success: true, data };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -1027,8 +1021,8 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   ipcMain.handle('gravity:getTransactions', async (event, options?: { limit?: number }) => {
     try {
-      // TODO: Implement get transactions
-      return { success: true, data: [] };
+      const data = getGravityTransactions(db, options);
+      return { success: true, data };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -1036,8 +1030,8 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   ipcMain.handle('gravity:matchPayments', async () => {
     try {
-      // TODO: Implement automatic matching
-      return { success: true, matchCount: 0 };
+      const result = matchGravityPayments(db, dbPath);
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -1045,8 +1039,8 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   ipcMain.handle('gravity:approveMatch', async (event, matchId: string) => {
     try {
-      // TODO: Implement approve match
-      return { success: true };
+      const result = approveMatch(db, dbPath, matchId);
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }
@@ -1054,8 +1048,17 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
 
   ipcMain.handle('gravity:rejectMatch', async (event, matchId: string) => {
     try {
-      // TODO: Implement reject match
-      return { success: true };
+      const result = rejectMatch(db, dbPath, matchId);
+      return result;
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:export', async (event, outputDir: string) => {
+    try {
+      const result = exportGravityPayments(db, dbPath, outputDir);
+      return result;
     } catch (error: any) {
       return { success: false, error: error.message };
     }

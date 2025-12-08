@@ -247,6 +247,50 @@ function createTables(database: Database): void {
     CREATE INDEX IF NOT EXISTS idx_audit_log_timestamp ON audit_log(timestamp);
     CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action);
     CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id);
+
+    -- 13. Gravity payments staging table
+    CREATE TABLE IF NOT EXISTS stg_gravity_payments (
+      id                 TEXT PRIMARY KEY,
+      upload_id          TEXT REFERENCES file_uploads(id),
+      transaction_datetime TEXT NOT NULL,
+      approval_code      TEXT,
+      transaction_type   TEXT,
+      card_last_four     TEXT,
+      sale_amount        REAL,
+      tip_amount         REAL,
+      total_amount       REAL NOT NULL,
+      cashier            TEXT,
+      source             TEXT,
+      card_type          TEXT,
+      match_status       TEXT DEFAULT 'unmatched',
+      created_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_upload_id ON stg_gravity_payments(upload_id);
+    CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_datetime ON stg_gravity_payments(transaction_datetime);
+    CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_amount ON stg_gravity_payments(total_amount);
+    CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_match_status ON stg_gravity_payments(match_status);
+    CREATE INDEX IF NOT EXISTS idx_stg_gravity_payments_approval ON stg_gravity_payments(approval_code);
+
+    -- 14. Gravity payment matches table
+    CREATE TABLE IF NOT EXISTS gravity_payment_matches (
+      id                 TEXT PRIMARY KEY,
+      payment_id         TEXT NOT NULL REFERENCES stg_gravity_payments(id),
+      invoice_number     TEXT NOT NULL,
+      customer_id        TEXT REFERENCES customers(customer_id),
+      match_confidence   TEXT NOT NULL,
+      match_score        REAL,
+      match_status       TEXT DEFAULT 'pending',
+      match_reason       TEXT,
+      approved_by        TEXT,
+      approved_at        TEXT,
+      created_at         TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_gravity_matches_payment_id ON gravity_payment_matches(payment_id);
+    CREATE INDEX IF NOT EXISTS idx_gravity_matches_invoice ON gravity_payment_matches(invoice_number);
+    CREATE INDEX IF NOT EXISTS idx_gravity_matches_status ON gravity_payment_matches(match_status);
+    CREATE INDEX IF NOT EXISTS idx_gravity_matches_customer ON gravity_payment_matches(customer_id);
   `;
 
   // Execute all CREATE TABLE statements
