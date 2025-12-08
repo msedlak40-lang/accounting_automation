@@ -114,7 +114,9 @@ export function processGravityFile(
       const paymentId = uuidv4();
 
       // Parse datetime - handles both string format ("10/8/2025 20:27") and Excel serial numbers
+      console.log('Raw date value:', row['Date/Time'], 'Type:', typeof row['Date/Time']);
       const datetime = parseDateTime(row['Date/Time']);
+      console.log('Parsed datetime:', datetime);
 
       // Parse amounts
       const saleAmount = parseFloat(String(row['Sale Amount'] || 0));
