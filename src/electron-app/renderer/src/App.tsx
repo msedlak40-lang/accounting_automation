@@ -117,6 +117,7 @@ declare global {
         getTransactions: (options?: { uploadId?: string; limit?: number }) => Promise<{ success: boolean; data?: any[]; error?: string }>;
         approveMatch: (matchId: string) => Promise<{ success: boolean; error?: string }>;
         rejectMatch: (matchId: string) => Promise<{ success: boolean; error?: string }>;
+        export: (outputDir: string) => Promise<{ success: boolean; paymentsExported: number; filePath?: string; error?: string }>;
       };
     };
   }
@@ -197,6 +198,8 @@ function App() {
   const [gravityTransactions, setGravityTransactions] = useState<any[]>([]);
   const [matching, setMatching] = useState(false);
   const [matchResult, setMatchResult] = useState<any>(null);
+  const [exportResult, setExportResult] = useState<any>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     checkDatabase();
@@ -419,6 +422,33 @@ function App() {
     const result = await window.electronAPI.gravity.rejectMatch(matchId);
     if (result.success) {
       await loadGravityData();
+    }
+  };
+
+  const handleGravityExport = async () => {
+    try {
+      setExporting(true);
+      setExportResult(null);
+
+      // Select output directory
+      const dirResult = await window.electronAPI.export.selectDirectory();
+      if (dirResult.canceled || !dirResult.dirPath) {
+        setExporting(false);
+        return;
+      }
+
+      // Export Gravity payments
+      const result = await window.electronAPI.gravity.export(dirResult.dirPath);
+      setExportResult(result);
+
+      if (result.success) {
+        await loadGravityData();
+      }
+    } catch (error: any) {
+      console.error('Gravity export error:', error);
+      setExportResult({ success: false, error: error.message });
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -1784,6 +1814,13 @@ function App() {
                   >
                     {matching ? 'Matching...' : 'Match Payments'}
                   </button>
+                  <button
+                    onClick={handleGravityExport}
+                    disabled={exporting || !gravitySummary || gravitySummary.matchedCount === 0}
+                    className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50"
+                  >
+                    {exporting ? 'Exporting...' : 'Export Payments'}
+                  </button>
                 </div>
               </div>
 
@@ -1848,6 +1885,25 @@ function App() {
                     <div className="text-red-800">
                       <div className="font-medium">Error:</div>
                       <div className="text-sm">{matchResult.error}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Export Result */}
+              {exportResult && (
+                <div className={`mt-4 p-4 rounded-lg ${exportResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                  {exportResult.success ? (
+                    <div className="text-green-800">
+                      <div className="font-medium mb-1">Export complete!</div>
+                      <div className="text-sm">
+                        Exported {exportResult.paymentsExported} payments to: {exportResult.filePath}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-red-800">
+                      <div className="font-medium">Error:</div>
+                      <div className="text-sm">{exportResult.error}</div>
                     </div>
                   )}
                 </div>
