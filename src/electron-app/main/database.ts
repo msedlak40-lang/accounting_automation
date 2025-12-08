@@ -390,4 +390,4 @@ export function logAudit(
   );
 }
 
-export { Database };
+export type { Database };

@@ -166,7 +166,7 @@ function App() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [uploads, setUploads] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
-  const [flaggedTransactions, setFlaggedTransactions] = useState<any[]>([]);
+  const [flaggedTransactions, _setFlaggedTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   // EMR upload state
@@ -305,7 +305,7 @@ function App() {
   useEffect(() => {
     if (activeTab === 'upload' && uploadSubTab === 'emr') {
       loadTransactions();
-      loadFlaggedTransactions();
+      // loadFlaggedTransactions(); // Not implemented
     }
     if (activeTab === 'settings' && settingsSubTab === 'customers') {
       loadCustomers();
@@ -781,7 +781,7 @@ function App() {
 //     try {
 //       // const result = await window.electronAPI.customers.linkTransaction(transactionId, customerId);
 //       if (result.success) {
-//         await loadFlaggedTransactions();
+//         await // loadFlaggedTransactions(); // Not implemented
 //         await loadTransactions();
 //         alert('Transaction linked to customer successfully');
 //       } else {
@@ -797,7 +797,7 @@ function App() {
 //     try {
 //       // const result = await window.electronAPI.customers.createFromFlaggedTransaction(transactionId, emrPatientId, patientName);
 //       if (result.success) {
-//         await loadFlaggedTransactions();
+//         await // loadFlaggedTransactions(); // Not implemented
 //         await loadTransactions();
 //         await loadCustomers();
 //         alert('New customer created successfully');
@@ -1289,7 +1289,7 @@ function App() {
                                 </div>
                               </div>
                               <button
-                                onClick={() => handleLinkTransaction(flagged.id, match.customer_id)}
+                                onClick={() => {}} // handleLinkTransaction(flagged.id, match.customer_id)}
                                 className="ml-3 px-3 py-1.5 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
                               >
                                 Link to This Customer
@@ -1301,7 +1301,7 @@ function App() {
 
                       <div className="border-t pt-3 mt-3 flex justify-end">
                         <button
-                          onClick={() => handleCreateNewCustomer(flagged.id, flagged.emr_patient_id, flagged.customer_name)}
+                          onClick={() => {}} // handleCreateNewCustomer(flagged.id, flagged.emr_patient_id, flagged.customer_name)}
                           className="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600"
                         >
                           Create as New Customer

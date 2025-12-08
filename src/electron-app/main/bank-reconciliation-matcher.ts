@@ -475,7 +475,7 @@ export function approveDepositMatch(
     const fs = require('fs');
     const data = db.export();
     const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
+    fs.writeFileSync(_dbPath, buffer);
 
     // Log audit entry
     db.run(
@@ -525,7 +525,7 @@ export function rejectDepositMatch(
     const fs = require('fs');
     const data = db.export();
     const buffer = Buffer.from(data);
-    fs.writeFileSync(dbPath, buffer);
+    fs.writeFileSync(_dbPath, buffer);
 
     // Log audit entry
     db.run(
