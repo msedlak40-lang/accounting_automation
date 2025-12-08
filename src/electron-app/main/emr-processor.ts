@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase, logAudit } from './database';
 import { buildEMRToCustomerMap, getOrCreateCustomerByEMRId } from './customer-crosswalk';
+import { parseDate } from './date-utils';
 
 interface EMRRow {
   Date: Date;
@@ -125,7 +126,7 @@ export function processEMRFile(
       const cid = String(row.CID || '');
       const serviceName = row['Service/Product'] || null;
       const paymentType = row['Payment Type'] || null;
-      const txnDate = formatDate(row.Date);
+      const txnDate = parseDate(row.Date);
 
       // Get customer name from EMR row (Name field, or First Name + Last Name)
       let customerName: string | null = row.Name || null;
@@ -346,25 +347,6 @@ function loadPaymentTypeMappings(db: Database): Map<string, PaymentTypeMapping> 
   }
 
   return map;
-}
-
-/**
- * Format date to ISO string for SQLite
- */
-function formatDate(date: any): string {
-  if (!date) return '';
-
-  if (date instanceof Date) {
-    return date.toISOString().split('T')[0];
-  }
-
-  // Try to parse string date
-  const parsed = new Date(date);
-  if (!isNaN(parsed.getTime())) {
-    return parsed.toISOString().split('T')[0];
-  }
-
-  return String(date);
 }
 
 /**

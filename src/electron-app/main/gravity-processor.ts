@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { saveDatabase, logAudit } from './database';
+import { parseDateTime } from './date-utils';
 
 interface GravityPaymentRow {
   'Date/Time': string;
@@ -112,8 +113,8 @@ export function processGravityFile(
     for (const row of data) {
       const paymentId = uuidv4();
 
-      // Parse datetime - Gravity format: "10/8/2025 20:27"
-      const datetime = parseGravityDateTime(row['Date/Time']);
+      // Parse datetime - handles both string format ("10/8/2025 20:27") and Excel serial numbers
+      const datetime = parseDateTime(row['Date/Time']);
 
       // Parse amounts
       const saleAmount = parseFloat(String(row['Sale Amount'] || 0));
@@ -188,29 +189,6 @@ export function processGravityFile(
       stats: { totalRows: 0, paymentsImported: 0, totalAmount: 0 },
       error: error.message
     };
-  }
-}
-
-/**
- * Parse Gravity datetime format: "10/8/2025 20:27" to ISO format
- */
-function parseGravityDateTime(dateStr: string): string {
-  if (!dateStr) return '';
-
-  try {
-    // Parse "M/D/YYYY H:mm" format
-    const parts = dateStr.split(' ');
-    const datePart = parts[0];
-    const timePart = parts[1] || '00:00';
-
-    const [month, day, year] = datePart.split('/').map(n => parseInt(n));
-    const [hour, minute] = timePart.split(':').map(n => parseInt(n));
-
-    const date = new Date(year, month - 1, day, hour, minute);
-    return date.toISOString();
-  } catch (e) {
-    console.error('Error parsing date:', dateStr, e);
-    return dateStr;
   }
 }
 

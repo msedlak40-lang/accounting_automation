@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { BankStatement } from './types';
+import { parseDate } from './date-utils';
 
 interface BankStatementRow {
   Date: string;
@@ -185,21 +186,6 @@ function detectProcessor(description: string): 'Gravity' | 'Clover' | 'Cherry' |
   }
 
   return null;
-}
-
-/**
- * Parse date string to ISO format
- */
-function parseDate(dateStr: string): string {
-  // Format: "11/10/2025" -> "2025-11-10"
-  const parts = dateStr.split('/');
-  if (parts.length === 3) {
-    const month = parts[0].padStart(2, '0');
-    const day = parts[1].padStart(2, '0');
-    const year = parts[2];
-    return `${year}-${month}-${day}`;
-  }
-  return dateStr;
 }
 
 /**
