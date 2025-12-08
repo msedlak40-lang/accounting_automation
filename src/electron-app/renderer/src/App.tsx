@@ -123,10 +123,18 @@ declare global {
   }
 }
 
-type TabType = 'dashboard' | 'transactions' | 'customers' | 'services' | 'payments' | 'expenses' | 'gravity' | 'reports' | 'export' | 'audit';
+type TabType = 'dashboard' | 'upload' | 'review' | 'export' | 'settings';
+type UploadSubTab = 'emr' | 'gravity' | 'expenses' | 'bank';
+type ReviewSubTab = 'payment-matching' | 'bank-reconciliation';
+type ExportSubTab = 'transaction-pro' | 'reports';
+type SettingsSubTab = 'customers' | 'services' | 'payments' | 'audit';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [uploadSubTab, setUploadSubTab] = useState<UploadSubTab>('emr');
+  const [reviewSubTab, setReviewSubTab] = useState<ReviewSubTab>('payment-matching');
+  const [exportSubTab, setExportSubTab] = useState<ExportSubTab>('transaction-pro');
+  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTab>('customers');
   const [dbStatus, setDbStatus] = useState<'checking' | 'ready' | 'error'>('checking');
   const [stats, setStats] = useState({ customers: 0, mappings: 0, paymentTypes: 0, logs: 0, transactions: 0 });
 
@@ -260,26 +268,29 @@ function App() {
 
   // Load data when tab becomes active
   useEffect(() => {
-    if (activeTab === 'transactions') {
+    if (activeTab === 'upload' && uploadSubTab === 'emr') {
       loadTransactions();
       loadFlaggedTransactions();
     }
-    if (activeTab === 'customers') {
+    if (activeTab === 'settings' && settingsSubTab === 'customers') {
       loadCustomers();
     }
-    if (activeTab === 'export') {
+    if (activeTab === 'export' && exportSubTab === 'transaction-pro') {
       loadExportPreview();
     }
-    if (activeTab === 'expenses') {
+    if (activeTab === 'upload' && uploadSubTab === 'expenses') {
       loadExpenses();
     }
-    if (activeTab === 'gravity') {
+    if (activeTab === 'upload' && uploadSubTab === 'gravity') {
       loadGravityData();
     }
-    if (activeTab === 'reports') {
+    if (activeTab === 'review' && reviewSubTab === 'payment-matching') {
+      loadGravityData();
+    }
+    if (activeTab === 'export' && exportSubTab === 'reports') {
       loadReport();
     }
-  }, [activeTab, reportType]);
+  }, [activeTab, uploadSubTab, reviewSubTab, exportSubTab, settingsSubTab, reportType]);
 
   const loadExportPreview = async () => {
     const result = await window.electronAPI.export.preview();
@@ -715,14 +726,33 @@ function App() {
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'transactions', label: `Transactions (${stats.transactions})`, icon: '📋' },
+    { id: 'upload', label: 'Upload', icon: '📤' },
+    { id: 'review', label: 'Review', icon: '🔄' },
+    { id: 'export', label: 'Export', icon: '📥' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
+  ];
+
+  const uploadSubTabs = [
+    { id: 'emr', label: `EMR Transactions (${stats.transactions})`, icon: '📋' },
+    { id: 'gravity', label: 'Gravity Payments', icon: '💳' },
+    { id: 'expenses', label: `Credit Card (${expenses.length})`, icon: '💰' },
+    { id: 'bank', label: 'Bank Statement', icon: '🏦' },
+  ];
+
+  const reviewSubTabs = [
+    { id: 'payment-matching', label: 'Payment Matching', icon: '🔗' },
+    { id: 'bank-reconciliation', label: 'Bank Reconciliation', icon: '✅' },
+  ];
+
+  const exportSubTabs = [
+    { id: 'transaction-pro', label: 'Transaction Pro', icon: '📥' },
+    { id: 'reports', label: 'Reports', icon: '📈' },
+  ];
+
+  const settingsSubTabs = [
     { id: 'customers', label: `Customers (${stats.customers})`, icon: '👥' },
     { id: 'services', label: `Service Mappings (${stats.mappings})`, icon: '🔗' },
     { id: 'payments', label: `Payment Types (${stats.paymentTypes})`, icon: '💳' },
-    { id: 'expenses', label: `Expenses (${expenses.length})`, icon: '💰' },
-    { id: 'gravity', label: 'Payment Matching', icon: '🔄' },
-    { id: 'reports', label: 'Reports', icon: '📈' },
-    { id: 'export', label: 'Export', icon: '📥' },
     { id: 'audit', label: `Audit Log (${stats.logs})`, icon: '📝' },
   ];
 
@@ -758,6 +788,99 @@ function App() {
           </nav>
         </div>
       </div>
+
+      {/* Sub-Navigation */}
+      {activeTab === 'upload' && (
+        <div className="bg-gray-100 border-b">
+          <div className="max-w-7xl mx-auto px-4">
+            <nav className="flex space-x-2 py-2" aria-label="Sub-tabs">
+              {uploadSubTabs.map((subTab) => (
+                <button
+                  key={subTab.id}
+                  onClick={() => setUploadSubTab(subTab.id as UploadSubTab)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    uploadSubTab === subTab.id
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-1">{subTab.icon}</span>
+                  {subTab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'review' && (
+        <div className="bg-gray-100 border-b">
+          <div className="max-w-7xl mx-auto px-4">
+            <nav className="flex space-x-2 py-2" aria-label="Sub-tabs">
+              {reviewSubTabs.map((subTab) => (
+                <button
+                  key={subTab.id}
+                  onClick={() => setReviewSubTab(subTab.id as ReviewSubTab)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    reviewSubTab === subTab.id
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-1">{subTab.icon}</span>
+                  {subTab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'export' && (
+        <div className="bg-gray-100 border-b">
+          <div className="max-w-7xl mx-auto px-4">
+            <nav className="flex space-x-2 py-2" aria-label="Sub-tabs">
+              {exportSubTabs.map((subTab) => (
+                <button
+                  key={subTab.id}
+                  onClick={() => setExportSubTab(subTab.id as ExportSubTab)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    exportSubTab === subTab.id
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-1">{subTab.icon}</span>
+                  {subTab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="bg-gray-100 border-b">
+          <div className="max-w-7xl mx-auto px-4">
+            <nav className="flex space-x-2 py-2" aria-label="Sub-tabs">
+              {settingsSubTabs.map((subTab) => (
+                <button
+                  key={subTab.id}
+                  onClick={() => setSettingsSubTab(subTab.id as SettingsSubTab)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    settingsSubTab === subTab.id
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-1">{subTab.icon}</span>
+                  {subTab.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 px-4">
@@ -978,8 +1101,8 @@ function App() {
           </div>
         )}
 
-        {/* Transactions Tab */}
-        {activeTab === 'transactions' && (
+        {/* Upload Tab - EMR Transactions Sub-Tab */}
+        {activeTab === 'upload' && uploadSubTab === 'emr' && (
           <div className="space-y-4">
             {/* Flagged Transactions Section */}
             {flaggedTransactions.length > 0 && (
@@ -1157,8 +1280,8 @@ function App() {
           </div>
         )}
 
-        {/* Customers Tab */}
-        {activeTab === 'customers' && (
+        {/* Settings Tab - Customers Sub-Tab */}
+        {activeTab === 'settings' && settingsSubTab === 'customers' && (
           <div className="space-y-4">
             {/* Edit Customer Modal */}
             {showEditCustomer && editingCustomer && (
@@ -1344,8 +1467,8 @@ function App() {
           </div>
         )}
 
-        {/* Service Mappings Tab */}
-        {activeTab === 'services' && (
+        {/* Settings Tab - Service Mappings Sub-Tab */}
+        {activeTab === 'settings' && settingsSubTab === 'services' && (
           <div className="space-y-4">
             {/* Add Service Form */}
             {showAddService && (
@@ -1476,8 +1599,8 @@ function App() {
           </div>
         )}
 
-        {/* Payment Types Tab */}
-        {activeTab === 'payments' && (
+        {/* Settings Tab - Payment Types Sub-Tab */}
+        {activeTab === 'settings' && settingsSubTab === 'payments' && (
           <div className="space-y-4">
             {/* Add Payment Type Form */}
             {showAddPayment && (
@@ -1600,8 +1723,8 @@ function App() {
           </div>
         )}
 
-        {/* Export Tab */}
-        {activeTab === 'export' && (
+        {/* Export Tab - Transaction Pro Sub-Tab */}
+        {activeTab === 'export' && exportSubTab === 'transaction-pro' && (
           <div className="space-y-4">
             {/* Export Preview Card */}
             <div className="bg-white rounded-lg shadow p-6">
@@ -1718,8 +1841,8 @@ function App() {
           </div>
         )}
 
-        {/* Expenses Tab */}
-        {activeTab === 'expenses' && (
+        {/* Upload Tab - Credit Card Expenses Sub-Tab */}
+        {activeTab === 'upload' && uploadSubTab === 'expenses' && (
           <div className="bg-white rounded-lg shadow">
             <div className="p-4 border-b flex justify-between items-center">
               <div>
@@ -1792,8 +1915,8 @@ function App() {
           </div>
         )}
 
-        {/* Gravity Payment Matching Tab */}
-        {activeTab === 'gravity' && (
+        {/* Review Tab - Payment Matching Sub-Tab */}
+        {activeTab === 'review' && reviewSubTab === 'payment-matching' && (
           <div className="space-y-6">
             {/* Summary Card */}
             <div className="bg-white rounded-lg shadow p-6">
@@ -2025,8 +2148,8 @@ function App() {
           </div>
         )}
 
-        {/* Reports Tab */}
-        {activeTab === 'reports' && (
+        {/* Export Tab - Reports Sub-Tab */}
+        {activeTab === 'export' && exportSubTab === 'reports' && (
           <div className="space-y-4">
             {/* Report Type Selector */}
             <div className="bg-white rounded-lg shadow p-4">
@@ -2151,8 +2274,8 @@ function App() {
           </div>
         )}
 
-        {/* Audit Log Tab */}
-        {activeTab === 'audit' && (
+        {/* Settings Tab - Audit Log Sub-Tab */}
+        {activeTab === 'settings' && settingsSubTab === 'audit' && (
           <div className="bg-white rounded-lg shadow">
             <div className="p-4 border-b flex justify-between items-center">
               <h2 className="text-lg font-semibold">Audit Log</h2>
@@ -2214,6 +2337,83 @@ function App() {
             </div>
             <div className="p-3 border-t text-sm text-gray-500">
               Showing {auditLogs.length} log entries
+            </div>
+          </div>
+        )}
+
+        {/* Upload Tab - Gravity Payments Sub-Tab */}
+        {activeTab === 'upload' && uploadSubTab === 'gravity' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">💳</div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Gravity Payment Upload</h2>
+              <p className="text-gray-600 mb-6">
+                Upload Gravity payment CSV files and view staged payments before matching.
+              </p>
+              <p className="text-sm text-gray-500 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
+                <strong>Note:</strong> For now, use the <strong>Review → Payment Matching</strong> tab to upload Gravity files and match payments.
+                This section will be enhanced to separate upload from matching workflow.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Tab - Bank Statement Sub-Tab */}
+        {activeTab === 'upload' && uploadSubTab === 'bank' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">🏦</div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Bank Statement Upload</h2>
+              <p className="text-gray-600 mb-6">
+                Upload bank statement CSV files to begin reconciliation.
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto mb-6">
+                <div className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-yellow-800">Feature Coming Soon</p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Bank reconciliation functionality is currently in development. This feature will automatically match
+                      bank deposits to payment batches and calculate merchant discount fees.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Expected features: CSV upload, transaction classification, processor detection, merchant fee calculation
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Review Tab - Bank Reconciliation Sub-Tab */}
+        {activeTab === 'review' && reviewSubTab === 'bank-reconciliation' && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">✅</div>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Bank Reconciliation</h2>
+              <p className="text-gray-600 mb-6">
+                Match bank deposits to payment batches and approve reconciliation transactions.
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto mb-6">
+                <div className="flex items-start gap-2">
+                  <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-yellow-800">Feature Coming Soon</p>
+                    <p className="text-sm text-yellow-700 mt-1">
+                      Bank reconciliation review functionality is currently in development. This will integrate with
+                      the Gravity payment matching workflow to automatically reconcile bank deposits.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Expected features: Auto-matching of deposits, merchant fee calculation, approval workflow, discrepancy resolution
+              </p>
             </div>
           </div>
         )}
