@@ -105,6 +105,18 @@ const api = {
     expenseSummary: () => ipcRenderer.invoke('reports:expenseSummary'),
     dashboardStats: () => ipcRenderer.invoke('reports:dashboardStats'),
   },
+
+  // Gravity Payment Matching
+  gravity: {
+    selectFile: () => ipcRenderer.invoke('gravity:selectFile'),
+    processFile: (filePath: string) => ipcRenderer.invoke('gravity:processFile', filePath),
+    getSummary: () => ipcRenderer.invoke('gravity:getSummary'),
+    getMatches: () => ipcRenderer.invoke('gravity:getMatches'),
+    getTransactions: (options?: { limit?: number }) => ipcRenderer.invoke('gravity:getTransactions', options),
+    matchPayments: () => ipcRenderer.invoke('gravity:matchPayments'),
+    approveMatch: (matchId: string) => ipcRenderer.invoke('gravity:approveMatch', matchId),
+    rejectMatch: (matchId: string) => ipcRenderer.invoke('gravity:rejectMatch', matchId),
+  },
 };
 
 // Expose protected methods that allow the renderer process to use

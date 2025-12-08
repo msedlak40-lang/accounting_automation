@@ -961,5 +961,105 @@ export function setupIpcHandlers(db: Database, dbPath: string): void {
     }
   });
 
+  // ==================== Gravity Payment Matching (Stub handlers) ====================
+  // TODO: Implement actual gravity payment matching logic
+
+  ipcMain.handle('gravity:selectFile', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: [
+          { name: 'CSV Files', extensions: ['csv'] },
+          { name: 'All Files', extensions: ['*'] }
+        ]
+      });
+
+      if (result.canceled) {
+        return { success: true, canceled: true };
+      }
+
+      return { success: true, filePath: result.filePaths[0] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:processFile', async (event, filePath: string) => {
+    try {
+      // TODO: Implement gravity file processing
+      return {
+        success: true,
+        stats: {
+          paymentCount: 0,
+          totalAmount: 0
+        }
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:getSummary', async () => {
+    try {
+      // TODO: Implement gravity summary
+      return {
+        success: true,
+        data: {
+          totalPayments: 0,
+          totalAmount: 0,
+          matchedCount: 0,
+          unmatchedCount: 0
+        }
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:getMatches', async () => {
+    try {
+      // TODO: Implement get matches
+      return { success: true, data: [] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:getTransactions', async (event, options?: { limit?: number }) => {
+    try {
+      // TODO: Implement get transactions
+      return { success: true, data: [] };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:matchPayments', async () => {
+    try {
+      // TODO: Implement automatic matching
+      return { success: true, matchCount: 0 };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:approveMatch', async (event, matchId: string) => {
+    try {
+      // TODO: Implement approve match
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle('gravity:rejectMatch', async (event, matchId: string) => {
+    try {
+      // TODO: Implement reject match
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  });
+
   console.log('IPC handlers registered successfully');
 }
