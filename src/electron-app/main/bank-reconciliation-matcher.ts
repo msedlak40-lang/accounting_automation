@@ -345,7 +345,7 @@ function createDepositMatch(db: Database, proposal: DepositMatchProposal): void 
 }
 
 /**
- * Get all deposit matches
+ * Get all deposit matches with payment details
  */
 export function getDepositMatches(db: Database, status?: string): any[] {
   let query = `
@@ -374,12 +374,50 @@ export function getDepositMatches(db: Database, status?: string): any[] {
   const results: any[] = [];
   while (stmt.step()) {
     const match = stmt.getAsObject();
+
     // Parse payment_ids JSON
+    let paymentIds: string[] = [];
     try {
-      match.payment_ids_array = JSON.parse(match.payment_ids as string);
+      paymentIds = JSON.parse(match.payment_ids as string);
+      match.payment_ids_array = paymentIds;
     } catch {
       match.payment_ids_array = [];
     }
+
+    // Fetch payment details for each payment in the batch
+    if (paymentIds.length > 0) {
+      const paymentDetails: any[] = [];
+      const placeholders = paymentIds.map(() => '?').join(',');
+
+      const paymentQuery = `
+        SELECT
+          gpm.id as match_id,
+          gpm.invoice_number,
+          gpm.customer_id,
+          gp.total_amount,
+          gp.transaction_datetime,
+          gp.card_type,
+          c.qb_display_name as customer_name
+        FROM gravity_payment_matches gpm
+        INNER JOIN stg_gravity_payments gp ON gpm.payment_id = gp.id
+        LEFT JOIN customers c ON gpm.customer_id = c.customer_id
+        WHERE gpm.id IN (${placeholders})
+        ORDER BY gp.transaction_datetime
+      `;
+
+      const paymentStmt = db.prepare(paymentQuery);
+      paymentStmt.bind(paymentIds);
+
+      while (paymentStmt.step()) {
+        paymentDetails.push(paymentStmt.getAsObject());
+      }
+      paymentStmt.free();
+
+      match.payment_details = paymentDetails;
+    } else {
+      match.payment_details = [];
+    }
+
     results.push(match);
   }
   stmt.free();

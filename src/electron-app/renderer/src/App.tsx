@@ -242,6 +242,7 @@ function App() {
   const [bankMatchResult, setBankMatchResult] = useState<any>(null);
   const [bankMatches, setBankMatches] = useState<any[]>([]);
   const [bankMatchSummary, setBankMatchSummary] = useState<any>(null);
+  const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     checkDatabase();
@@ -2766,6 +2767,72 @@ function App() {
                           {match.notes && (
                             <div className="mt-2 text-sm text-gray-600 bg-blue-50 p-2 rounded">
                               <strong>Match Reason:</strong> {match.notes}
+                            </div>
+                          )}
+
+                          {/* Toggle button for payment details */}
+                          {match.payment_details && match.payment_details.length > 0 && (
+                            <div className="mt-3">
+                              <button
+                                onClick={() => setExpandedMatchId(expandedMatchId === match.id ? null : match.id)}
+                                className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+                              >
+                                {expandedMatchId === match.id ? '▼' : '▶'}
+                                View {match.payment_details.length} Payment{match.payment_details.length !== 1 ? 's' : ''} in Batch
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Expandable payment details table */}
+                          {expandedMatchId === match.id && match.payment_details && match.payment_details.length > 0 && (
+                            <div className="mt-3 border border-gray-200 rounded-lg overflow-hidden">
+                              <div className="bg-gray-50 px-3 py-2 border-b">
+                                <h4 className="font-medium text-sm">Payment Batch Details</h4>
+                              </div>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                  <thead className="bg-gray-100">
+                                    <tr>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Date/Time</th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Invoice #</th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Customer</th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Card Type</th>
+                                      <th className="px-3 py-2 text-right text-xs font-medium text-gray-600">Amount</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-200 bg-white">
+                                    {match.payment_details.map((payment: any, idx: number) => (
+                                      <tr key={payment.match_id || idx} className="hover:bg-gray-50">
+                                        <td className="px-3 py-2 text-xs text-gray-600 font-mono">
+                                          {new Date(payment.transaction_datetime).toLocaleString('en-US', {
+                                            month: '2-digit',
+                                            day: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </td>
+                                        <td className="px-3 py-2 font-medium text-gray-900">{payment.invoice_number}</td>
+                                        <td className="px-3 py-2 text-gray-700">{payment.customer_name || payment.customer_id || 'Unknown'}</td>
+                                        <td className="px-3 py-2 text-gray-600">{payment.card_type || '-'}</td>
+                                        <td className="px-3 py-2 text-right font-medium text-gray-900">
+                                          ${Number(payment.total_amount).toFixed(2)}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                  <tfoot className="bg-gray-50">
+                                    <tr>
+                                      <td colSpan={4} className="px-3 py-2 text-sm font-semibold text-gray-700 text-right">
+                                        Batch Total:
+                                      </td>
+                                      <td className="px-3 py-2 text-right font-bold text-blue-600">
+                                        ${Number(match.payment_batch_total).toFixed(2)}
+                                      </td>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div>
                             </div>
                           )}
                         </div>
