@@ -216,8 +216,7 @@ function findEMRPaymentCandidates(
   db: Database,
   paymentDate: string,
   paymentAmount: number,
-  dateToleranceDays: number = 30,
-  amountTolerancePercent: number = 2
+  dateToleranceDays: number = 30
 ): EMRPayment[] {
   // Calculate date range
   const dateParts = paymentDate.split('T')[0];
@@ -338,7 +337,6 @@ export function matchGravityPayments(
       // Evaluate candidates using the existing scoring logic
       const matches = findMatchingEMRPayments(
         paymentDate,
-        paymentAmount,
         emrCandidates
       );
 
@@ -420,7 +418,6 @@ export function matchGravityPayments(
  */
 function findMatchingEMRPayments(
   paymentDate: string,
-  paymentAmount: number,
   emrPayments: EMRPayment[]
 ): Array<{
   emr_payment_id: string;
