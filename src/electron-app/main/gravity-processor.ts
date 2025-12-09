@@ -216,7 +216,7 @@ function findEMRPaymentCandidates(
   db: Database,
   paymentDate: string,
   paymentAmount: number,
-  dateToleranceDays: number = 7,
+  dateToleranceDays: number = 30,
   amountTolerancePercent: number = 2
 ): EMRPayment[] {
   // Calculate date range
@@ -233,6 +233,7 @@ function findEMRPaymentCandidates(
   const maxAmount = paymentAmount + Math.max(amountTolerance, 1.00);
 
   // Use SQL with indexes to efficiently filter candidates
+  // Only match credit card payments (Gravity only processes credit cards)
   const result = db.exec(`
     SELECT
       id,
@@ -246,6 +247,12 @@ function findEMRPaymentCandidates(
     WHERE match_status = 'unmatched'
       AND payment_amount BETWEEN ? AND ?
       AND DATE(transaction_date) BETWEEN DATE(?) AND DATE(?)
+      AND (
+        LOWER(payment_type) LIKE '%credit%card%'
+        OR LOWER(payment_type) LIKE '%cc%'
+        OR LOWER(payment_type) = 'card'
+      )
+      AND LOWER(payment_type) NOT LIKE '%gift%card%'
     ORDER BY ABS(payment_amount - ?) ASC,
              ABS(JULIANDAY(transaction_date) - JULIANDAY(?)) ASC
     LIMIT 10
@@ -302,13 +309,20 @@ export function matchGravityPayments(
     const payments = paymentsResult[0].values;
     const totalPayments = payments.length;
 
-    // Get EMR payment count for logging
+    // Get EMR credit card payment count for logging (only credit cards show in Gravity)
     const emrCountResult = db.exec(`
-      SELECT COUNT(*) FROM stg_emr_payments WHERE match_status = 'unmatched'
+      SELECT COUNT(*) FROM stg_emr_payments
+      WHERE match_status = 'unmatched'
+        AND (
+          LOWER(payment_type) LIKE '%credit%card%'
+          OR LOWER(payment_type) LIKE '%cc%'
+          OR LOWER(payment_type) = 'card'
+        )
+        AND LOWER(payment_type) NOT LIKE '%gift%card%'
     `);
     const emrCount = emrCountResult[0]?.values[0]?.[0] || 0;
 
-    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR payments using SQL-based matching`);
+    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR credit card payments using SQL-based matching`);
 
     let matchCount = 0;
     let processedCount = 0;
@@ -469,34 +483,33 @@ function findMatchingEMRPayments(
       continue;
     }
 
-    // Date proximity (same day = best)
+    // Date proximity bonus (amount is primary matching factor, dates may not match)
     const daysDiff = Math.abs(
       (new Date(paymentDate).getTime() - new Date(emrDate).getTime()) / (1000 * 60 * 60 * 24)
     );
 
     if (daysDiff === 0) {
-      score += 30;
-      reasons.push('same day');
-    } else if (daysDiff <= 1) {
       score += 20;
-      reasons.push('within 1 day');
+      reasons.push('same day');
     } else if (daysDiff <= 3) {
-      score += 10;
+      score += 15;
       reasons.push('within 3 days');
     } else if (daysDiff <= 7) {
-      score += 5;
+      score += 10;
       reasons.push('within 1 week');
+    } else if (daysDiff <= 14) {
+      score += 5;
+      reasons.push('within 2 weeks');
     } else {
-      // More than a week apart, less likely
-      score -= 10;
+      // Far apart dates don't penalize - dates often don't match
       reasons.push(`${Math.round(daysDiff)} days apart`);
     }
 
-    // Determine confidence level
+    // Determine confidence level (lowered thresholds since amount is more reliable than date)
     let confidence: string;
-    if (score >= 70) {
+    if (score >= 50) {
       confidence = 'high';
-    } else if (score >= 40) {
+    } else if (score >= 30) {
       confidence = 'medium';
     } else {
       confidence = 'low';
