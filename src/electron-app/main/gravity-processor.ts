@@ -269,7 +269,7 @@ function findEMRPaymentCandidates(
     GROUP BY t.invoice_number, t.customer_id, t.customer_cid, t.transaction_date
     HAVING ABS(invoice_total - ?) < 0.01
     ORDER BY ABS(JULIANDAY(t.transaction_date) - JULIANDAY(?)) ASC
-    LIMIT 10
+    LIMIT 1000
   `, [
     startDate.toISOString().split('T')[0],
     endDate.toISOString().split('T')[0],
