@@ -1,0 +1,19 @@
+[project]
+name = "medspa-pipeline"
+version = "0.1.0"
+description = "Med Spa accounting automation pipeline"
+authors = [{name = "Your Med Spa"}]
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+]
+
+[project.scripts]
+medspa = "medspa_pipeline.cli:app"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
