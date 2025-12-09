@@ -1,2 +1,10 @@
 *.patch
 *.db
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Debug scripts (temporary investigation files)
+src/electron-app/debug_*.js
+src/electron-app/check_*.js
