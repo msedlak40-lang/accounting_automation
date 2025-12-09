@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { initializeDatabase, Database } from './database';
 import { setupIpcHandlers } from './ipc-handlers';
+import { registerPythonHandlers } from './python-handlers';
 
 let mainWindow: BrowserWindow | null = null;
 let db: Database | null = null;
@@ -52,6 +53,10 @@ app.whenReady().then(async () => {
 
     // Setup IPC handlers for renderer communication
     setupIpcHandlers(db, dbPath);
+
+    // Register Python-powered handlers
+    registerPythonHandlers(db);
+    console.log('Python handlers registered');
 
     // Create main window
     createWindow();
