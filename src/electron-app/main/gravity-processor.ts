@@ -247,7 +247,7 @@ function findEMRPaymentCandidates(
       SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) as total_due_sum,
       COALESCE(SUM(
         CASE
-          WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+          WHEN LOWER(p.payment_type) IN ('alle rewards', 'aspire awards', 'client bank', 'reward points', 'square gift card')
           THEN p.payment_amount
           ELSE 0
         END
@@ -255,7 +255,7 @@ function findEMRPaymentCandidates(
       (SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) -
        COALESCE(SUM(
          CASE
-           WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+           WHEN LOWER(p.payment_type) IN ('alle rewards', 'aspire awards', 'client bank', 'reward points', 'square gift card')
            THEN p.payment_amount
            ELSE 0
          END
@@ -428,7 +428,7 @@ export function matchGravityPayments(
             SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) as total_due_sum,
             COALESCE(SUM(
               CASE
-                WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+                WHEN LOWER(p.payment_type) IN ('alle rewards', 'aspire awards', 'client bank', 'reward points', 'square gift card')
                 THEN p.payment_amount
                 ELSE 0
               END
@@ -436,7 +436,7 @@ export function matchGravityPayments(
             (SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) -
              COALESCE(SUM(
                CASE
-                 WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+                 WHEN LOWER(p.payment_type) IN ('alle rewards', 'aspire awards', 'client bank', 'reward points', 'square gift card')
                  THEN p.payment_amount
                  ELSE 0
                END
