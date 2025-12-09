@@ -23,12 +23,12 @@ function exportEmrInvoicesToCsv(db: Database): string {
   const invoices = db.exec(`
     SELECT
       invoice_number,
-      date AS invoice_date,
-      SUM(CAST(json_extract(data, '$.totalDue') AS REAL)) AS total_due
+      transaction_date AS invoice_date,
+      SUM(CAST(json_extract(transaction_data, '$.totalDue') AS REAL)) AS total_due
     FROM transactions_staging
     WHERE invoice_number IS NOT NULL
-    GROUP BY invoice_number, date
-    ORDER BY date DESC
+    GROUP BY invoice_number, transaction_date
+    ORDER BY transaction_date DESC
   `);
 
   if (invoices.length === 0 || invoices[0].values.length === 0) {
@@ -85,15 +85,15 @@ function exportEmrTransactionsToCsv(db: Database): string {
   const transactions = db.exec(`
     SELECT
       invoice_number,
-      date,
-      json_extract(data, '$.customerId') AS customer_id,
-      json_extract(data, '$.serviceName') AS service,
-      CAST(json_extract(data, '$.quantity') AS INTEGER) AS quantity,
-      CAST(json_extract(data, '$.price') AS REAL) AS price,
-      CAST(json_extract(data, '$.totalDue') AS REAL) AS total
+      transaction_date as date,
+      json_extract(transaction_data, '$.customerId') AS customer_id,
+      json_extract(transaction_data, '$.serviceName') AS service,
+      CAST(json_extract(transaction_data, '$.quantity') AS INTEGER) AS quantity,
+      CAST(json_extract(transaction_data, '$.price') AS REAL) AS price,
+      CAST(json_extract(transaction_data, '$.totalDue') AS REAL) AS total
     FROM transactions_staging
     WHERE invoice_number IS NOT NULL
-    ORDER BY date DESC, invoice_number
+    ORDER BY transaction_date DESC, invoice_number
   `);
 
   if (transactions.length === 0 || transactions[0].values.length === 0) {
