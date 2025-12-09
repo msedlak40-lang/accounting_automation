@@ -211,6 +211,8 @@ export function processGravityFile(
 /**
  * Get EMR payments to match against Gravity payments - OPTIMIZED VERSION
  * Uses SQL to efficiently find potential matches instead of loading everything
+ *
+ * UPDATED: Now groups by invoice number and sums Total Due amounts from transactions
  */
 function findEMRPaymentCandidates(
   db: Database,
@@ -226,29 +228,33 @@ function findEMRPaymentCandidates(
   const endDate = new Date(dateObj);
   endDate.setDate(endDate.getDate() + dateToleranceDays);
 
-  // Use SQL with indexes to efficiently filter candidates
-  // Only match credit card payments: visa, mastercard, amex, discover
-  // Use ABS for amount to handle floating point precision (within 1 cent)
+  // NEW APPROACH: Group by invoice number and sum Total Due from transactions_staging
+  // Join with stg_emr_payments to filter for credit card payments only
+  // Extract totalDue from JSON transaction_data and sum by invoice
   const result = db.exec(`
     SELECT
-      id,
-      invoice_number,
-      customer_id,
-      customer_name,
-      transaction_date,
-      payment_amount,
-      payment_type
-    FROM stg_emr_payments
-    WHERE match_status = 'unmatched'
-      AND ABS(payment_amount - ?) < 0.01
-      AND DATE(transaction_date) BETWEEN DATE(?) AND DATE(?)
-      AND LOWER(payment_type) IN ('visa', 'mastercard', 'amex', 'discover')
-    ORDER BY ABS(JULIANDAY(transaction_date) - JULIANDAY(?)) ASC
+      p.id,
+      p.invoice_number,
+      p.customer_id,
+      p.customer_name,
+      p.transaction_date,
+      p.payment_type,
+      COALESCE(SUM(
+        CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)
+      ), 0) as invoice_total
+    FROM stg_emr_payments p
+    LEFT JOIN transactions_staging t ON p.invoice_number = t.invoice_number
+    WHERE p.match_status = 'unmatched'
+      AND DATE(p.transaction_date) BETWEEN DATE(?) AND DATE(?)
+      AND LOWER(p.payment_type) IN ('visa', 'mastercard', 'amex', 'discover')
+    GROUP BY p.id, p.invoice_number, p.customer_id, p.customer_name, p.transaction_date, p.payment_type
+    HAVING ABS(invoice_total - ?) < 0.01
+    ORDER BY ABS(JULIANDAY(p.transaction_date) - JULIANDAY(?)) ASC
     LIMIT 10
   `, [
-    paymentAmount,
     startDate.toISOString().split('T')[0],
     endDate.toISOString().split('T')[0],
+    paymentAmount,
     paymentDate
   ]);
 
@@ -262,8 +268,8 @@ function findEMRPaymentCandidates(
       customer_id: row[2] as string,
       customer_name: row[3] as string,
       transaction_date: row[4] as string,
-      payment_amount: row[5] as number,
-      payment_type: row[6] as string
+      payment_amount: row[6] as number, // This is now the invoice_total (summed Total Due)
+      payment_type: row[5] as string
     });
   }
 
@@ -304,7 +310,7 @@ export function matchGravityPayments(
     `);
     const emrCount = emrCountResult[0]?.values[0]?.[0] || 0;
 
-    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR credit card payments (exact amount matches) using SQL-based matching`);
+    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR credit card payments (matching invoice totals) using SQL-based matching`);
 
     let matchCount = 0;
     let processedCount = 0;
@@ -339,19 +345,23 @@ export function matchGravityPayments(
       if (processedCount === 1 && emrCandidates.length === 0) {
         console.log(`DEBUG: No candidates found for first payment:`);
         console.log(`  Amount: $${paymentAmount}, Date: ${paymentDate}`);
-        console.log(`  Checking if any EMR payments exist with similar amounts...`);
+        console.log(`  Checking if any EMR invoice totals exist with similar amounts...`);
         const debugResult = db.exec(`
-          SELECT COUNT(*) as count, payment_type, payment_amount
-          FROM stg_emr_payments
-          WHERE match_status = 'unmatched'
-            AND ABS(payment_amount - ?) < 5.00
-          GROUP BY payment_type, payment_amount
+          SELECT
+            p.invoice_number,
+            p.payment_type,
+            COALESCE(SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)), 0) as invoice_total
+          FROM stg_emr_payments p
+          LEFT JOIN transactions_staging t ON p.invoice_number = t.invoice_number
+          WHERE p.match_status = 'unmatched'
+          GROUP BY p.invoice_number, p.payment_type
+          HAVING ABS(invoice_total - ?) < 5.00
           LIMIT 5
         `, [paymentAmount]);
         if (debugResult.length > 0) {
-          console.log(`  Found ${debugResult[0].values.length} EMR payments within $5:`);
+          console.log(`  Found ${debugResult[0].values.length} EMR invoices with totals within $5:`);
           debugResult[0].values.forEach((row: any) => {
-            console.log(`    Type: ${row[1]}, Amount: $${row[2]}`);
+            console.log(`    Invoice: ${row[0]}, Type: ${row[1]}, Total: $${row[2]}`);
           });
         }
       }
