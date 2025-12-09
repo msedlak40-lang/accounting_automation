@@ -72,6 +72,7 @@ interface PaymentMatch {
   amount?: number | null;
   card_type?: string | null;
   gravity_date?: string | null;
+  transaction_date?: string | null;
 }
 
 interface Invoice {
@@ -699,6 +700,19 @@ export function getPaymentMatches(db: Database, options?: { status?: string }): 
     const cardType = row[12] as string;
     const matchStatus = row[6] as string;
 
+    // Format dates to display nicely (date only, no time)
+    const formatDate = (dateStr: string | null): string => {
+      if (!dateStr) return '';
+      // Handle both ISO format (2025-12-08T10:30:00) and YYYYMMDD format
+      if (dateStr.includes('T')) {
+        return dateStr.split('T')[0]; // Return YYYY-MM-DD
+      } else if (dateStr.length === 8 && /^\d{8}$/.test(dateStr)) {
+        // Convert YYYYMMDD to YYYY-MM-DD
+        return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
+      }
+      return dateStr;
+    };
+
     matches.push({
       id: row[0] as string,
       payment_id: row[1] as string,
@@ -733,7 +747,8 @@ export function getPaymentMatches(db: Database, options?: { status?: string }): 
       customer_cid: emrCustomerCid,
       amount: emrPaymentAmount,
       card_type: cardType,
-      gravity_date: gravityDateTime
+      gravity_date: formatDate(gravityDateTime),
+      transaction_date: formatDate(emrTransactionDate)
     });
   }
 
