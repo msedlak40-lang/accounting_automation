@@ -41,8 +41,9 @@ You should see:
 Usage: medspa [OPTIONS] COMMAND [ARGS]...
 
 Commands:
-  match   Match Gravity payments to EMR invoices.
-  debug   Debug a specific invoice to see how it's being calculated.
+  match     Match Gravity payments to EMR invoices.
+  invoices  Generate invoice import CSV for QuickBooks Transaction Pro.
+  debug     Debug a specific invoice to see how it's being calculated.
 ```
 
 ## Running the Pipeline
@@ -223,6 +224,110 @@ Match confidence: HIGH
 - **Medium confidence** - Exact amount match, 4-7 days apart or multiple candidates
 - **Low** - Exact amount match, more than 7 days apart
 
+## Generating Invoices
+
+### What This Does
+
+The invoice generation command creates a CSV file of all services performed, ready to import into QuickBooks via Transaction Pro. This creates the invoices for the services (not the payments - that's handled by the `match` command).
+
+### Basic Usage
+
+```powershell
+medspa invoices <emr_file> <coa_file>
+```
+
+### With Your Files
+
+```powershell
+# From the repo root directory
+cd C:\Users\Trader\accounting_automation
+
+# Generate invoices
+medspa invoices `
+  data\raw\emr_transactions.xlsx `
+  data\raw\COA_Quickbooks_matched.xlsx `
+  --output-dir output
+
+# Open results folder
+explorer output
+```
+
+### Output Files
+
+After running, you'll get these files in the `output` folder:
+
+1. **Invoice_Import_ItemBased.csv**
+   - Import this into QuickBooks via Transaction Pro
+   - Contains all service lines with mapped QuickBooks items
+   - Format: Customer, TxnDate, RefNumber, Item, Description, Quantity, Rate, Amount, TaxCode, Memo
+
+2. **Unmapped_Services.csv** (if any services need mapping)
+   - Services that don't have a mapping in the COA file
+   - Add these to the `emr_service_items` sheet in COA_Quickbooks_matched.xlsx
+   - Then re-run the invoice generation
+
+### Console Output
+
+The command shows:
+```
+Invoice Generation Summary:
+  Total service lines: 1208
+  Unique invoices: 756
+  Date range: 2025-01-03 to 2025-10-08
+  ⚠️  Unmapped services: 10
+  ✓ Generated 1208 invoice lines
+  ✓ Covering 756 invoices
+```
+
+### Adding Service Mappings
+
+If you get unmapped services:
+
+1. Open `data\raw\COA_Quickbooks_matched.xlsx`
+2. Go to the `emr_service_items` sheet
+3. Add a row for each unmapped service:
+   - **Service/Product**: Exact name from EMR
+   - **Matched_Item**: QuickBooks item name (e.g., "Injectables:Botox per Unit 100U")
+   - **Account**: Income account
+   - **Tax Code**: "Tax" or "Non"
+4. Save the file
+5. Re-run the invoice generation
+
+### Command Options
+
+```powershell
+medspa invoices [OPTIONS] EMR_FILE COA_FILE
+```
+
+**Options:**
+- `--output-dir PATH` - Where to save results (default: ./output)
+
+**Examples:**
+
+```powershell
+# Save to Desktop
+medspa invoices data\raw\emr.xlsx data\raw\coa.xlsx --output-dir C:\Users\Trader\Desktop\invoices
+
+# Use different COA file
+medspa invoices data\raw\emr.xlsx data\raw\COA_Updated.xlsx
+```
+
+### Complete Workflow
+
+For a complete month-end close:
+
+```powershell
+# 1. Generate invoices (creates AR)
+medspa invoices data\raw\emr_transactions.xlsx data\raw\COA_Quickbooks_matched.xlsx
+
+# 2. Match payments (applies payments to AR)
+medspa match data\raw\emr_transactions.xlsx data\raw\gravity_payments.csv
+
+# 3. Import both files into QuickBooks via Transaction Pro
+#    - First: Invoice_Import_ItemBased.csv (creates invoices)
+#    - Second: Receive_Payments_From_Gravity.csv (applies payments)
+```
+
 ## Troubleshooting
 
 ### "medspa: command not found"
@@ -326,7 +431,10 @@ python_pipeline/
 # Install
 pip install -e python_pipeline
 
-# Run matching
+# Generate invoices
+medspa invoices data\raw\emr_transactions.xlsx data\raw\COA_Quickbooks_matched.xlsx
+
+# Run payment matching
 medspa match data\raw\emr_transactions.xlsx data\raw\gravity_payments.csv
 
 # Debug invoice
@@ -334,6 +442,7 @@ medspa debug data\raw\emr_transactions.xlsx 00039889
 
 # Help
 medspa --help
+medspa invoices --help
 medspa match --help
 medspa debug --help
 ```

@@ -12,6 +12,12 @@ from .loaders import (
     save_unmatched_gravity
 )
 from .matchers import match_gravity_payments
+from .invoice_generator import (
+    load_service_mappings,
+    generate_invoices,
+    save_invoices,
+    save_unmapped_services
+)
 
 app = typer.Typer()
 console = Console()
@@ -135,6 +141,72 @@ def debug(
         console.print(f"  ${service_total:.2f} (services) - ${rewards_total:.2f} (rewards) = [green]${net_total:.2f}[/green]")
         console.print(f"\n[bold]This invoice should match a Gravity payment of: ${net_total:.2f}[/bold]")
         console.print(f"[dim]Date: {invoice_lines.iloc[0]['Date']}[/dim]")
+
+
+@app.command()
+def invoices(
+    emr_file: Path = typer.Argument(..., help="EMR transactions Excel file"),
+    coa_file: Path = typer.Argument(..., help="COA Excel file with service mappings"),
+    output_dir: Path = typer.Option("./output", help="Output directory for results"),
+):
+    """
+    Generate invoice import CSV for QuickBooks Transaction Pro.
+
+    This creates invoices for all services performed in the EMR file.
+
+    Example:
+        medspa invoices emr_transactions.xlsx COA_Quickbooks_matched.xlsx
+    """
+    console.print("\n[bold blue]Invoice Generation Pipeline[/bold blue]")
+    console.print("=" * 50)
+
+    # Validate inputs
+    if not emr_file.exists():
+        console.print(f"[red]Error: EMR file not found: {emr_file}[/red]")
+        raise typer.Exit(1)
+
+    if not coa_file.exists():
+        console.print(f"[red]Error: COA file not found: {coa_file}[/red]")
+        raise typer.Exit(1)
+
+    # Create output directory
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    console.print(f"\n[cyan]Loading data...[/cyan]")
+    console.print(f"  EMR: {emr_file}")
+    console.print(f"  COA: {coa_file}")
+
+    # Load data
+    emr_df = load_emr_transactions(emr_file)
+    service_mappings = load_service_mappings(coa_file)
+
+    console.print(f"\n[cyan]Generating invoices...[/cyan]")
+    console.print(f"  Service mappings loaded: {len(service_mappings)}")
+
+    # Generate invoices
+    invoices_df, unmapped_df = generate_invoices(emr_df, service_mappings)
+
+    # Save outputs
+    console.print(f"\n[cyan]Saving results to {output_dir}/[/cyan]")
+
+    invoice_path = output_dir / "Invoice_Import_ItemBased.csv"
+    save_invoices(invoices_df, invoice_path)
+
+    if len(unmapped_df) > 0:
+        unmapped_path = output_dir / "Unmapped_Services.csv"
+        save_unmapped_services(unmapped_df, unmapped_path)
+
+    # Summary
+    console.print(f"\n[bold green]✓ Complete![/bold green]")
+    console.print(f"[green]Generated invoices ready for Transaction Pro import:[/green]")
+    console.print(f"[green]  {invoice_path}[/green]")
+
+    if len(unmapped_df) > 0:
+        console.print(f"\n[yellow]⚠️  {len(unmapped_df)} services need mapping:[/yellow]")
+        console.print(f"[yellow]  Review: {output_dir}/Unmapped_Services.csv[/yellow]")
+        console.print(f"[yellow]  Add to: {coa_file} (emr_service_items sheet)[/yellow]")
+    else:
+        console.print(f"[green]All services mapped successfully![/green]")
 
 
 if __name__ == "__main__":

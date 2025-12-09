@@ -1,4 +1,4 @@
-# Session Summary: Gravity Payment Matching
+# Session Summary: Med Spa Accounting Automation
 
 **Date:** December 9, 2025
 **Branch:** `claude/explore-codebase-015nsypKdhGzsgvhhUhRNZck`
@@ -57,9 +57,38 @@ matches = gravity.merge(invoices, on_amount_and_date)
 - Invoice #00039889: Service ($352) - Alle Rewards ($20) = $332
 - Matches Gravity payment 09868D for $332 on 10/8/25 ✓
 
-### 4. What Was Committed
+### 4. Added Invoice Generation (Session 2)
 
-**Commits:**
+**New functionality:**
+- Generate QuickBooks invoices from EMR service lines
+- Map EMR service names to QuickBooks items using COA file
+- Output Transaction Pro-ready CSV files
+- Identify unmapped services for manual review
+
+**How it works:**
+```python
+# 1. Load service mappings from COA Excel file
+service_mappings = load_service_mappings('COA_Quickbooks_matched.xlsx')
+
+# 2. Extract service lines from EMR
+service_lines = emr[emr['Service/Product'].notna()]
+
+# 3. Map to QuickBooks items
+service_lines['QB_Item'] = service_lines['Service'].map(service_mappings)
+
+# 4. Format for Transaction Pro
+invoices = format_for_transaction_pro(service_lines)
+```
+
+**Results:**
+- 1,208 invoice lines generated
+- 756 unique invoices
+- 115 service mappings loaded from COA
+- 10 unmapped services identified for manual mapping
+
+### 5. What Was Committed
+
+**Previous Commits:**
 1. `bf5aaa2` - Fix case-sensitive reward payment type matching (SQL approach)
 2. `2b3c9ee` - Update .gitignore to exclude node_modules and debug scripts
 3. `6292cdb` - Add Python-based payment matching pipeline
@@ -86,16 +115,24 @@ git pull origin claude/explore-codebase-015nsypKdhGzsgvhhUhRNZck
 # 2. Install
 pip install -e python_pipeline
 
-# 3. Run matching
+# 3. Generate invoices (creates AR)
+medspa invoices data\raw\emr_transactions.xlsx data\raw\COA_Quickbooks_matched.xlsx --output-dir output
+
+# 4. Match payments (applies payments to AR)
 medspa match data\raw\emr_transactions.xlsx data\raw\gravity_payments.csv --output-dir output
 
-# 4. Check results
+# 5. Check results
 explorer output
 ```
 
 ### Output Files
 
-1. **Receive_Payments_From_Gravity.csv** - Import into Transaction Pro
+**For Invoice Generation:**
+1. **Invoice_Import_ItemBased.csv** - Import into Transaction Pro to create invoices
+2. **Unmapped_Services.csv** - Services that need mapping (if any)
+
+**For Payment Matching:**
+1. **Receive_Payments_From_Gravity.csv** - Import into Transaction Pro to apply payments
 2. **Unmatched_Gravity_Payments.csv** - Review manually
 
 ### Debug a Specific Invoice
@@ -195,7 +232,10 @@ git pull
 # Reinstall if needed
 pip install -e python_pipeline --force-reinstall
 
-# Run on YOUR actual data files
+# Generate invoices for services
+medspa invoices <your_emr_file> <your_coa_file> --output-dir results
+
+# Match payments to invoices
 medspa match <your_emr_file> <your_gravity_file> --output-dir results
 
 # Debug any problematic invoices
@@ -233,11 +273,21 @@ medspa debug <your_emr_file> <invoice_number>
 
 ## Success Metrics
 
+**Payment Matching:**
 - ✅ Working payment matching (89% success rate)
-- ✅ Clear, debuggable code (200 lines vs 1000+)
-- ✅ Fast to run (seconds instead of database overhead)
-- ✅ Easy to install (`pip install -e .`)
 - ✅ Handles rewards correctly ($352 - $20 = $332 ✓)
 - ✅ Case-insensitive payment types
-- ✅ Debug command for troubleshooting
 - ✅ Clean output for Transaction Pro import
+
+**Invoice Generation:**
+- ✅ Generates 1,208 invoice lines from EMR data
+- ✅ Maps 115 services to QuickBooks items
+- ✅ Identifies unmapped services for review
+- ✅ Transaction Pro-ready CSV format
+
+**Overall:**
+- ✅ Clear, debuggable code (300 lines vs 1000+)
+- ✅ Fast to run (seconds instead of database overhead)
+- ✅ Easy to install (`pip install -e .`)
+- ✅ Debug command for troubleshooting
+- ✅ Complete workflow: invoices → payments
