@@ -2,10 +2,10 @@
 
 import pandas as pd
 from pathlib import Path
-from typing import Tuple
+from typing import Union
 
 
-def load_emr_transactions(file_path: str | Path) -> pd.DataFrame:
+def load_emr_transactions(file_path: Union[str, Path]) -> pd.DataFrame:
     """
     Load EMR transactions from Excel file.
 
@@ -30,7 +30,7 @@ def load_emr_transactions(file_path: str | Path) -> pd.DataFrame:
     return df
 
 
-def load_gravity_payments(file_path: str | Path) -> pd.DataFrame:
+def load_gravity_payments(file_path: Union[str, Path]) -> pd.DataFrame:
     """
     Load Gravity payments from CSV file.
 
@@ -55,7 +55,7 @@ def load_gravity_payments(file_path: str | Path) -> pd.DataFrame:
     return df[['Date', 'TransactionID', 'Amount', 'CardType']]
 
 
-def save_receive_payments(matches_df: pd.DataFrame, output_path: str | Path) -> None:
+def save_receive_payments(matches_df: pd.DataFrame, output_path: Union[str, Path]) -> None:
     """
     Save Receive Payments CSV for Transaction Pro import.
 
@@ -82,7 +82,7 @@ def save_receive_payments(matches_df: pd.DataFrame, output_path: str | Path) -> 
     print(f"✓ Saved {len(output)} matched payments to {output_path}")
 
 
-def save_unmatched_gravity(unmatched_df: pd.DataFrame, output_path: str | Path) -> None:
+def save_unmatched_gravity(unmatched_df: pd.DataFrame, output_path: Union[str, Path]) -> None:
     """Save unmatched Gravity payments for review."""
     if len(unmatched_df) == 0:
         print("✓ All Gravity payments matched!")
