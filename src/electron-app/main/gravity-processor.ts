@@ -227,13 +227,8 @@ function findEMRPaymentCandidates(
   const endDate = new Date(dateObj);
   endDate.setDate(endDate.getDate() + dateToleranceDays);
 
-  // Calculate amount range (within tolerance)
-  const amountTolerance = paymentAmount * (amountTolerancePercent / 100);
-  const minAmount = paymentAmount - Math.max(amountTolerance, 1.00);
-  const maxAmount = paymentAmount + Math.max(amountTolerance, 1.00);
-
   // Use SQL with indexes to efficiently filter candidates
-  // Only match credit card payments (Gravity only processes credit cards)
+  // Only match credit card payments: visa, mastercard, amex, discover
   const result = db.exec(`
     SELECT
       id,
@@ -245,23 +240,15 @@ function findEMRPaymentCandidates(
       payment_type
     FROM stg_emr_payments
     WHERE match_status = 'unmatched'
-      AND payment_amount BETWEEN ? AND ?
+      AND payment_amount = ?
       AND DATE(transaction_date) BETWEEN DATE(?) AND DATE(?)
-      AND (
-        LOWER(payment_type) LIKE '%credit%card%'
-        OR LOWER(payment_type) LIKE '%cc%'
-        OR LOWER(payment_type) = 'card'
-      )
-      AND LOWER(payment_type) NOT LIKE '%gift%card%'
-    ORDER BY ABS(payment_amount - ?) ASC,
-             ABS(JULIANDAY(transaction_date) - JULIANDAY(?)) ASC
+      AND LOWER(payment_type) IN ('visa', 'mastercard', 'amex', 'discover')
+    ORDER BY ABS(JULIANDAY(transaction_date) - JULIANDAY(?)) ASC
     LIMIT 10
   `, [
-    minAmount,
-    maxAmount,
+    paymentAmount,
     startDate.toISOString().split('T')[0],
     endDate.toISOString().split('T')[0],
-    paymentAmount,
     paymentDate
   ]);
 
@@ -309,20 +296,15 @@ export function matchGravityPayments(
     const payments = paymentsResult[0].values;
     const totalPayments = payments.length;
 
-    // Get EMR credit card payment count for logging (only credit cards show in Gravity)
+    // Get EMR credit card payment count for logging (visa, mastercard, amex, discover)
     const emrCountResult = db.exec(`
       SELECT COUNT(*) FROM stg_emr_payments
       WHERE match_status = 'unmatched'
-        AND (
-          LOWER(payment_type) LIKE '%credit%card%'
-          OR LOWER(payment_type) LIKE '%cc%'
-          OR LOWER(payment_type) = 'card'
-        )
-        AND LOWER(payment_type) NOT LIKE '%gift%card%'
+        AND LOWER(payment_type) IN ('visa', 'mastercard', 'amex', 'discover')
     `);
     const emrCount = emrCountResult[0]?.values[0]?.[0] || 0;
 
-    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR credit card payments using SQL-based matching`);
+    console.log(`Matching ${totalPayments} Gravity payments against ${emrCount} EMR credit card payments (exact amount matches) using SQL-based matching`);
 
     let matchCount = 0;
     let processedCount = 0;
@@ -461,55 +443,40 @@ function findMatchingEMRPayments(
 
   for (const emrPayment of emrPayments) {
     const emrDate = emrPayment.transaction_date.split('T')[0];
-    const emrAmount = emrPayment.payment_amount;
 
-    let score = 0;
-    const reasons: string[] = [];
+    // All candidates already have exact amount match (filtered by SQL)
+    let score = 50; // Base score for exact amount match
+    const reasons: string[] = ['exact amount'];
 
-    // Exact amount match (highest weight)
-    if (Math.abs(emrAmount - paymentAmount) < 0.01) {
-      score += 50;
-      reasons.push('exact amount match');
-    } else if (Math.abs(emrAmount - paymentAmount) < 1.00) {
-      // Within $1 tolerance
-      score += 30;
-      reasons.push('amount within $1');
-    } else if (Math.abs(emrAmount - paymentAmount) / emrAmount < 0.02) {
-      // Within 2% tolerance
-      score += 20;
-      reasons.push('amount within 2%');
-    } else {
-      // Amount too different, skip this payment
-      continue;
-    }
-
-    // Date proximity bonus (amount is primary matching factor, dates may not match)
+    // Date proximity determines confidence
     const daysDiff = Math.abs(
       (new Date(paymentDate).getTime() - new Date(emrDate).getTime()) / (1000 * 60 * 60 * 24)
     );
 
     if (daysDiff === 0) {
-      score += 20;
+      score += 30;
       reasons.push('same day');
     } else if (daysDiff <= 3) {
-      score += 15;
+      score += 20;
       reasons.push('within 3 days');
     } else if (daysDiff <= 7) {
-      score += 10;
+      score += 15;
       reasons.push('within 1 week');
     } else if (daysDiff <= 14) {
-      score += 5;
+      score += 10;
       reasons.push('within 2 weeks');
+    } else if (daysDiff <= 30) {
+      score += 5;
+      reasons.push('within 30 days');
     } else {
-      // Far apart dates don't penalize - dates often don't match
       reasons.push(`${Math.round(daysDiff)} days apart`);
     }
 
-    // Determine confidence level (lowered thresholds since amount is more reliable than date)
+    // Determine confidence level
     let confidence: string;
-    if (score >= 50) {
+    if (score >= 70) {
       confidence = 'high';
-    } else if (score >= 30) {
+    } else if (score >= 50) {
       confidence = 'medium';
     } else {
       confidence = 'low';
