@@ -118,6 +118,15 @@ const api = {
     rejectMatch: (matchId: string) => ipcRenderer.invoke('gravity:rejectMatch', matchId),
     export: (outputDir: string) => ipcRenderer.invoke('gravity:export', outputDir),
   },
+
+  // Python Pipeline Integration
+  python: {
+    test: () => ipcRenderer.invoke('python:test'),
+    matchPayments: () => ipcRenderer.invoke('python:matchPayments'),
+    generateInvoices: () => ipcRenderer.invoke('python:generateInvoices'),
+    getMatches: () => ipcRenderer.invoke('python:getMatches'),
+    debug: (invoiceNumber: string) => ipcRenderer.invoke('python:debug', invoiceNumber),
+  },
 };
 
 // Expose protected methods that allow the renderer process to use

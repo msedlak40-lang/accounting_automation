@@ -119,6 +119,19 @@ declare global {
         rejectMatch: (matchId: string) => Promise<{ success: boolean; error?: string }>;
         export: (outputDir: string) => Promise<{ success: boolean; paymentsExported: number; filePath?: string; error?: string }>;
       };
+      python: {
+        test: () => Promise<{ success: boolean; message?: string; error?: string }>;
+        matchPayments: () => Promise<{
+          success: boolean;
+          matchCount: number;
+          unmatchedCount: number;
+          matches: any[];
+          error?: string;
+        }>;
+        generateInvoices: () => Promise<{ success: boolean; data?: any; error?: string }>;
+        getMatches: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+        debug: (invoiceNumber: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+      };
       bank: {
         selectFile: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
         processFile: (filePath: string) => Promise<{
@@ -449,7 +462,8 @@ function App() {
       setMatching(true);
       setMatchResult(null);
 
-      const result = await window.electronAPI.gravity.matchPayments();
+      // Use Python pipeline for payment matching
+      const result = await window.electronAPI.python.matchPayments();
       setMatchResult(result);
 
       if (result.success) {
