@@ -67,7 +67,7 @@ interface PythonBridgeConfig {
  * Default configuration
  */
 const DEFAULT_CONFIG: Required<PythonBridgeConfig> = {
-  pythonPath: 'python',
+  pythonPath: 'python3',
   pipelinePath: path.join(__dirname, '../../../python_pipeline'),
   timeout: 60000, // 60 seconds
 };
