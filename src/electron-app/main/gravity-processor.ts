@@ -216,7 +216,7 @@ function findEMRPaymentCandidates(
   db: Database,
   paymentDate: string,
   paymentAmount: number,
-  dateToleranceDays: number = 30
+  dateToleranceDays: number = 7
 ): EMRPayment[] {
   // Calculate date range
   const dateParts = paymentDate.split('T')[0];
@@ -228,6 +228,7 @@ function findEMRPaymentCandidates(
 
   // Use SQL with indexes to efficiently filter candidates
   // Only match credit card payments: visa, mastercard, amex, discover
+  // Use ABS for amount to handle floating point precision (within 1 cent)
   const result = db.exec(`
     SELECT
       id,
@@ -239,7 +240,7 @@ function findEMRPaymentCandidates(
       payment_type
     FROM stg_emr_payments
     WHERE match_status = 'unmatched'
-      AND payment_amount = ?
+      AND ABS(payment_amount - ?) < 0.01
       AND DATE(transaction_date) BETWEEN DATE(?) AND DATE(?)
       AND LOWER(payment_type) IN ('visa', 'mastercard', 'amex', 'discover')
     ORDER BY ABS(JULIANDAY(transaction_date) - JULIANDAY(?)) ASC
@@ -333,6 +334,27 @@ export function matchGravityPayments(
         paymentDate,
         paymentAmount
       );
+
+      // Debug logging for first payment to help diagnose matching issues
+      if (processedCount === 1 && emrCandidates.length === 0) {
+        console.log(`DEBUG: No candidates found for first payment:`);
+        console.log(`  Amount: $${paymentAmount}, Date: ${paymentDate}`);
+        console.log(`  Checking if any EMR payments exist with similar amounts...`);
+        const debugResult = db.exec(`
+          SELECT COUNT(*) as count, payment_type, payment_amount
+          FROM stg_emr_payments
+          WHERE match_status = 'unmatched'
+            AND ABS(payment_amount - ?) < 5.00
+          GROUP BY payment_type, payment_amount
+          LIMIT 5
+        `, [paymentAmount]);
+        if (debugResult.length > 0) {
+          console.log(`  Found ${debugResult[0].values.length} EMR payments within $5:`);
+          debugResult[0].values.forEach((row: any) => {
+            console.log(`    Type: ${row[1]}, Amount: $${row[2]}`);
+          });
+        }
+      }
 
       // Evaluate candidates using the existing scoring logic
       const matches = findMatchingEMRPayments(
