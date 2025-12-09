@@ -75,13 +75,6 @@ interface PaymentMatch {
   transaction_date?: string | null;
 }
 
-interface Invoice {
-  invoice_number: string;
-  customer_id: string;
-  transaction_date: string;
-  total_amount: number;
-}
-
 interface EMRPayment {
   id: string;
   invoice_number: string;
@@ -213,38 +206,6 @@ export function processGravityFile(
       error: error.message
     };
   }
-}
-
-/**
- * Get invoices from transactions staging grouped by invoice number
- */
-function getInvoices(db: Database): Invoice[] {
-  const result = db.exec(`
-    SELECT
-      invoice_number,
-      customer_id,
-      transaction_date,
-      SUM(amount) as total_amount
-    FROM transactions_staging
-    WHERE invoice_number IS NOT NULL AND invoice_number != ''
-      AND amount IS NOT NULL
-    GROUP BY invoice_number, customer_id, transaction_date
-    ORDER BY transaction_date DESC
-  `);
-
-  if (result.length === 0) return [];
-
-  const invoices: Invoice[] = [];
-  for (const row of result[0].values) {
-    invoices.push({
-      invoice_number: row[0] as string,
-      customer_id: row[1] as string,
-      transaction_date: row[2] as string,
-      total_amount: row[3] as number
-    });
-  }
-
-  return invoices;
 }
 
 /**
@@ -456,87 +417,6 @@ export function matchGravityPayments(
     }
     return { success: false, matchCount: 0, error: error.message };
   }
-}
-
-/**
- * Find matching invoices for a payment
- */
-function findMatchingInvoices(
-  paymentDate: string,
-  paymentAmount: number,
-  invoices: Invoice[]
-): Array<{ invoice_number: string; customer_id: string; confidence: string; score: number; reason: string }> {
-  const matches: Array<{ invoice_number: string; customer_id: string; confidence: string; score: number; reason: string }> = [];
-
-  for (const invoice of invoices) {
-    const invoiceDate = invoice.transaction_date.split('T')[0];
-    const invoiceAmount = invoice.total_amount;
-
-    let score = 0;
-    const reasons: string[] = [];
-
-    // Exact amount match (highest weight)
-    if (Math.abs(invoiceAmount - paymentAmount) < 0.01) {
-      score += 50;
-      reasons.push('exact amount match');
-    } else if (Math.abs(invoiceAmount - paymentAmount) < 1.00) {
-      // Within $1 tolerance
-      score += 30;
-      reasons.push('amount within $1');
-    } else if (Math.abs(invoiceAmount - paymentAmount) / invoiceAmount < 0.02) {
-      // Within 2% tolerance
-      score += 20;
-      reasons.push('amount within 2%');
-    } else {
-      // Amount too different, skip this invoice
-      continue;
-    }
-
-    // Date proximity (same day = best)
-    const daysDiff = Math.abs(
-      (new Date(paymentDate).getTime() - new Date(invoiceDate).getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysDiff === 0) {
-      score += 30;
-      reasons.push('same day');
-    } else if (daysDiff <= 1) {
-      score += 20;
-      reasons.push('within 1 day');
-    } else if (daysDiff <= 3) {
-      score += 10;
-      reasons.push('within 3 days');
-    } else if (daysDiff <= 7) {
-      score += 5;
-      reasons.push('within 1 week');
-    } else {
-      // More than a week apart, less likely
-      score -= 10;
-      reasons.push(`${Math.round(daysDiff)} days apart`);
-    }
-
-    // Determine confidence level
-    let confidence: string;
-    if (score >= 70) {
-      confidence = 'high';
-    } else if (score >= 40) {
-      confidence = 'medium';
-    } else {
-      confidence = 'low';
-    }
-
-    matches.push({
-      invoice_number: invoice.invoice_number,
-      customer_id: invoice.customer_id,
-      confidence,
-      score,
-      reason: reasons.join(', ')
-    });
-  }
-
-  // Sort by score descending and return top 3 matches
-  matches.sort((a, b) => b.score - a.score);
-  return matches.slice(0, 3);
 }
 
 /**
