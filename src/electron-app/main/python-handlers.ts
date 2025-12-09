@@ -52,12 +52,12 @@ function exportGravityPaymentsToCsv(db: Database): string {
   const payments = db.exec(`
     SELECT
       id,
-      payment_date,
-      amount,
-      payment_method,
-      customer_name
+      DATE(transaction_datetime) as payment_date,
+      total_amount as amount,
+      card_type as payment_method,
+      cashier as customer_name
     FROM stg_gravity_payments
-    ORDER BY payment_date DESC
+    ORDER BY transaction_datetime DESC
   `);
 
   if (payments.length === 0 || payments[0].values.length === 0) {
@@ -307,8 +307,8 @@ export function registerPythonHandlers(db: Database) {
           m.amount,
           m.status,
           m.created_at,
-          g.payment_date,
-          g.customer_name
+          DATE(g.transaction_datetime) as payment_date,
+          g.cashier as customer_name
         FROM gravity_payment_matches m
         LEFT JOIN stg_gravity_payments g ON g.id = m.payment_id
         ORDER BY m.created_at DESC
