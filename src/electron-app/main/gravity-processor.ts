@@ -233,6 +233,10 @@ function findEMRPaymentCandidates(
   // NEW APPROACH: Start from transactions_staging (service lines) and group by invoice
   // This works even if there's no payment line in stg_emr_payments
   // We get customer info from the transactions_staging records
+  //
+  // IMPORTANT: If invoice has reward payments (Alle Rewards, Aspire Awards, Client Bank,
+  // Reward Points, or square gift card), we subtract those from the Total Due sum
+  // because rewards reduce the amount that needs to be paid via Gravity
   const result = db.exec(`
     SELECT
       t.invoice_number,
@@ -240,9 +244,25 @@ function findEMRPaymentCandidates(
       t.customer_cid,
       t.transaction_date,
       MIN(t.id) as first_line_id,
-      SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) as invoice_total,
+      SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) as total_due_sum,
+      COALESCE(SUM(
+        CASE
+          WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+          THEN p.payment_amount
+          ELSE 0
+        END
+      ), 0) as reward_amount,
+      (SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) -
+       COALESCE(SUM(
+         CASE
+           WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+           THEN p.payment_amount
+           ELSE 0
+         END
+       ), 0)) as invoice_total,
       COUNT(*) as line_count
     FROM transactions_staging t
+    LEFT JOIN stg_emr_payments p ON t.invoice_number = p.invoice_number
     WHERE t.invoice_number IS NOT NULL
       AND DATE(t.transaction_date) BETWEEN DATE(?) AND DATE(?)
       AND json_extract(t.transaction_data, '$.totalDue') IS NOT NULL
@@ -265,7 +285,11 @@ function findEMRPaymentCandidates(
     const customerId = row[1] as string;
     const customerCid = row[2] as string;
     const transactionDate = row[3] as string;
-    const invoiceTotal = row[5] as number;
+    // row[4] is first_line_id
+    // row[5] is total_due_sum
+    // row[6] is reward_amount
+    const invoiceTotal = row[7] as number; // invoice_total (totalDue - rewards)
+    // row[8] is line_count
 
     // Try to get customer name from stg_emr_patients using customer_cid
     let customerName = 'Unknown';
@@ -401,9 +425,25 @@ export function matchGravityPayments(
           SELECT
             t.invoice_number,
             t.transaction_date,
-            SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) as invoice_total,
+            SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) as total_due_sum,
+            COALESCE(SUM(
+              CASE
+                WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+                THEN p.payment_amount
+                ELSE 0
+              END
+            ), 0) as reward_amount,
+            (SUM(CAST(json_extract(t.transaction_data, '$.totalDue') AS REAL)) -
+             COALESCE(SUM(
+               CASE
+                 WHEN p.payment_type IN ('Alle Rewards', 'Aspire Awards', 'Client Bank', 'Reward Points', 'square gift card')
+                 THEN p.payment_amount
+                 ELSE 0
+               END
+             ), 0)) as invoice_total,
             COUNT(*) as line_count
           FROM transactions_staging t
+          LEFT JOIN stg_emr_payments p ON t.invoice_number = p.invoice_number
           WHERE t.invoice_number IS NOT NULL
             AND json_extract(t.transaction_data, '$.totalDue') IS NOT NULL
           GROUP BY t.invoice_number, t.transaction_date
@@ -413,7 +453,7 @@ export function matchGravityPayments(
         if (debugResult.length > 0) {
           console.log(`  Found ${debugResult[0].values.length} EMR invoices with totals within $5:`);
           debugResult[0].values.forEach((row: any) => {
-            console.log(`    Invoice: ${row[0]}, Date: ${row[1]}, Total: $${row[2]} (${row[3]} lines)`);
+            console.log(`    Invoice: ${row[0]}, Date: ${row[1]}, Total Due: $${row[2]}, Rewards: $${row[3]}, Net Total: $${row[4]} (${row[5]} lines)`);
           });
         }
       }
